@@ -1,9 +1,8 @@
-# main_window.py
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
-from dashboard_panel import WorkerDashboard
-from request_table import TaskRequestTable
-from theme import apply_worker_theme
+from worker_gui.dashboard_panel import WorkerDashboard
+from worker_gui.request_table import TaskRequestTable
+from worker_gui.theme import apply_worker_theme
 
 
 class WorkerGUI(QMainWindow):

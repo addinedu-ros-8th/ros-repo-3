@@ -1,5 +1,4 @@
 # theme.py
-
 def apply_kaki_theme(widget):
     widget.setStyleSheet("""
         QMainWindow, QDialog, QWidget {

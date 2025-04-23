@@ -1,10 +1,8 @@
-# main_window.py
-
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
-from dashboard_panel import MonitorPanel
-from dialogs import LogDialog, RobotDialog, RequestDialog
-from theme import apply_kaki_theme
+from admin_gui.dashboard_panel import MonitorPanel
+from admin_gui.dialogs import LogDialog, RobotDialog, RequestDialog
+from admin_gui.theme import apply_kaki_theme
 
 
 class MainWindow(QMainWindow):
