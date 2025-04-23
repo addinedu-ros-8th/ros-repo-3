@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from datetime import datetime
 from .theme import apply_worker_theme
+from .db_access import insert_task
 
 
 class WorkerDashboard(QWidget):
@@ -73,15 +74,21 @@ class WorkerDashboard(QWidget):
         self.setLayout(layout)
 
     def _emit_task_request(self):
-        origin_desc = []
-        for zone, spinbox in self.origin_inputs.items():
-            if spinbox.value() > 0:
-                origin_desc.append(f"{zone}:{spinbox.value()}")
+        origin_list = []
+        quantity_list = []
 
-        if not origin_desc:
+        for zone, spinbox in self.origin_inputs.items():
+            count = spinbox.value()
+            if count > 0:
+                origin_list.append(zone)
+                quantity_list.append(str(count))
+
+        if not origin_list:
             return
 
-        time_str = datetime.now().strftime("%H:%M")
+        origin_str = ",".join(origin_list)
+        quantity_str = ",".join(quantity_list)
+        now = datetime.now()  # Use full datetime object
         task_id = f"T{self.task_counter:03}"
         self.task_counter += 1
 
@@ -92,10 +99,20 @@ class WorkerDashboard(QWidget):
         task_info = {
             "robot": robot_id,
             "task_id": task_id,
-            "origin": ", ".join(origin_desc),
+            "origin": origin_str,
+            "quantity": quantity_str,
             "status": "Pending",
-            "time": time_str
+            "time": now  # Store full datetime
         }
+
+        insert_task(
+            robot=task_info["robot"],
+            task_code=task_info["task_id"],
+            origin=task_info["origin"],
+            quantity=task_info["quantity"],
+            status=task_info["status"],
+            time=task_info["time"]
+        )
 
         self.task_submitted.emit(task_info)
 

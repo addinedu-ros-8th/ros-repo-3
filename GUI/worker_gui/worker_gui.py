@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
 from .dashboard_panel import WorkerDashboard
 from .request_table import TaskRequestTable
 from .theme import apply_worker_theme
-
+from GUI.worker_gui.db_access import fetch_all_tasks
+from datetime import datetime
+from PyQt5.QtCore import Qt
 
 class WorkerGUI(QMainWindow):
     def __init__(self):
@@ -29,6 +31,44 @@ class WorkerGUI(QMainWindow):
 
         central.setLayout(main_layout)
         self.setCentralWidget(central)
+
+        # DB에서 작업 불러오고 task_counter 설정
+        self._load_existing_tasks()
+
+    def _load_existing_tasks(self):
+        tasks = fetch_all_tasks()
+        max_id = self._get_max_task_id_number(tasks)
+        self.dashboard.task_counter = max_id + 1
+
+        for task in tasks:
+            time_obj = task["time"]
+            if isinstance(time_obj, datetime):
+                time_str = time_obj.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                time_str = str(time_obj)
+
+            self.table.add_task({
+                "robot": task["robot_id"],
+                "task_id": task["task_id"],
+                "origin": task["origin"],
+                "quantity": task.get("quantity", "-"),
+                "status": task["status"],
+                "time": time_str
+            })
+
+        self.table.sort_by_column(5, Qt.DescendingOrder)
+
+    def _get_max_task_id_number(self, tasks):
+        max_id = 0
+        for task in tasks:
+            task_id = task.get("task_id", "")
+            if task_id.startswith("T"):
+                try:
+                    number = int(task_id[1:])
+                    max_id = max(max_id, number)
+                except ValueError:
+                    continue
+        return max_id
 
 
 if __name__ == '__main__':

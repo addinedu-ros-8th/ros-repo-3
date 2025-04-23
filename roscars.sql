@@ -55,11 +55,12 @@ CREATE TABLE `InventoryChangeLog` (
   `timestamp` timestamp
 );
 
-CREATE TABLE `User` (
-  `user_id` integer PRIMARY KEY,
-  `name` varchar(255),
-  `role` varchar(255),
-  `call_robot` boolean
+CREATE TABLE `RequestTask` (
+  `robot_id` VARCHAR(20) NOT NULL,
+  `task_id` VARCHAR(20) NOT NULL UNIQUE,
+  `origin` TEXT NOT NULL,
+  `status` VARCHAR(20) DEFAULT 'Pending',
+  `time` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE `RobotFunction` ADD FOREIGN KEY (`robot_id`) REFERENCES `Robot` (`robot_id`);
