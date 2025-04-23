@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtWidgets import (
+    QHeaderView,
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QTableWidget, QTableWidgetItem, QGroupBox,
     QDialog, QSizePolicy, QRadioButton, QButtonGroup
@@ -7,38 +8,71 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtCore import Qt
 
+
+def apply_kaki_theme(widget):
+    widget.setStyleSheet("""
+        QDialog, QMainWindow {
+            background-color: #f4f2ec;
+        }
+        QTableWidget {
+            background-color: #fffdf6;
+            color: #3e3e3e;
+            gridline-color: #a89f7d;
+        }
+        QHeaderView::section {
+            background-color: #d2c8a9;
+            color: #3e3e3e;
+            font-weight: bold;
+            padding: 6px;
+            border: 1px solid #c2bca2;
+        }
+    """)
+
+
 class LogDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Logs")
         self.setGeometry(200, 200, 800, 400)
+        apply_kaki_theme(self)
         layout = QVBoxLayout()
         table = QTableWidget(0, 5)
+        table.horizontalHeader().setStretchLastSection(True)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         table.setHorizontalHeaderLabels(["Timestamp", "Robot", "Task", "Event", "Description"])
         layout.addWidget(table)
         self.setLayout(layout)
+
 
 class RobotDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Robot Management")
         self.setGeometry(200, 200, 800, 400)
+        apply_kaki_theme(self)
         layout = QVBoxLayout()
         table = QTableWidget(0, 4)
+        table.horizontalHeader().setStretchLastSection(True)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         table.setHorizontalHeaderLabels(["Robot ID", "Battery", "Status", "Functionality"])
         layout.addWidget(table)
         self.setLayout(layout)
+
 
 class RequestDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Requests")
         self.setGeometry(200, 200, 800, 400)
+        apply_kaki_theme(self)
         layout = QVBoxLayout()
         table = QTableWidget(0, 5)
+        table.horizontalHeader().setStretchLastSection(True)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         table.setHorizontalHeaderLabels(["Request ID", "Robot", "Task", "Status", "Priority"])
         layout.addWidget(table)
         self.setLayout(layout)
+
 
 class AdminGUI(QMainWindow):
     def __init__(self):
@@ -89,13 +123,11 @@ class AdminGUI(QMainWindow):
         self.layout = QVBoxLayout()
         self.layout.setSpacing(15)
 
-        # Title
         title = QLabel("Roskatsu System Dashboard")
         title.setObjectName("titleLabel")
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
-        # View toggle radio buttons
         self.radio_map = QRadioButton("Map")
         self.radio_sensor = QRadioButton("Sensor Data")
         self.radio_map.setChecked(True)
@@ -111,7 +143,6 @@ class AdminGUI(QMainWindow):
         self.radio_map.toggled.connect(self.toggle_views)
         self.radio_sensor.toggled.connect(self.toggle_views)
 
-        # Map Placeholder
         self.map_label = QLabel("Live Map Placeholder")
         self.map_label.setAlignment(Qt.AlignCenter)
         self.map_label.setStyleSheet("background-color: #e7e3d4; border: 2px solid #a89f7d; padding: 10px;")
@@ -119,7 +150,6 @@ class AdminGUI(QMainWindow):
         self.map_label.setMinimumHeight(300)
         self.layout.addWidget(self.map_label)
 
-        # Sensor Section
         self.sensor_box = QGroupBox("Sensor Data")
         self.sensor_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sensor_layout = QVBoxLayout()
@@ -132,7 +162,6 @@ class AdminGUI(QMainWindow):
         self.sensor_box.setVisible(False)
         self.layout.addWidget(self.sensor_box)
 
-        # System Health
         sys_health = QGroupBox("System Health")
         sys_layout = QHBoxLayout()
         sys_layout.addWidget(QLabel("Task States (Idle, Moving, Error...)"))
@@ -140,7 +169,6 @@ class AdminGUI(QMainWindow):
         sys_health.setLayout(sys_layout)
         self.layout.addWidget(sys_health)
 
-        # Management Buttons
         button_box = QGroupBox("Management Panels")
         button_layout = QHBoxLayout()
 
