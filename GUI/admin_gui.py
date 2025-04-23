@@ -1,11 +1,10 @@
 import sys
 from PyQt5.QtWidgets import (
-    QHeaderView,
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QHeaderView, QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QTableWidget, QTableWidgetItem, QGroupBox,
-    QDialog, QSizePolicy, QRadioButton, QButtonGroup
+    QDialog, QSizePolicy, QComboBox, QRadioButton, QButtonGroup
 )
-from PyQt5.QtGui import QFont, QPalette, QColor
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
 
@@ -79,6 +78,7 @@ class AdminGUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("Roskatsu Admin Dashboard")
         self.setGeometry(150, 150, 1400, 900)
+        self.selected_robot = "Pinky 1"
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #f4f2ec;
@@ -128,14 +128,26 @@ class AdminGUI(QMainWindow):
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
+        # Combined selection row (robot + view)
+        selection_row = QHBoxLayout()
+        robot_label = QLabel("Select Robot:")
+        robot_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.robot_combo = QComboBox()
+        self.robot_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.robot_combo.addItems(["Pinky 1", "Pinky 2"])
+        self.robot_combo.currentTextChanged.connect(self.update_robot_selection)
+
+        selection_row.addWidget(robot_label)
+        selection_row.addWidget(self.robot_combo)
+
+        selection_row.addSpacing(30)
+
+        selection_row.addWidget(QLabel("Select View:"))
         self.radio_map = QRadioButton("Map")
         self.radio_sensor = QRadioButton("Sensor Data")
         self.radio_map.setChecked(True)
-        view_toggle = QHBoxLayout()
-        view_toggle.addWidget(QLabel("Select View:"))
-        view_toggle.addWidget(self.radio_map)
-        view_toggle.addWidget(self.radio_sensor)
-        self.layout.addLayout(view_toggle)
+        selection_row.addWidget(self.radio_map)
+        selection_row.addWidget(self.radio_sensor)
 
         self.radio_group = QButtonGroup()
         self.radio_group.addButton(self.radio_map)
@@ -143,7 +155,9 @@ class AdminGUI(QMainWindow):
         self.radio_map.toggled.connect(self.toggle_views)
         self.radio_sensor.toggled.connect(self.toggle_views)
 
-        self.map_label = QLabel("Live Map Placeholder")
+        self.layout.addLayout(selection_row)
+
+        self.map_label = QLabel()
         self.map_label.setAlignment(Qt.AlignCenter)
         self.map_label.setStyleSheet("background-color: #e7e3d4; border: 2px solid #a89f7d; padding: 10px;")
         self.map_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -153,7 +167,7 @@ class AdminGUI(QMainWindow):
         self.sensor_box = QGroupBox("Sensor Data")
         self.sensor_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sensor_layout = QVBoxLayout()
-        self.sensor_graph = QLabel("Sensor Stream Graph Placeholder")
+        self.sensor_graph = QLabel()
         self.sensor_graph.setAlignment(Qt.AlignCenter)
         self.sensor_graph.setStyleSheet("background-color: #fbf8ee; border: 2px dashed #a3895f; padding: 10px;")
         self.sensor_graph.setMinimumHeight(300)
@@ -162,12 +176,12 @@ class AdminGUI(QMainWindow):
         self.sensor_box.setVisible(False)
         self.layout.addWidget(self.sensor_box)
 
-        sys_health = QGroupBox("System Health")
-        sys_layout = QHBoxLayout()
-        sys_layout.addWidget(QLabel("Task States (Idle, Moving, Error...)"))
-        sys_layout.addWidget(QLabel("Battery Levels"))
-        sys_health.setLayout(sys_layout)
-        self.layout.addWidget(sys_health)
+        self.sys_health = QGroupBox("System Health")
+        self.sys_layout = QHBoxLayout()
+        self.health_label = QLabel()
+        self.sys_layout.addWidget(self.health_label)
+        self.sys_health.setLayout(self.sys_layout)
+        self.layout.addWidget(self.sys_health)
 
         button_box = QGroupBox("Management Panels")
         button_layout = QHBoxLayout()
@@ -193,6 +207,17 @@ class AdminGUI(QMainWindow):
         central.setLayout(self.layout)
         self.setCentralWidget(central)
 
+        self.refresh_robot_view()
+
+    def update_robot_selection(self, text):
+        self.selected_robot = text
+        self.refresh_robot_view()
+
+    def refresh_robot_view(self):
+        self.map_label.setText(f"Live Map for {self.selected_robot}")
+        self.sensor_graph.setText(f"Sensor Stream Graph for {self.selected_robot}")
+        self.health_label.setText(f"System Health: {self.selected_robot} status display")
+
     def toggle_views(self):
         self.map_label.setVisible(self.radio_map.isChecked())
         self.sensor_box.setVisible(self.radio_sensor.isChecked())
@@ -208,6 +233,7 @@ class AdminGUI(QMainWindow):
     def open_request_dialog(self):
         self.request_dialog = RequestDialog()
         self.request_dialog.exec_()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
