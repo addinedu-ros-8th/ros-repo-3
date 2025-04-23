@@ -1,10 +1,9 @@
 import sys
 from PyQt5.QtWidgets import (
     QHeaderView, QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QTableWidget, QTableWidgetItem, QGroupBox,
+    QLabel, QPushButton, QTableWidget, QGroupBox,
     QDialog, QSizePolicy, QComboBox, QRadioButton, QButtonGroup
 )
-from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
 
