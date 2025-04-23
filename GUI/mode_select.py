@@ -1,10 +1,10 @@
-# role_selector.py
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt5.QtCore import Qt
-from admin_gui.admin_gui import MainWindow as AdminMainWindow
-from worker_gui.worker_gui import WorkerGUI
-from admin_gui.theme import apply_kaki_theme
+from GUI.admin_gui.admin_gui import MainWindow as AdminMainWindow
+from GUI.worker_gui.worker_gui import WorkerGUI
+from GUI.admin_gui.theme import apply_kaki_theme
+
 
 
 class RoleChooser(QMainWindow):

@@ -2,7 +2,7 @@
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QHeaderView
 from PyQt5.QtWidgets import QTableWidgetItem
-from admin_gui.theme import apply_kaki_theme
+from .theme import apply_kaki_theme
 
 
 class LogDialog(QDialog):

@@ -1,7 +1,7 @@
 # request_table.py
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import Qt
-from worker_gui.theme import apply_worker_theme
+from .theme import apply_worker_theme
 
 
 class TaskRequestTable(QGroupBox):

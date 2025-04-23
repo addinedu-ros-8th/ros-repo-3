@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from datetime import datetime
-from worker_gui.theme import apply_worker_theme
+from .theme import apply_worker_theme
 
 
 class WorkerDashboard(QWidget):
