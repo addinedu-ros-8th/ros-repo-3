@@ -1,28 +1,35 @@
-# monitor_panel.py
+# dashboard_panel.py
+
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox,
     QSizePolicy, QComboBox, QRadioButton, QButtonGroup
 )
 from PyQt5.QtCore import Qt
+from theme import apply_kaki_theme
+
 
 class MonitorPanel(QWidget):
     def __init__(self):
         super().__init__()
         self.selected_robot = "Pinky 1"
+        apply_kaki_theme(self)
         self._init_ui()
 
     def _init_ui(self):
         layout = QVBoxLayout()
         layout.setSpacing(15)
 
+        # 제목
         title = QLabel("Roskatsu System Dashboard")
         title.setObjectName("titleLabel")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
+        # 로봇 선택 & 뷰 전환
         selection_row = QHBoxLayout()
         robot_label = QLabel("Select Robot:")
         robot_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         self.robot_combo = QComboBox()
         self.robot_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.robot_combo.addItems(["Pinky 1", "Pinky 2"])
@@ -47,6 +54,7 @@ class MonitorPanel(QWidget):
 
         layout.addLayout(selection_row)
 
+        # 맵 라벨
         self.map_label = QLabel()
         self.map_label.setAlignment(Qt.AlignCenter)
         self.map_label.setStyleSheet("background-color: #e7e3d4; border: 2px solid #a89f7d; padding: 10px;")
@@ -54,6 +62,7 @@ class MonitorPanel(QWidget):
         self.map_label.setMinimumHeight(300)
         layout.addWidget(self.map_label)
 
+        # 센서 뷰
         self.sensor_box = QGroupBox("Sensor Data")
         self.sensor_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sensor_layout = QVBoxLayout()
@@ -66,6 +75,7 @@ class MonitorPanel(QWidget):
         self.sensor_box.setVisible(False)
         layout.addWidget(self.sensor_box)
 
+        # 시스템 상태
         self.sys_health = QGroupBox("System Health")
         self.sys_layout = QHBoxLayout()
         self.health_label = QLabel()
@@ -73,7 +83,7 @@ class MonitorPanel(QWidget):
         self.sys_health.setLayout(self.sys_layout)
         layout.addWidget(self.sys_health)
 
-        # 버튼 패널
+        # 버튼 영역
         button_box = QGroupBox("Management Panels")
         button_layout = QHBoxLayout()
 

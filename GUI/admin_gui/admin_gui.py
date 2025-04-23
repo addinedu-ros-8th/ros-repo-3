@@ -1,50 +1,13 @@
-# admin_gui.py
+# main_window.py
+
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
-from monitor_panel import MonitorPanel
-from task_control_panel import LogDialog, RobotDialog, RequestDialog
+from dashboard_panel import MonitorPanel
+from dialogs import LogDialog, RobotDialog, RequestDialog
+from theme import apply_kaki_theme
 
 
-def apply_kaki_theme(widget):
-    widget.setStyleSheet("""
-        QMainWindow {
-            background-color: #f4f2ec;
-        }
-        QLabel#titleLabel {
-            font-size: 22px;
-            font-weight: bold;
-            color: #3e3e3e;
-        }
-        QGroupBox {
-            border: 1px solid #c2bca2;
-            border-radius: 8px;
-            margin-top: 10px;
-            background-color: #fffdf6;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 10px;
-            padding: 0 3px 0 3px;
-            font-weight: bold;
-            color: #5b5a4e;
-        }
-        QPushButton {
-            background-color: #708238;
-            color: white;
-            border-radius: 6px;
-            padding: 8px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background-color: #5e6f2a;
-        }
-        QRadioButton {
-            font-size: 14px;
-            color: #3e3e3e;
-        }
-    """)
-
-class AdminGUI(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Roskatsu Admin Dashboard")
@@ -52,35 +15,43 @@ class AdminGUI(QMainWindow):
 
         apply_kaki_theme(self)
 
+        # 중앙 위젯 설정
         central = QWidget()
         layout = QVBoxLayout()
 
+        # 메인 대시보드 패널 구성
         self.monitor_panel = MonitorPanel()
+        layout.addWidget(self.monitor_panel)
+
+        # 테마 적용
         apply_kaki_theme(self.monitor_panel)
 
+        # 각 버튼에 대응되는 다이얼로그 연결
         self.monitor_panel.btn_robots.clicked.connect(self.open_robot_dialog)
         self.monitor_panel.btn_requests.clicked.connect(self.open_request_dialog)
         self.monitor_panel.btn_logs.clicked.connect(self.open_log_dialog)
 
-        layout.addWidget(self.monitor_panel)
         central.setLayout(layout)
         self.setCentralWidget(central)
 
     def open_log_dialog(self):
         dialog = LogDialog()
+        apply_kaki_theme(dialog)
         dialog.exec_()
 
     def open_robot_dialog(self):
         dialog = RobotDialog()
+        apply_kaki_theme(dialog)
         dialog.exec_()
 
     def open_request_dialog(self):
         dialog = RequestDialog()
+        apply_kaki_theme(dialog)
         dialog.exec_()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = AdminGUI()
+    window = MainWindow()
     window.show()
     sys.exit(app.exec_())
