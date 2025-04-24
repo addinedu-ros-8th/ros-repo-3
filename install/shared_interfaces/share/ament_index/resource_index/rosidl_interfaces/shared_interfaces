@@ -1,0 +1,8 @@
+msg/BatteryStatus.idl
+msg/BatteryStatus.msg
+msg/Emergency.idl
+msg/Emergency.msg
+msg/TaskResult.idl
+msg/TaskResult.msg
+srv/ManualOverride.idl
+srv/ManualOverride.srv

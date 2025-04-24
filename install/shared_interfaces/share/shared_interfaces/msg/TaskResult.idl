@@ -1,0 +1,14 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from shared_interfaces/msg/TaskResult.msg
+// generated code does not contain a copyright notice
+
+
+module shared_interfaces {
+  module msg {
+    struct TaskResult {
+      string task_id;
+
+      string result;
+    };
+  };
+};

@@ -1,0 +1,17 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from shared_interfaces/srv/ManualOverride.srv
+// generated code does not contain a copyright notice
+
+
+module shared_interfaces {
+  module srv {
+    struct ManualOverride_Request {
+      int32 robot_id;
+
+      string command;
+    };
+    struct ManualOverride_Response {
+      boolean success;
+    };
+  };
+};
