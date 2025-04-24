@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt5.QtCore import Qt
-from GUI.admin_gui.admin_gui import MainWindow as AdminMainWindow
-from GUI.worker_gui.worker_gui import WorkerGUI
+from GUI.admin_gui.main import MainWindow as AdminMainWindow
+from GUI.worker_gui.main import WorkerGUI
 from GUI.admin_gui.theme import apply_kaki_theme
 
 
