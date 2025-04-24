@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
 from .dashboard_panel import WorkerDashboard
 from .request_table import TaskRequestTable
 from .theme import apply_worker_theme
-from GUI.worker_gui.db_access import fetch_all_tasks
+from interface.worker_gui.db_access import fetch_all_tasks
 from datetime import datetime
 from PyQt5.QtCore import Qt
 
