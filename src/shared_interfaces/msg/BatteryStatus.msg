@@ -1,3 +1,2 @@
-float32 voltage
-float32 current
-float32 percentage
+uint8 robot_id
+float32 battery_percent
