@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal
 from datetime import datetime
 from .theme import apply_staff_theme
-from .db_access import insert_task
+from ...server.main_server.db_access import insert_task
 
 
 class StaffDashboard(QWidget):

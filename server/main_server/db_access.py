@@ -39,7 +39,6 @@ def fetch_all_tasks():
     tasks = cursor.fetchall()
     conn.close()
 
-    # ✅ time 필드를 문자열로 변환 및 포맷
     for task in tasks:
         if 'task_start_time' in task and task['time']:
             try:
