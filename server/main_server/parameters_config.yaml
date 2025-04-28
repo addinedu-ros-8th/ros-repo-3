@@ -1,22 +1,14 @@
 # parameters_config.yaml
+
 server:
-  host: "0.0.0.0"
-  port: 5000
+  host: "0.0.0.0"   # 모든 인터페이스에서 수신
+  port: 5000        # 서버 포트 번호
 
 database:
-  host: "localhost"
-  port: 3306
-  username: "root"
-  password: "your_password"
-  database_name: "robot_management"
+  host: "localhost" # DB 서버 주소
+  user: "your_db_user"
+  password: "your_db_password"
+  name: "your_db_name"
 
-ai_server:
-  host: "ai.server.local"
-  port: 6000
-
-mobile_controller:
-  ros2_topic_namespace: "/robot"
-
-robot_defaults:
-  battery_threshold: 20    # 20% 이하면 충전 이동
-  idle_timeout: 300        # 초 (5분 이상 IDLE이면 상태 업데이트)
+robot_settings:
+  emergency_battery_threshold: 10  # (%) 배터리 임계치

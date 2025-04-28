@@ -1,32 +1,73 @@
 # service_node.py
 
+import os
 import json
+import yaml
 from network.emergency_handler import EmergencyHandler
 from network.tcp_handler import TCPServer
 from db_access import DatabaseAccessor
-from task_manager import TaskManager
+from ros_nodes.task_manager import TaskManager
 from logger import log_info, log_error
-import yaml
 
-# 설정 읽기
-with open("parameters_config.yaml", "r") as f:
+# 서버 설정 파일 경로 안전하게 읽기
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(BASE_DIR, "../parameters_config.yaml")
+
+with open(CONFIG_PATH, "r") as f:
     config = yaml.safe_load(f)
 
 SERVER_HOST = config["server"]["host"]
 SERVER_PORT = config["server"]["port"]
 
-# MainService 클래스 정의
 class MainService:
     def __init__(self):
         self.db = DatabaseAccessor()
         self.task_manager = TaskManager(self.db)
         self.emergency_handler = EmergencyHandler()
-        self.tcp_server = TCPServer(SERVER_HOST, SERVER_PORT)
-        log_info("[MainService] MainService initialized.")
+        self.tcp_server = TCPServer(SERVER_HOST, SERVER_PORT, self)
+
+        log_info("[MainService] Initialized.")
 
     def start(self):
         log_info("[MainService] Starting TCP server...")
         self.tcp_server.start_server()
+
+    def route_message(self, message, client_socket):
+        """받은 message를 타입에 따라 라우팅"""
+        try:
+            log_info(f"[MainService] Routing message: {message}")
+            data = json.loads(message)
+            message_type = data.get("type")
+
+            if message_type == "LoginRequest":
+                self.handle_login_request(data, client_socket)
+
+            elif message_type == "CreateTaskRequest":
+                self.handle_create_task_request(data, client_socket)
+
+            elif message_type == "SearchQRCodeData":
+                self.handle_qrcode_search(data, client_socket)
+
+            elif message_type == "RequestRobotStatus":
+                self.handle_robot_status_request(data, client_socket)
+
+            else:
+                log_error(f"[MainService] Unknown message type: {message_type}")
+                self.send_error_response(client_socket, "Unknown message type")
+
+        except json.JSONDecodeError:
+            log_error("[MainService] Failed to parse incoming message as JSON.")
+            self.send_error_response(client_socket, "Invalid JSON format")
+        except Exception as e:
+            log_error(f"[MainService] route_message Exception: {str(e)}")
+            self.send_error_response(client_socket, "Internal server error")
+
+    def send_error_response(self, client_socket, reason):
+        response = {
+            "type": "ErrorResponse",
+            "reason": reason
+        }
+        client_socket.sendall(json.dumps(response).encode('utf-8'))
 
     def handle_login_request(self, data, client_socket):
         try:
@@ -51,14 +92,16 @@ class MainService:
 
             client_socket.sendall(json.dumps(response).encode('utf-8'))
         except Exception as e:
-            log_error(f"[handle_login_request] {str(e)}")
+            log_error(f"[MainService] handle_login_request Error: {str(e)}")
+            self.send_error_response(client_socket, "Login failed")
 
     def handle_create_task_request(self, data, client_socket):
         try:
             result = self.task_manager.create_task(data)
             client_socket.sendall(json.dumps(result).encode('utf-8'))
         except Exception as e:
-            log_error(f"[handle_create_task_request] {str(e)}")
+            log_error(f"[MainService] handle_create_task_request Error: {str(e)}")
+            self.send_error_response(client_socket, "Task creation failed")
 
     def handle_qrcode_search(self, data, client_socket):
         try:
@@ -83,8 +126,10 @@ class MainService:
                     "reason": "QR not found"
                 }
             client_socket.sendall(json.dumps(response).encode('utf-8'))
+
         except Exception as e:
-            log_error(f"[handle_qrcode_search] {str(e)}")
+            log_error(f"[MainService] handle_qrcode_search Error: {str(e)}")
+            self.send_error_response(client_socket, "QR code search failed")
 
     def handle_robot_status_request(self, data, client_socket):
         try:
@@ -95,11 +140,11 @@ class MainService:
             }
             client_socket.sendall(json.dumps(response).encode('utf-8'))
         except Exception as e:
-            log_error(f"[handle_robot_status_request] {str(e)}")
+            log_error(f"[MainService] handle_robot_status_request Error: {str(e)}")
+            self.send_error_response(client_socket, "Robot status request failed")
 
     def emergency_stop_robot(self, robot_id):
         self.emergency_handler.trigger_emergency_stop(robot_id)
 
     def clear_emergency(self, robot_id):
         self.emergency_handler.clear_emergency(robot_id)
-

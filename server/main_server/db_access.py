@@ -1,7 +1,10 @@
+# db_access.py
+
+import os
 from datetime import datetime
 import mysql.connector
-import os
 from dotenv import load_dotenv
+from logger import log_info, log_error
 
 load_dotenv()
 
@@ -10,43 +13,166 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
-def get_connection():
-    return mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
-    )
+class DatabaseAccessor:
+    def __init__(self):
+        self.connection = None
 
-def insert_task(robot, task_code, origin, quantity="", status="Pending", time=None):
-    if time is None:
-        time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # ✅ 시:분:초까지 포함된 현재 시간
+    def connect(self):
+        try:
+            self.connection = mysql.connector.connect(
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME
+            )
+        except mysql.connector.Error as err:
+            log_error(f"[DatabaseAccessor] Database connection error: {err}")
+            raise
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    query = """
-        INSERT INTO RequestTask (robot_id, task_id, origin, quantity, status, task_start_time)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """
-    cursor.execute(query, (robot, task_code, origin, quantity, status, time))
-    conn.commit()
-    conn.close()
+    def close(self):
+        if self.connection:
+            self.connection.close()
 
-def fetch_all_tasks():
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM Task ORDER BY task_start_time DESC")
-    tasks = cursor.fetchall()
-    conn.close()
+    def insert_task(self, task_info):
+        """작업(Task)을 데이터베이스에 삽입한다."""
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = """
+                INSERT INTO RequestTask (robot_id, task_id, origin, quantity, status, task_start_time)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            values = (
+                task_info.get("robot_id", None),
+                task_info.get("task_id", None),
+                task_info.get("origin", None),
+                task_info.get("quantity", ""),
+                task_info.get("status", "Pending"),
+                now_time
+            )
+            cursor.execute(query, values)
+            self.connection.commit()
+            return cursor.lastrowid
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] insert_task Error: {str(e)}")
+            raise
+        finally:
+            self.close()
 
-    for task in tasks:
-        if 'task_start_time' in task and task['time']:
-            try:
-                # MySQL에서 받아온 datetime 객체 혹은 str을 처리
-                if isinstance(task['time'], datetime):
-                    task['time'] = task['time'].strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    task['time'] = datetime.strptime(str(task['time']), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-            except Exception as e:
-                print(f"[시간 파싱 오류] {task['time']}: {e}")
-    return tasks
+    def fetch_all_tasks(self):
+        """모든 Task를 가져온다."""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT * FROM Task ORDER BY task_start_time DESC"
+            cursor.execute(query)
+            tasks = cursor.fetchall()
+            for task in tasks:
+                if 'task_start_time' in task and task['task_start_time']:
+                    try:
+                        if isinstance(task['task_start_time'], datetime):
+                            task['task_start_time'] = task['task_start_time'].strftime('%Y-%m-%d %H:%M:%S')
+                        else:
+                            task['task_start_time'] = datetime.strptime(str(task['task_start_time']), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+                    except Exception as e:
+                        log_error(f"[DatabaseAccessor] fetch_all_tasks Time Parse Error: {e}")
+            return tasks
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] fetch_all_tasks Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    # 여기 추가적으로 필요한 메소드들도 정의 가능
+    def search_user_by_name(self, name):
+        """사용자 이름으로 검색"""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT * FROM Users WHERE name = %s"
+            cursor.execute(query, (name,))
+            user = cursor.fetchone()
+            return user
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] search_user_by_name Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    def get_user_gui_data(self, user_id):
+        """사용자 GUI 데이터를 가져온다."""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT * FROM UserGuiData WHERE user_id = %s"
+            cursor.execute(query, (user_id,))
+            gui_data = cursor.fetchall()
+            return gui_data
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] get_user_gui_data Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    def search_qr_code(self, qr_code):
+        """QR 코드로 검색"""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT * FROM QRCode WHERE qr_code = %s"
+            cursor.execute(query, (qr_code,))
+            qr_info = cursor.fetchone()
+            return qr_info
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] search_qr_code Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    def search_shoes_data(self, shoes_id):
+        """신발 ID로 데이터 검색"""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT * FROM Shoes WHERE id = %s"
+            cursor.execute(query, (shoes_id,))
+            shoes_info = cursor.fetchone()
+            return shoes_info
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] search_shoes_data Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    def query_idle_robots(self):
+        """Idle 상태 로봇 목록 가져오기"""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT * FROM Robots WHERE status = 'IDLE'"
+            cursor.execute(query)
+            robots = cursor.fetchall()
+            return robots
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] query_idle_robots Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    def search_robot_status(self):
+        """로봇 상태 전체 조회"""
+        try:
+            self.connect()
+            cursor = self.connection.cursor(dictionary=True)
+            query = "SELECT robot_id, status FROM Robots"
+            cursor.execute(query)
+            robot_status = cursor.fetchall()
+            return robot_status
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] search_robot_status Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
+    # 업데이트 관련 메소드도 필요하면 추가할 수 있어

@@ -1,0 +1,8 @@
+2025-04-28 19:32:07,838 [INFO] [Main] Starting Main Service...
+2025-04-28 19:32:07,838 [INFO] [TaskManager] Initialized.
+2025-04-28 19:32:07,838 [INFO] [MainService] Initialized.
+2025-04-28 19:32:07,838 [INFO] [MainService] Starting TCP server...
+2025-04-28 19:32:07,838 [INFO] [TCPServer] Server started on 0.0.0.0:5000
+2025-04-28 19:32:11,925 [INFO] [TCPServer] Server socket closed.
+2025-04-28 19:32:11,925 [INFO] [TCPServer] All client threads joined. Server shut down complete.
+2025-04-28 19:32:11,925 [INFO] [Main] Main Service interrupted by user.
