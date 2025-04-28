@@ -1,5 +1,5 @@
 # theme.py
-def apply_worker_theme(widget):
+def apply_staff_theme(widget):
     widget.setStyleSheet("""
         QMainWindow, QDialog, QWidget {
             background-color: #f4f2ec;

@@ -8,7 +8,7 @@ from .theme import apply_kaki_theme
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Roskatsu Admin Dashboard")
+        self.setWindowTitle("Roskatsu Manager Dashboard")
         self.setGeometry(150, 150, 1400, 900)
 
         apply_kaki_theme(self)

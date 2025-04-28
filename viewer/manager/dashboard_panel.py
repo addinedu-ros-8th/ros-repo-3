@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import (
     QSizePolicy, QComboBox, QRadioButton, QButtonGroup
 )
 from PyQt5.QtCore import Qt
-from .theme import apply_kaki_theme
 
+from viewer.manager.theme import apply_kaki_theme
 
 class MonitorPanel(QWidget):
     def __init__(self):

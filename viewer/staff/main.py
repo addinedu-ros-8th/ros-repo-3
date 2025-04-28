@@ -1,25 +1,25 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
-from .dashboard_panel import WorkerDashboard
-from .request_table import TaskRequestTable
-from .theme import apply_worker_theme
-from interface.worker_gui.db_access import fetch_all_tasks
+from viewer.staff.dashboard_panel import StaffDashboard
+from viewer.staff.request_table import TaskRequestTable
+from viewer.staff.theme import apply_staff_theme
+from viewer.staff.db_access import fetch_all_tasks
 from datetime import datetime
 from PyQt5.QtCore import Qt
 
-class WorkerGUI(QMainWindow):
+class StaffGUI(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Roskatsu Worker Dashboard")
+        self.setWindowTitle("Roskatsu Staff Dashboard")
         self.setGeometry(100, 100, 1200, 800)
 
-        apply_worker_theme(self)
+        apply_staff_theme(self)
 
         central = QWidget(self)
         main_layout = QVBoxLayout()
 
         # 상단: 로봇 오버뷰 + 요청 폼
-        self.dashboard = WorkerDashboard()
+        self.dashboard = StaffDashboard()
         main_layout.addWidget(self.dashboard)
 
         # 하단: 작업 요청 테이블
@@ -73,6 +73,6 @@ class WorkerGUI(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = WorkerGUI()
+    window = StaffGUI()
     window.show()
     sys.exit(app.exec_())

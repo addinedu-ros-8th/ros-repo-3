@@ -1,9 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt5.QtCore import Qt
-from interface.admin_gui.main import MainWindow as AdminMainWindow
-from interface.worker_gui.main import WorkerGUI
-from interface.admin_gui.theme import apply_kaki_theme
+from viewer.manager.main import MainWindow as ManagerMainWindow
+from viewer.staff.main import StaffGUI
+from viewer.manager.theme import apply_kaki_theme
 
 
 
@@ -24,28 +24,28 @@ class RoleChooser(QMainWindow):
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
 
-        # Worker 버튼이 위로, 버튼 크기 키움
-        worker_btn = QPushButton("Worker GUI")
-        worker_btn.setMinimumHeight(60)
-        worker_btn.clicked.connect(self.launch_worker_gui)
-        layout.addWidget(worker_btn)
+        # Staff 버튼이 위로, 버튼 크기 키움
+        staff_btn = QPushButton("Staff GUI")
+        staff_btn.setMinimumHeight(60)
+        staff_btn.clicked.connect(self.launch_staff_gui)
+        layout.addWidget(staff_btn)
 
-        admin_btn = QPushButton("Admin GUI")
-        admin_btn.setMinimumHeight(60)
-        admin_btn.clicked.connect(self.launch_admin_gui)
-        layout.addWidget(admin_btn)
+        manager_btn = QPushButton("Manager GUI")
+        manager_btn.setMinimumHeight(60)
+        manager_btn.clicked.connect(self.launch_manager_gui)
+        layout.addWidget(manager_btn)
 
         central.setLayout(layout)
         self.setCentralWidget(central)
 
-    def launch_admin_gui(self):
-        self.admin_window = AdminMainWindow()
-        self.admin_window.show()
+    def launch_manager_gui(self):
+        self.manager_window = ManagerMainWindow()
+        self.manager_window.show()
         self.close()
 
-    def launch_worker_gui(self):
-        self.worker_window = WorkerGUI()
-        self.worker_window.show()
+    def launch_staff_gui(self):
+        self.staff_window = StaffGUI()
+        self.staff_window.show()
         self.close()
 
 

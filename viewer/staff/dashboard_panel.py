@@ -5,17 +5,17 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from datetime import datetime
-from .theme import apply_worker_theme
+from .theme import apply_staff_theme
 from .db_access import insert_task
 
 
-class WorkerDashboard(QWidget):
+class StaffDashboard(QWidget):
     task_submitted = pyqtSignal(dict)  # signal: emits task info when submitted
 
     def __init__(self):
         super().__init__()
         self.task_counter = 1
-        apply_worker_theme(self)
+        apply_staff_theme(self)
         self._init_ui()
 
     def _init_ui(self):

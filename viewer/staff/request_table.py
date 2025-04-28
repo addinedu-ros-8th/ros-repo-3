@@ -2,13 +2,13 @@
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import Qt
 from datetime import datetime
-from .theme import apply_worker_theme
+from .theme import apply_staff_theme
 
 
 class TaskRequestTable(QGroupBox):
     def __init__(self):
         super().__init__("My Task Requests")
-        apply_worker_theme(self)
+        apply_staff_theme(self)
         self._init_ui()
 
     def _init_ui(self):

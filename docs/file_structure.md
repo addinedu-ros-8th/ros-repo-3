@@ -18,11 +18,11 @@ project_root/
 │
 ├── gui/                              # PyQt 기반 GUI
 │   ├── shared/                       # 공통 위젯 및 유틸
-│   ├── admin_gui/
+│   ├── manager_gui/
 │   │   ├── main.py                   # 관리자 GUI 실행 진입점
 │   │   ├── monitor_panel.py
 │   │   └── task_control_panel.py
-│   └── worker_gui/
+│   └── staff_gui/
 │       ├── main.py                   # 작업자 GUI 실행 진입점
 │       ├── task_form.py
 │       └── task_history.py

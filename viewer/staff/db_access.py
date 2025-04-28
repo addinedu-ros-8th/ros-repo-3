@@ -1,12 +1,21 @@
 from datetime import datetime
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
 
 def get_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="tlaco12",
-        database="ros_project"
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
     )
 
 def insert_task(robot, task_code, origin, quantity="", status="Pending", time=None):
@@ -16,7 +25,7 @@ def insert_task(robot, task_code, origin, quantity="", status="Pending", time=No
     conn = get_connection()
     cursor = conn.cursor()
     query = """
-        INSERT INTO RequestTask (robot_id, task_id, origin, quantity, status, time)
+        INSERT INTO RequestTask (robot_id, task_id, origin, quantity, status, task_start_time)
         VALUES (%s, %s, %s, %s, %s, %s)
     """
     cursor.execute(query, (robot, task_code, origin, quantity, status, time))
@@ -26,13 +35,13 @@ def insert_task(robot, task_code, origin, quantity="", status="Pending", time=No
 def fetch_all_tasks():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM RequestTask ORDER BY time DESC")
+    cursor.execute("SELECT * FROM Task ORDER BY task_start_time DESC")
     tasks = cursor.fetchall()
     conn.close()
 
     # ✅ time 필드를 문자열로 변환 및 포맷
     for task in tasks:
-        if 'time' in task and task['time']:
+        if 'task_start_time' in task and task['time']:
             try:
                 # MySQL에서 받아온 datetime 객체 혹은 str을 처리
                 if isinstance(task['time'], datetime):

@@ -5,7 +5,7 @@ from std_msgs.msg import String
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
 
 
-class ROSNodeWorker(QObject):
+class ROSNodeStaff(QObject):
     battery_updated = pyqtSignal(str)
 
     def __init__(self):
@@ -15,7 +15,7 @@ class ROSNodeWorker(QObject):
 
     def start_ros_node(self):
         rclpy.init()
-        self._node = rclpy.create_node('worker_gui_node')
+        self._node = rclpy.create_node('staff_gui_node')
 
         # 예시: 배터리 상태 구독자 설정
         self._node.create_subscription(
@@ -40,14 +40,14 @@ class ROSNodeWorker(QObject):
 
 
 class ROSRunner(QThread):
-    def __init__(self, ros_worker):
+    def __init__(self, ros_staff):
         super().__init__()
-        self.ros_worker = ros_worker
+        self.ros_staff = ros_staff
 
     def run(self):
-        self.ros_worker.start_ros_node()
+        self.ros_staff.start_ros_node()
 
     def stop(self):
-        self.ros_worker.stop_ros_node()
+        self.ros_staff.stop_ros_node()
         self.quit()
         self.wait()

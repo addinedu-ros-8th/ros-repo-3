@@ -1,5 +1,5 @@
 import sys
-from interface.mode_select import RoleChooser
+from viewer.mode_select import RoleChooser
 from PyQt5.QtWidgets import QApplication
 
 if __name__ == "__main__":
