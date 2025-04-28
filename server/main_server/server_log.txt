@@ -6,3 +6,38 @@
 2025-04-28 19:32:11,925 [INFO] [TCPServer] Server socket closed.
 2025-04-28 19:32:11,925 [INFO] [TCPServer] All client threads joined. Server shut down complete.
 2025-04-28 19:32:11,925 [INFO] [Main] Main Service interrupted by user.
+2025-04-28 19:35:34,269 [ERROR] [DatabaseAccessor] Database connection error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:35:34,269 [ERROR] [DatabaseAccessor] insert_task Error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:35:34,306 [ERROR] [DatabaseAccessor] Database connection error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:35:34,307 [ERROR] [DatabaseAccessor] fetch_all_tasks Error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:36:24,192 [INFO] [TaskManager] Initialized.
+2025-04-28 19:36:24,192 [INFO] [TaskManager] Task created. Task ID: 1
+2025-04-28 19:36:24,192 [INFO] [TaskManager] Selected Robot: robot_001
+2025-04-28 19:36:24,192 [INFO] [TaskManager] Task 1 assigned to Robot robot_001.
+2025-04-28 19:36:24,192 [INFO] [TaskManager] Initialized.
+2025-04-28 19:36:24,192 [INFO] [TaskManager] Task created. Task ID: 1
+2025-04-28 19:36:24,192 [INFO] [TaskManager] No idle robots available. Task queued.
+2025-04-28 19:37:09,169 [WARNING] [EmergencyHandler] Emergency Stop triggered for Robot ID: robot_001
+2025-04-28 19:37:09,169 [INFO] [EmergencyHandler] Emergency cleared for Robot ID: robot_001
+2025-04-28 19:37:09,169 [WARNING] [EmergencyHandler] Collision detected by Robot ID: robot_002, sensor: Front_Lidar
+2025-04-28 19:37:09,169 [WARNING] [EmergencyHandler] Emergency Stop triggered for Robot ID: robot_002
+2025-04-28 19:37:09,169 [WARNING] [EmergencyHandler] Critical Battery Level (5%) on Robot ID: robot_003
+2025-04-28 19:37:09,169 [WARNING] [EmergencyHandler] Emergency Stop triggered for Robot ID: robot_003
+2025-04-28 19:38:08,087 [INFO] [TCPServer] Server started on 127.0.0.1:5050
+2025-04-28 19:38:09,087 [INFO] [TCPServer] Accepted connection from ('127.0.0.1', 44116)
+2025-04-28 19:38:09,088 [INFO] [TCPServer] Received message: {"type": "TestRequest", "content": "Hello Server"}
+2025-04-28 19:38:09,088 [INFO] [TCPServer] Server socket closed.
+2025-04-28 19:38:09,088 [INFO] [TCPServer] All client threads joined. Server shut down complete.
+2025-04-28 19:38:10,089 [ERROR] [TCPServer] Server Error: [Errno 9] Bad file descriptor
+2025-04-28 19:38:10,089 [INFO] [TCPServer] Server socket closed.
+2025-04-28 19:38:10,089 [INFO] [TCPServer] All client threads joined. Server shut down complete.
+2025-04-28 19:39:16,307 [INFO] [TaskManager] Initialized.
+2025-04-28 19:39:16,307 [INFO] [MainService] Initialized.
+2025-04-28 19:39:16,307 [INFO] [MainService] Routing message: {"type": "LoginRequest", "name": "test_user", "password": "1234"}
+2025-04-28 19:39:16,307 [INFO] [Login] test_user login successful.
+2025-04-28 19:39:16,308 [INFO] [MainService] Routing message: {"type": "CreateTaskRequest", "pickup_location": "Station_A", "dropoff_location": "Station_B", "item_id": "item_001", "priority": 1}
+2025-04-28 19:39:16,341 [ERROR] [DatabaseAccessor] Database connection error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:39:16,342 [ERROR] [DatabaseAccessor] insert_task Error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:39:16,342 [ERROR] [TaskManager] create_task Error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-28 19:39:16,342 [INFO] [MainService] Routing message: {"type": "SearchQRCodeData", "qr_code": "test_qr"}
+2025-04-28 19:39:16,342 [INFO] [MainService] Routing message: {"type": "RequestRobotStatus"}
