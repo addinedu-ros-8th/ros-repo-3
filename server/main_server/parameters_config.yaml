@@ -1,0 +1,22 @@
+# parameters_config.yaml
+server:
+  host: "0.0.0.0"
+  port: 5000
+
+database:
+  host: "localhost"
+  port: 3306
+  username: "root"
+  password: "your_password"
+  database_name: "robot_management"
+
+ai_server:
+  host: "ai.server.local"
+  port: 6000
+
+mobile_controller:
+  ros2_topic_namespace: "/robot"
+
+robot_defaults:
+  battery_threshold: 20    # 20% 이하면 충전 이동
+  idle_timeout: 300        # 초 (5분 이상 IDLE이면 상태 업데이트)
