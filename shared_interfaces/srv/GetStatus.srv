@@ -1,8 +1,0 @@
-# Request
-string robot_id
----
-# Response
-string robot_id
-string ip
-int32 battery_percentage
-string operational_status
