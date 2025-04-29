@@ -1,11 +1,11 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
+from viewer.theme import apply_theme  # 수정된 경로
 from viewer.staff.dashboard_panel import StaffDashboard
 from viewer.staff.request_table import TaskRequestTable
-from viewer.staff.theme import apply_staff_theme
 from server.main_server.db_access import fetch_all_tasks
 from datetime import datetime
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 
 class StaffGUI(QMainWindow):
     def __init__(self):
@@ -13,7 +13,7 @@ class StaffGUI(QMainWindow):
         self.setWindowTitle("Roskatsu Staff Dashboard")
         self.setGeometry(100, 100, 1200, 800)
 
-        apply_staff_theme(self)
+        apply_theme(self)  # 테마 적용
 
         central = QWidget(self)
         main_layout = QVBoxLayout()
@@ -56,7 +56,7 @@ class StaffGUI(QMainWindow):
                 "time": time_str
             })
 
-        self.table.sort_by_column(5, Qt.DescendingOrder)
+        self.table.sort_by_column(5, Qt.SortOrder.DescendingOrder)
 
     def _get_max_task_id_number(self, tasks):
         max_id = 0
@@ -70,9 +70,8 @@ class StaffGUI(QMainWindow):
                     continue
         return max_id
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = StaffGUI()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

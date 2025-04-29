@@ -1,14 +1,12 @@
-# request_table.py
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
+from PyQt6.QtCore import Qt
 from datetime import datetime
-from .theme import apply_staff_theme
-
+from viewer.theme import apply_theme  # 수정된 경로
 
 class TaskRequestTable(QGroupBox):
     def __init__(self):
         super().__init__("My Task Requests")
-        apply_staff_theme(self)
+        apply_theme(self)  # 테마 적용
         self._init_ui()
 
     def _init_ui(self):
@@ -16,7 +14,7 @@ class TaskRequestTable(QGroupBox):
         self.table = QTableWidget(0, 6)  # 6열로 확장
         self.table.setHorizontalHeaderLabels(["Robot ID", "Task ID", "Origin(s)", "Quantity", "Status", "Time"])
         self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.table)
         self.setLayout(layout)
 
@@ -29,7 +27,7 @@ class TaskRequestTable(QGroupBox):
         self.table.setItem(0, 3, QTableWidgetItem(task_info.get("quantity", "-")))
 
         status_item = QTableWidgetItem(task_info["status"])
-        status_item.setForeground(Qt.gray)
+        status_item.setForeground(Qt.GlobalColor.gray)
         self.table.setItem(0, 4, status_item)
 
         time_str = (
@@ -47,5 +45,5 @@ class TaskRequestTable(QGroupBox):
 
         self.table.setItem(0, 5, time_item)
 
-    def sort_by_column(self, column_index, order=Qt.AscendingOrder):
+    def sort_by_column(self, column_index, order=Qt.SortOrder.AscendingOrder):
         self.table.sortItems(column_index, order)

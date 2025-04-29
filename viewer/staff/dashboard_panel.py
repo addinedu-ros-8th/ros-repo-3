@@ -1,13 +1,11 @@
-# dashboard_panel.py
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget, QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QFormLayout,
     QGridLayout, QSpinBox, QComboBox, QPushButton, QSpacerItem, QSizePolicy
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
 from datetime import datetime
-from .theme import apply_staff_theme
+from viewer.theme import apply_theme  # 수정된 경로
 from server.main_server.db_access import insert_task
-
 
 class StaffDashboard(QWidget):
     task_submitted = pyqtSignal(dict)  # signal: emits task info when submitted
@@ -15,7 +13,7 @@ class StaffDashboard(QWidget):
     def __init__(self):
         super().__init__()
         self.task_counter = 1
-        apply_staff_theme(self)
+        apply_theme(self)  # 테마 적용
         self._init_ui()
 
     def _init_ui(self):

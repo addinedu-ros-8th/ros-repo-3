@@ -41,3 +41,11 @@
 2025-04-28 19:39:16,342 [ERROR] [TaskManager] create_task Error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
 2025-04-28 19:39:16,342 [INFO] [MainService] Routing message: {"type": "SearchQRCodeData", "qr_code": "test_qr"}
 2025-04-28 19:39:16,342 [INFO] [MainService] Routing message: {"type": "RequestRobotStatus"}
+2025-04-29 10:18:54,214 [ERROR] [DatabaseAccessor] Database connection error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-29 10:18:54,215 [ERROR] [DatabaseAccessor] fetch_all_tasks Error: 1045 (28000): Access denied for user 'sch'@'localhost' (using password: NO)
+2025-04-29 10:20:09,391 [ERROR] [DatabaseAccessor] Database connection error: 1045 (28000): Access denied for user 'sch'@'192.168.0.168' (using password: YES)
+2025-04-29 10:20:09,392 [ERROR] [DatabaseAccessor] fetch_all_tasks Error: 1045 (28000): Access denied for user 'sch'@'192.168.0.168' (using password: YES)
+2025-04-29 10:20:23,879 [ERROR] [DatabaseAccessor] Database connection error: 2003 (HY000): Can't connect to MySQL server on '192.168.0.0:3306' (113)
+2025-04-29 10:20:23,880 [ERROR] [DatabaseAccessor] fetch_all_tasks Error: 2003 (HY000): Can't connect to MySQL server on '192.168.0.0:3306' (113)
+2025-04-29 10:21:04,136 [ERROR] [DatabaseAccessor] Database connection error: 1045 (28000): Access denied for user 'sch'@'192.168.0.168' (using password: YES)
+2025-04-29 10:21:04,137 [ERROR] [DatabaseAccessor] fetch_all_tasks Error: 1045 (28000): Access denied for user 'sch'@'192.168.0.168' (using password: YES)

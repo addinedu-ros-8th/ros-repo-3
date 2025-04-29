@@ -1,18 +1,16 @@
-# dashboard_panel.py
-
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox,
     QSizePolicy, QComboBox, QRadioButton, QButtonGroup
 )
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 
-from viewer.manager.theme import apply_kaki_theme
+from viewer.theme import apply_theme  # 수정된 경로
 
 class MonitorPanel(QWidget):
     def __init__(self):
         super().__init__()
         self.selected_robot = "Pinky 1"
-        apply_kaki_theme(self)
+        apply_theme(self)
         self._init_ui()
 
     def _init_ui(self):
@@ -22,16 +20,16 @@ class MonitorPanel(QWidget):
         # 제목
         title = QLabel("Roskatsu System Dashboard")
         title.setObjectName("titleLabel")
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
         # 로봇 선택 & 뷰 전환
         selection_row = QHBoxLayout()
         robot_label = QLabel("Select Robot:")
-        robot_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        robot_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.robot_combo = QComboBox()
-        self.robot_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.robot_combo.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.robot_combo.addItems(["Pinky 1", "Pinky 2"])
         self.robot_combo.currentTextChanged.connect(self.update_robot_selection)
 
@@ -56,18 +54,18 @@ class MonitorPanel(QWidget):
 
         # 맵 라벨
         self.map_label = QLabel()
-        self.map_label.setAlignment(Qt.AlignCenter)
+        self.map_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.map_label.setStyleSheet("background-color: #e7e3d4; border: 2px solid #a89f7d; padding: 10px;")
-        self.map_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.map_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.map_label.setMinimumHeight(300)
         layout.addWidget(self.map_label)
 
         # 센서 뷰
         self.sensor_box = QGroupBox("Sensor Data")
-        self.sensor_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.sensor_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sensor_layout = QVBoxLayout()
         self.sensor_graph = QLabel()
-        self.sensor_graph.setAlignment(Qt.AlignCenter)
+        self.sensor_graph.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.sensor_graph.setStyleSheet("background-color: #fbf8ee; border: 2px dashed #a3895f; padding: 10px;")
         self.sensor_graph.setMinimumHeight(300)
         sensor_layout.addWidget(self.sensor_graph)

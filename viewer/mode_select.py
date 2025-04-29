@@ -1,18 +1,19 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
-from PyQt5.QtCore import Qt
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'viewer')))  # 경로 추가
+
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
+from PyQt6.QtCore import Qt
 from viewer.manager.main import MainWindow as ManagerMainWindow
 from viewer.staff.main import StaffGUI
-from viewer.manager.theme import apply_kaki_theme
-
-
+from viewer.theme import apply_theme  # theme.py 임포트
 
 class RoleChooser(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Select Role")
         self.setGeometry(200, 200, 400, 300)
-        apply_kaki_theme(self)
+        apply_theme(self)  # 테마 적용
         self._init_ui()
 
     def _init_ui(self):
@@ -21,10 +22,9 @@ class RoleChooser(QMainWindow):
 
         label = QLabel("Choose Interface")
         label.setObjectName("titleLabel")
-        label.setAlignment(Qt.AlignCenter)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(label)
 
-        # Staff 버튼이 위로, 버튼 크기 키움
         staff_btn = QPushButton("Staff GUI")
         staff_btn.setMinimumHeight(60)
         staff_btn.clicked.connect(self.launch_staff_gui)
@@ -48,9 +48,8 @@ class RoleChooser(QMainWindow):
         self.staff_window.show()
         self.close()
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     chooser = RoleChooser()
     chooser.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

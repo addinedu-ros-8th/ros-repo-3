@@ -1,12 +1,10 @@
-# ros_bridge.py
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from PyQt5.QtCore import QObject, pyqtSignal, QThread
-
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
 
 class ROSNodeStaff(QObject):
-    battery_updated = pyqtSignal(str)
+    battery_updated = pyqtSignal(str)  # 배터리 상태 업데이트 시그널
 
     def __init__(self):
         super().__init__()
@@ -14,10 +12,10 @@ class ROSNodeStaff(QObject):
         self.running = False
 
     def start_ros_node(self):
-        rclpy.init()
+        rclpy.init(args=None)  # PyQt6와 충돌 방지, args=None 명시
         self._node = rclpy.create_node('staff_gui_node')
 
-        # 예시: 배터리 상태 구독자 설정
+        # 배터리 상태 토픽 구독
         self._node.create_subscription(
             String,
             '/robot/status/battery',
@@ -29,25 +27,26 @@ class ROSNodeStaff(QObject):
         while rclpy.ok() and self.running:
             rclpy.spin_once(self._node, timeout_sec=0.1)
 
-        self._node.destroy_node()
+        # 종료 시 처리
+        if self._node is not None:
+            self._node.destroy_node()
         rclpy.shutdown()
 
     def stop_ros_node(self):
         self.running = False
 
     def _battery_callback(self, msg):
-        self.battery_updated.emit(msg.data)
-
+        self.battery_updated.emit(msg.data)  # 시그널로 데이터 전달
 
 class ROSRunner(QThread):
-    def __init__(self, ros_staff):
+    def __init__(self, ros_node: ROSNodeStaff):
         super().__init__()
-        self.ros_staff = ros_staff
+        self.ros_node = ros_node
 
     def run(self):
-        self.ros_staff.start_ros_node()
+        self.ros_node.start_ros_node()
 
     def stop(self):
-        self.ros_staff.stop_ros_node()
+        self.ros_node.stop_ros_node()
         self.quit()
         self.wait()

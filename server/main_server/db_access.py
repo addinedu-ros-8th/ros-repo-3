@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 import mysql.connector
 from dotenv import load_dotenv
-from logger import log_info, log_error
+from .logger import log_info, log_error
 
 load_dotenv()
 
@@ -175,4 +175,20 @@ class DatabaseAccessor:
         finally:
             self.close()
 
-    # 업데이트 관련 메소드도 필요하면 추가할 수 있어
+db_accessor = DatabaseAccessor()
+
+def insert_task(robot, task_code, origin, quantity, status, time):
+    """viewer에서 import 해서 바로 쓰는 insert_task 함수 (DatabaseAccessor 래핑)"""
+    task_info = {
+        "robot_id": robot,
+        "task_id": task_code,
+        "origin": origin,
+        "quantity": quantity,
+        "status": status,
+        "task_start_time": time
+    }
+    db_accessor.insert_task(task_info)
+
+def fetch_all_tasks():
+    """viewer에서 import 해서 바로 쓰는 fetch_all_tasks 함수 (DatabaseAccessor 래핑)"""
+    return db_accessor.fetch_all_tasks()

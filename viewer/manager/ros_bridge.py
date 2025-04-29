@@ -1,13 +1,10 @@
-# ros_bridge.py
-
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from PyQt5.QtCore import QObject, pyqtSignal, QThread
-
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
 
 class ROSNodeStaff(QObject):
-    battery_updated = pyqtSignal(str)  # Qt로 데이터 전달용 시그널
+    battery_updated = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -24,10 +21,8 @@ class ROSNodeStaff(QObject):
             10
         )
         self.running = True
-
         while rclpy.ok() and self.running:
             rclpy.spin_once(self._node, timeout_sec=0.1)
-
         self._node.destroy_node()
         rclpy.shutdown()
 
@@ -36,7 +31,6 @@ class ROSNodeStaff(QObject):
 
     def _battery_callback(self, msg):
         self.battery_updated.emit(msg.data)
-
 
 class ROSRunner(QThread):
     def __init__(self, ros_staff):
