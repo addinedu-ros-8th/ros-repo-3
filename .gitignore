@@ -172,7 +172,28 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-
 .DS_Store
+
+# Ignore colcon build artifacts
+build/
+install/
+log/
+
+# ROS2 workspace settings
+*.pyc
+__pycache__/
+
+# Optional: vscode settings
+.vscode/
+.idea/
+
+# MacOS, Linux trash
+.DS_Store
+.Trash-*
+
+# Python virtual environments (optional)
+venv/
+.env/
+
+
 
