@@ -1,80 +1,141 @@
-CREATE TABLE `Robot` (
-  `robot_id` integer PRIMARY KEY,
-  `robot_name` varchar(255),
-  `battery_level` integer,
-  `current_status` varchar(255)
+CREATE TABLE `RosCars` (
+  `roscar_id` integer PRIMARY KEY,
+  `roscar_name` varchar(255),
+  `battery_percentage` integer,
+  `operational_status` ENUM ('STANDBY', 'DRIVING', 'CHARGING', 'ERROR', 'EMERGENCY_STOP'),
+  `roscar_ip_v4` text
 );
 
-CREATE TABLE `Functionality` (
-  `function_id` integer PRIMARY KEY,
-  `function_name` varchar(255),
-  `priority` varchar(255)
+CREATE TABLE `RosCarDrivingStatus` (
+  `driving_status_id` integer PRIMARY KEY,
+  `roscar_id` integer,
+  `status_type` ENUM ('PICKUP', 'DELIVERY', 'RETURN', 'GO_TO_STANDBY_ZONE', 'GO_TO_CHARGING_ZONE', 'DISCONNECT'),
+  `is_enabled` boolean
 );
 
-CREATE TABLE `RobotFunction` (
-  `robot_function_id` integer PRIMARY KEY,
-  `robot_id` integer,
-  `function_id` integer,
-  `is_available` boolean
+CREATE TABLE `Delivery` (
+  `delivery_id` integer PRIMARY KEY,
+  `roscar_id` integer,
+  `user_id` integer,
+  `driving_status_id` integer,
+  `delivery_status` ENUM ('TO_DO', 'IN_PROGRESS', 'COMPLETING'),
+  `delivery_start_time` timestamp,
+  `delivery_end_time` timestamp
 );
 
 CREATE TABLE `Task` (
   `task_id` integer PRIMARY KEY,
-  `robot_id` integer,
-  `function_id` integer,
-  `task_name` varchar(255),
-  `status` varchar(255),
-  `priority_level` varchar(255),
-  `start_time` timestamp,
-  `end_time` timestamp
+  `delivery_id` integer,
+  `shoes_id` integer,
+  `task_status` ENUM ('TO_DO', 'IN_PROGRESS', 'DONE'),
+  `task_start_time` timestamp,
+  `task_end_time` timestamp
 );
 
-CREATE TABLE `Log` (
-  `log_id` integer PRIMARY KEY,
-  `robot_id` integer,
-  `task_id` integer,
-  `timestamp` timestamp,
-  `event_type` varchar(255),
-  `description` text
+CREATE TABLE `ShoesModel` (
+  `shoes_model_id` integer PRIMARY KEY,
+  `name` text,
+  `size` integer,
+  `color_name` ENUM ('black', 'white', 'snow', 'red', 'tomato', 'salmon', 'coral', 'pink', 'magenta', 'hotpink', 'raspberry', 'orange', 'chocolate', 'yellow', 'khaki', 'gold', 'green', 'greenyellow', 'olive', 'olivedrab', 'azure', 'skyblue', 'aqua', 'aquamarine', 'cyan', 'blue', 'navy', 'violet', 'lavender', 'indigo', 'purple')
+);
+
+CREATE TABLE `Location` (
+  `location_id` integer PRIMARY KEY,
+  `name` text,
+  `floor_level` integer,
+  `zone_number` integer,
+  `map_x` float,
+  `map_y` float,
+  `aruco_id` integer,
+  `updated_at` timestamp
 );
 
 CREATE TABLE `Inventory` (
-  `item_id` integer PRIMARY KEY,
-  `location` varchar(255),
-  `aruco_id` integer,
+  `inventory_id` integer PRIMARY KEY,
+  `location_id` integer,
+  `shoes_model_id` integer,
   `quantity` integer,
   `last_updated` timestamp
 );
 
-CREATE TABLE `InventoryChangeLog` (
-  `change_id` integer PRIMARY KEY,
+CREATE TABLE `QRCode` (
+  `qrcode_id` integer PRIMARY KEY,
+  `inventory_id` integer,
+  `qrcode_data` varchar(255)
+);
+
+CREATE TABLE `User` (
+  `user_id` integer PRIMARY KEY,
+  `user_name` varchar(255),
+  `user_role` ENUM ('ADMIN', 'WORKER'),
+  `can_call_roscar` boolean,
+  `password` varchar(255)
+);
+
+CREATE TABLE `DeliveryEventLog` (
+  `event_id` integer PRIMARY KEY,
+  `delivery_id` integer,
+  `previous_event` ENUM ('WAIT', 'PROGRESS_START', 'COMPLET', 'CANCEL', 'FAILE'),
+  `new_event` ENUM ('WAIT', 'PROGRESS_START', 'COMPLET', 'CANCEL', 'FAILE'),
+  `changed_at` timestamp,
+  `changed_by_user_id` integer
+);
+
+CREATE TABLE `TaskEventLog` (
+  `event_id` integer PRIMARY KEY,
+  `task_id` integer,
+  `previous_event` ENUM ('WAIT', 'PROGRESS_START', 'COMPLET', 'CANCEL', 'FAILE'),
+  `new_event` ENUM ('WAIT', 'PROGRESS_START', 'COMPLET', 'CANCEL', 'FAILE'),
+  `changed_at` timestamp
+);
+
+CREATE TABLE `RosCarEventLog` (
+  `event_id` integer PRIMARY KEY,
+  `roscar_id` integer,
+  `task_id` integer,
+  `event_type` ENUM ('PICKUP_START', 'EMERGENCY_STOP', 'COLLISION_AVOID', 'ERROR', 'CHARGING_START', 'CHARGING_COMPLET'),
+  `event_timestamp` timestamp
+);
+
+CREATE TABLE `InventoryEventLog` (
+  `event_id` integer PRIMARY KEY,
+  `actor_user_id` integer,
   `item_id` integer,
-  `robot_id` integer,
-  `change_type` varchar(255),
-  `change_by` varchar(255),
-  `timestamp` timestamp
+  `roscar_id` integer,
+  `quantity` integer,
+  `event_timestamp` timestamp
 );
 
-CREATE TABLE `RequestTask` (
-  `robot_id` VARCHAR(20) NOT NULL,
-  `task_id` VARCHAR(20) NOT NULL UNIQUE,
-  `origin` TEXT NOT NULL,
-  `status` VARCHAR(20) DEFAULT 'Pending',
-  `time` DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+ALTER TABLE `RosCarDrivingStatus` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
 
-ALTER TABLE `RobotFunction` ADD FOREIGN KEY (`robot_id`) REFERENCES `Robot` (`robot_id`);
+ALTER TABLE `Delivery` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
 
-ALTER TABLE `RobotFunction` ADD FOREIGN KEY (`function_id`) REFERENCES `Functionality` (`function_id`);
+ALTER TABLE `Delivery` ADD FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`);
 
-ALTER TABLE `Task` ADD FOREIGN KEY (`robot_id`) REFERENCES `Robot` (`robot_id`);
+ALTER TABLE `Delivery` ADD FOREIGN KEY (`driving_status_id`) REFERENCES `RosCarDrivingStatus` (`status_type`);
 
-ALTER TABLE `Task` ADD FOREIGN KEY (`function_id`) REFERENCES `Functionality` (`function_id`);
+ALTER TABLE `Task` ADD FOREIGN KEY (`delivery_id`) REFERENCES `Delivery` (`delivery_id`);
 
-ALTER TABLE `Log` ADD FOREIGN KEY (`robot_id`) REFERENCES `Robot` (`robot_id`);
+ALTER TABLE `Task` ADD FOREIGN KEY (`shoes_id`) REFERENCES `ShoesModel` (`shoes_model_id`);
 
-ALTER TABLE `Log` ADD FOREIGN KEY (`task_id`) REFERENCES `Task` (`task_id`);
+ALTER TABLE `Inventory` ADD FOREIGN KEY (`location_id`) REFERENCES `Location` (`location_id`);
 
-ALTER TABLE `InventoryChangeLog` ADD FOREIGN KEY (`item_id`) REFERENCES `Inventory` (`item_id`);
+ALTER TABLE `Inventory` ADD FOREIGN KEY (`shoes_model_id`) REFERENCES `ShoesModel` (`shoes_model_id`);
 
-ALTER TABLE `InventoryChangeLog` ADD FOREIGN KEY (`robot_id`) REFERENCES `Robot` (`robot_id`);
+ALTER TABLE `QRCode` ADD FOREIGN KEY (`inventory_id`) REFERENCES `Inventory` (`inventory_id`);
+
+ALTER TABLE `DeliveryEventLog` ADD FOREIGN KEY (`delivery_id`) REFERENCES `Delivery` (`delivery_id`);
+
+ALTER TABLE `DeliveryEventLog` ADD FOREIGN KEY (`changed_by_user_id`) REFERENCES `User` (`user_id`);
+
+ALTER TABLE `TaskEventLog` ADD FOREIGN KEY (`task_id`) REFERENCES `Task` (`task_id`);
+
+ALTER TABLE `RosCarEventLog` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
+
+ALTER TABLE `RosCarEventLog` ADD FOREIGN KEY (`task_id`) REFERENCES `Task` (`task_id`);
+
+ALTER TABLE `InventoryEventLog` ADD FOREIGN KEY (`actor_user_id`) REFERENCES `User` (`user_id`);
+
+ALTER TABLE `InventoryEventLog` ADD FOREIGN KEY (`item_id`) REFERENCES `Inventory` (`inventory_id`);
+
+ALTER TABLE `InventoryEventLog` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
