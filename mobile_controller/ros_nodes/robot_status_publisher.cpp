@@ -73,14 +73,20 @@ private:
 
         char buffer[128];
         std::string ip_address = "";
-        while (fgets(buffer, sizeof(buffer), fp) != nullptr) {
-            ip_address += buffer;
+        if (fgets(buffer, sizeof(buffer), fp) != nullptr) {
+            ip_address = buffer;
         }
         fclose(fp);
 
         // IP 주소 앞뒤 공백 제거
         ip_address.erase(0, ip_address.find_first_not_of(" \t\r\n"));
         ip_address.erase(ip_address.find_last_not_of(" \t\r\n") + 1);
+
+        // 첫 번째 IP 주소만 반환
+        size_t space_pos = ip_address.find(' ');
+        if (space_pos != std::string::npos) {
+            ip_address = ip_address.substr(0, space_pos); // 첫 번째 IP 주소만 취함
+        }
 
         return ip_address.empty() ? "unknown" : ip_address;
     }
