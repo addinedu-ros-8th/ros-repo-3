@@ -26,13 +26,13 @@ class ProductInfoPanel(QWidget):
         button_layout = QHBoxLayout()
         self.btn_request = QPushButton("요청")
         self.btn_add_to_cart = QPushButton("담기 (장바구니)")
-        self.btn_close = QPushButton("닫기")
         self.btn_view_cart = QPushButton("담은목록")
+        self.btn_close = QPushButton("닫기")
 
         button_layout.addWidget(self.btn_request)
         button_layout.addWidget(self.btn_add_to_cart)
-        button_layout.addWidget(self.btn_close)
         button_layout.addWidget(self.btn_view_cart)
+        button_layout.addWidget(self.btn_close)
 
         main_layout.addLayout(button_layout)
 
@@ -58,7 +58,13 @@ class ProductInfoPanel(QWidget):
         self.parent_gui.go_to_request_wait(status_text="요청중...")
 
     def on_add_to_cart_clicked(self):
-        self.parent_gui.go_to_camera()  # 추후 캐쉬 저장 추가 예정
+        print("담기 버튼 클릭됨 (ProductInfoPanel)")
+
+        if hasattr(self.parent_gui, "cache_manager"):
+            self.parent_gui.cache_manager.add_item(self.current_product)  # 캐쉬 저장
+            self.parent_gui.cart_panel.load_cart_items()  # 담은 목록 화면 갱신
+        else:
+            print("[경고] cache_manager가 설정되지 않았습니다.")
 
     def on_close_clicked(self):
         self.parent_gui.go_to_camera()

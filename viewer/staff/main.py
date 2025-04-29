@@ -9,6 +9,7 @@ from .camera_panel import CameraPanel
 from .product_info_panel import ProductInfoPanel
 from .cart_panel import CartPanel
 from .request_wait_panel import RequestWaitPanel
+from viewer.staff.cache_manager import CacheManager
 
 class StaffGUI(QMainWindow):
     def __init__(self):
@@ -19,6 +20,8 @@ class StaffGUI(QMainWindow):
 
         self.central_widget = QWidget()
         self.main_layout = QVBoxLayout(self.central_widget)
+
+        self.cache_manager = CacheManager()
 
         # 스택 위젯 생성
         self.stack = QStackedWidget()
@@ -51,7 +54,7 @@ class StaffGUI(QMainWindow):
         self.stack.setCurrentIndex(1)
 
     def go_to_cart(self):
-        self.cart_panel.load_cart_items()
+        self.cart_panel.load_cart_items()  # 캐시와 UI를 동기화
         self.stack.setCurrentIndex(2)
 
     def go_to_request_wait(self, status_text="요청중..."):
