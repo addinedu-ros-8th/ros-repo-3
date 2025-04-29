@@ -2,7 +2,7 @@
 <package format="3">
   <name>shared_interfaces</name>
   <version>0.0.1</version>
-  <description>Custom interface definitions for ROS2 system</description>
+  <description>Shared custom interfaces for the ROS system</description>
 
   <maintainer email="tlacogns@gmail.com">Huni0128</maintainer>
   <license>Apache-2.0</license>
@@ -14,5 +14,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <member_of_group>rosidl_interface_packages</member_of_group>
   </export>
 </package>
