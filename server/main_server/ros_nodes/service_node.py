@@ -1,5 +1,3 @@
-# service_node.py
-
 import os
 import json
 import yaml
@@ -36,24 +34,21 @@ class MainService:
         """받은 message를 타입에 따라 라우팅"""
         try:
             log_info(f"[MainService] Routing message: {message}")
-            data = json.loads(message)
-            message_type = data.get("type")
+            
+            # 메시지 파싱
+            if message.startswith("POST /add_robot"):
+                # 'Content-Length' 헤더의 길이를 확인해서 본문을 정확히 파싱합니다.
+                content_length = int(message.split("Content-Length:")[1].split("\r\n")[0].strip())
+                json_data = message.split("\r\n\r\n")[1][:content_length]
 
-            if message_type == "LoginRequest":
-                self.handle_login_request(data, client_socket)
+                # JSON 데이터 파싱
+                data = json.loads(json_data)
+                message_type = data.get("type")
 
-            elif message_type == "CreateTaskRequest":
-                self.handle_create_task_request(data, client_socket)
-
-            elif message_type == "SearchQRCodeData":
-                self.handle_qrcode_search(data, client_socket)
-
-            elif message_type == "RequestRobotStatus":
-                self.handle_robot_status_request(data, client_socket)
-
-            else:
-                log_error(f"[MainService] Unknown message type: {message_type}")
-                self.send_error_response(client_socket, "Unknown message type")
+                if message_type == "AddRobotRequest":
+                    self.handle_add_robot_request(data, client_socket)
+                else:
+                    self.send_error_response(client_socket, "Unknown message type")
 
         except json.JSONDecodeError:
             log_error("[MainService] Failed to parse incoming message as JSON.")
@@ -63,6 +58,7 @@ class MainService:
             self.send_error_response(client_socket, "Internal server error")
 
     def send_error_response(self, client_socket, reason):
+        """클라이언트에 에러 응답 전송"""
         response = {
             "type": "ErrorResponse",
             "reason": reason
@@ -142,6 +138,36 @@ class MainService:
         except Exception as e:
             log_error(f"[MainService] handle_robot_status_request Error: {str(e)}")
             self.send_error_response(client_socket, "Robot status request failed")
+
+    def handle_add_robot_request(self, data, client_socket):
+        """로봇 추가 요청을 처리하는 메서드"""
+        try:
+            robot_name = data.get("robot_name")
+            robot_ip = data.get("robot_ip")
+
+            if not robot_name or not robot_ip:
+                log_error(f"[MainService] Invalid robot data received: {data}")
+                self.send_error_response(client_socket, "Invalid robot data")
+                return
+
+            # 로봇 정보를 DB에 저장
+            robot_id = self.db.add_robot(robot_name, robot_ip)
+            
+            # 성공 응답 보내기
+            response = {
+                "type": "AddRobotResponse",
+                "message": f"Robot {robot_name} added successfully!",
+                "robot_id": robot_id
+            }
+            
+            # 응답 로그 추가
+            log_info(f"[MainService] Sending response: {json.dumps(response)}")
+
+            client_socket.sendall(json.dumps(response).encode('utf-8'))
+
+        except Exception as e:
+            log_error(f"[MainService] handle_add_robot_request Error: {str(e)}")
+            self.send_error_response(client_socket, "Robot addition failed")
 
     def emergency_stop_robot(self, robot_id):
         self.emergency_handler.trigger_emergency_stop(robot_id)

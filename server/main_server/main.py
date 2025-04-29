@@ -1,5 +1,11 @@
-# main.py
+import sys
+import os
 
+# 프로젝트 루트 디렉토리 경로 추가
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+from viewer.manager.main import MainWindow  # 절대 경로로 수정
+from viewer.theme import apply_theme
 from ros_nodes.service_node import MainService
 from logger import log_info, log_error
 

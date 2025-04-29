@@ -1,10 +1,8 @@
-from PyQt6.QtWidgets import (
-    QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QListWidget,
-    QGroupBox, QTableWidget, QTableWidgetItem, QTabWidget, QHeaderView, QSizePolicy
-)
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import *
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 from viewer.theme import apply_theme
+import requests
 
 class MonitorPanel(QWidget):
     def __init__(self):
@@ -31,8 +29,21 @@ class MonitorPanel(QWidget):
         robot_manage_layout = QVBoxLayout()
 
         self.robot_list = QListWidget()
+        
+        # 로봇 ID와 IP 입력 필드 추가
+        self.robot_id_input = QLineEdit(self)
+        self.robot_id_input.setPlaceholderText("Enter Robot ID")
+        robot_manage_layout.addWidget(self.robot_id_input)
+
+        self.robot_ip_input = QLineEdit(self)
+        self.robot_ip_input.setPlaceholderText("Enter Robot IP Address")
+        robot_manage_layout.addWidget(self.robot_ip_input)
+
         self.add_robot_btn = QPushButton("Add Robot")
         self.remove_robot_btn = QPushButton("Remove Robot")
+
+        # 버튼 클릭 시 add_robot 함수 호출
+        self.add_robot_btn.clicked.connect(self.add_robot)
 
         robot_manage_layout.addWidget(self.robot_list)
         robot_manage_layout.addWidget(self.add_robot_btn)
@@ -78,4 +89,34 @@ class MonitorPanel(QWidget):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         return table
 
-    # 추가 메소드 (로봇 리스트 업데이트, 테이블 데이터 추가 등 필요시 작성 가능)
+    def update_robot_list(self, robot_name):
+        # 로봇 리스트에 새로운 로봇 이름 추가
+        self.robot_list.addItem(robot_name)
+
+    def add_robot(self):
+        # 사용자가 입력한 로봇 ID와 IP 주소를 가져옵니다.
+        robot_id = self.robot_id_input.text()
+        robot_ip = self.robot_ip_input.text()
+
+        if not robot_id or not robot_ip:
+            self.show_message("Error", "Please provide both robot ID and IP address.")
+            return
+
+        # 서버로 POST 요청
+        data = {"robot_id": robot_id, "robot_ip": robot_ip}
+        try:
+            response = requests.post("http://192.168.0.168:5000/add_robot", json=data)
+            if response.status_code == 200:
+                self.show_message("Success", "Robot added successfully!")
+                self.update_robot_list(robot_id)  # Update robot list in the GUI
+            else:
+                self.show_message("Failure", f"Failed to add robot: {response.text}")
+        except requests.exceptions.RequestException as e:
+            self.show_message("Error", f"Error: {e}")
+
+    def show_message(self, title, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)  # 수정된 부분
+        msg.setWindowTitle(title)
+        msg.setText(message)
+        msg.exec()

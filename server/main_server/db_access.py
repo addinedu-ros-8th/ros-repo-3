@@ -1,10 +1,8 @@
-# db_access.py
-
 import os
 from datetime import datetime
 import mysql.connector
 from dotenv import load_dotenv
-from .logger import log_info, log_error
+from server.main_server.logger import log_info, log_error
 
 load_dotenv()
 
@@ -84,7 +82,27 @@ class DatabaseAccessor:
         finally:
             self.close()
 
-    # 여기 추가적으로 필요한 메소드들도 정의 가능
+    # 로봇 추가를 위한 메서드
+    def add_robot(self, robot_name, robot_ip):
+        """새로운 로봇을 데이터베이스에 추가한다."""
+        try:
+            self.connect()
+            cursor = self.connection.cursor()
+            query = """
+                INSERT INTO Robots (name, ip, status)
+                VALUES (%s, %s, 'IDLE')
+            """
+            values = (robot_name, robot_ip)
+            cursor.execute(query, values)
+            self.connection.commit()
+            log_info(f"[DatabaseAccessor] Added robot: {robot_name} with IP: {robot_ip}")
+            return cursor.lastrowid  # 새로 삽입된 로봇의 ID 반환
+        except Exception as e:
+            log_error(f"[DatabaseAccessor] add_robot Error: {str(e)}")
+            raise
+        finally:
+            self.close()
+
     def search_user_by_name(self, name):
         """사용자 이름으로 검색"""
         try:
@@ -175,6 +193,7 @@ class DatabaseAccessor:
         finally:
             self.close()
 
+# Wrapping functions for external imports
 db_accessor = DatabaseAccessor()
 
 def insert_task(robot, task_code, origin, quantity, status, time):
