@@ -1,31 +1,45 @@
-# server/main_server/ros_nodes/robot_status_listener.py
-
+from shared_interfaces.msg import RobotStatus
+from std_msgs.msg import String
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
 
-class RobotStatusListener(Node):
+class RobotStatusRequester(Node):
     def __init__(self):
-        super().__init__('robot_status_listener')
-
+        super().__init__('robot_status_requester')
+        self.publisher_ = self.create_publisher(String, '/robot_status_request', 10)
         self.subscription = self.create_subscription(
-            String,
-            '/robot_status',
-            self.listener_callback,
-            10  # QoS profile (queue depth)
+            RobotStatus,
+            '/robot_status_response',
+            self.robot_status_callback,
+            10
         )
 
-        self.get_logger().info('RobotStatusListener node has been started.')
+    def request_robot_status(self, roscar_ip_v4):
+        msg = String()
+        msg.data = roscar_ip_v4
+        self.publisher_.publish(msg)
+        self.get_logger().info(f'Requested status for {roscar_ip_v4}')
 
-    def listener_callback(self, msg):
-        self.get_logger().info(f'Received robot status: {msg.data}')
-
-def main(args=None):
-    rclpy.init(args=args)
-    node = RobotStatusListener()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()
+    def robot_status_callback(self, msg):
+        # DB에 저장
+        insert_roscar(
+            msg.roscar_id,
+            msg.roscar_name,
+            msg.battery_percentage,
+            msg.operational_status,
+            msg.roscar_ip_v4
+        )
+        # GUI 업데이트
+        self.notify_gui_robot_added(msg)
+    
+    def notify_gui_robot_added(self, msg):
+        data = {
+            "type": "RobotAddedNotification",
+            "roscar_id": msg.roscar_id,
+            "roscar_name": msg.roscar_name,
+            "battery_percentage": msg.battery_percentage,
+            "operational_status": msg.operational_status,
+            "roscar_ip_v4": msg.roscar_ip_v4
+        }
+        # TCP 통해 GUI에 전송 (send_message_to_gui 메서드 필요)
+        self.send_message_to_gui(data)

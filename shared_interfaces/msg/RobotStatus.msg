@@ -1,0 +1,5 @@
+int32 roscar_id
+string roscar_name
+int32 battery_percentage
+string operational_status
+string roscar_ip_v4
