@@ -22,6 +22,8 @@ setup(
         'console_scripts': [
             'service_node = main_server.ros_nodes.service_node:main',
             'controller_node = mobile_controller.ros_nodes.controller_node:main',
+            'send_waypoints_node = main_server.ros_nodes.send_waypoints_node:main',
+            'sequential_navigate_node = main_server.ros_nodes.sequential_navigate_node:main',
         ],
     },
 )
