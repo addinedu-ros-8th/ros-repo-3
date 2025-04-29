@@ -196,4 +196,4 @@ venv/
 .env/
 
 
-
+server/main_server/server_log.txt
