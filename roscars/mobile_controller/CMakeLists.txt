@@ -28,19 +28,10 @@ ament_target_dependencies(robot_battery_publisher
   shared_interfaces
 )
 
-# executable 추가 - lidar
-add_executable(lidar_node ros_nodes/lidar.cpp)
-ament_target_dependencies(lidar_node
-  rclcpp
-  std_msgs
-  shared_interfaces
-)
-
 # 설치 경로 설정
 install(TARGETS
   robot_status_publisher
   robot_battery_publisher
-  lidar_node  # ✅ lidar_node 추가됨
   DESTINATION lib/${PROJECT_NAME}
 )
 
