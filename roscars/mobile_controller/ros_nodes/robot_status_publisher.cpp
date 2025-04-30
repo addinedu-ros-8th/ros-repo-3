@@ -1,6 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "shared_interfaces/msg/robot_status.hpp"
 #include "mobile_controller/utils.hpp"  // 추가: utils 사용
+#include <fstream>
 
 using RobotStatus = shared_interfaces::msg::RobotStatus;
 using namespace std::chrono_literals;
@@ -17,21 +18,36 @@ public:
             std::bind(&RobotStatusPublisher::publish_status, this)
         );
     }
+    std::string get_ap_ssid()
+    {
+        std::ifstream hostapd_file("/etc/hostapd/hostapd.conf");
+        std::string line;
+        while (std::getline(hostapd_file, line))
+        {
+            if (line.find("ssid=") == 0)
+            {
+                return line.substr(5);  // "ssid=" 이후 부분만
+            }
+        }
+        return "UNKNOWN_SSID";
+    }
 
 private:
+    
     void publish_status()
     {
         auto msg = RobotStatus();
-        msg.roscar_id = 1;  // ID는 임시로 1 고정
-        msg.roscar_name = get_hostname();
-        msg.battery_percentage = 100;  // 배터리 데이터 나중 추가
-        msg.operational_status = "ACTIVE";  // 나중에 동적 관리 가능
-        msg.roscar_ip_v4 = get_ip_address("wlan0");  // wlan0 또는 eth0
+        msg.roscar_id = 1;
+        msg.roscar_name = get_ap_ssid();  // ← 여기 수정
+        msg.battery_percentage = 100;
+        msg.operational_status = "ACTIVE";
+        msg.roscar_ip_v4 = get_ip_address("wlan0");
 
         RCLCPP_INFO(this->get_logger(), "Publishing RobotStatus: name=%s, ip=%s",
                     msg.roscar_name.c_str(), msg.roscar_ip_v4.c_str());
         publisher_->publish(msg);
     }
+
 
     rclcpp::Publisher<RobotStatus>::SharedPtr publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
