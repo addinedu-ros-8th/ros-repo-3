@@ -1,0 +1,42 @@
+import socket
+import zlib
+import cv2
+import numpy as np
+from ultralytics import YOLO
+
+# 1. 학습된 YOLOv8 모델 로딩
+model = YOLO("runs/detect/train4/weights/best.pt")  # ← 여기에 적용 완료
+
+# 2. UDP 수신 소켓
+PORT = 9999
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind(('0.0.0.0', PORT))
+
+print("YOLO 수신 서버 시작...")
+
+while True:
+    data, _ = sock.recvfrom(65536)
+    try:
+        decompressed = zlib.decompress(data)
+        np_data = np.frombuffer(decompressed, dtype=np.uint8)
+        frame = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
+
+        if frame is None:
+            continue
+
+        # 3. YOLO 추론
+        results = model(frame, verbose=False)
+        annotated = results[0].plot()  # bounding box 포함 시각화 결과
+
+        # 4. 화면 출력
+        cv2.imshow('YOLOv8 Custom Detection (roscar)', annotated)
+
+        if cv2.waitKey(1) == 27:  # ESC 키로 종료
+            break
+
+    except Exception as e:
+        print("처리 에러:", e)
+        continue
+
+sock.close()
+cv2.destroyAllWindows()

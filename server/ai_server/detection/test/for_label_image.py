@@ -82,6 +82,7 @@ while True:
                 print("🔄 거리 변경: 250_300")
             elif key == ord('s'):
                 recording = True
+                
                 recorded_images = 0  # 새 세션 시작할 때 리셋
                 print("⏺️ 녹화 시작")
             elif key == ord('e'):
