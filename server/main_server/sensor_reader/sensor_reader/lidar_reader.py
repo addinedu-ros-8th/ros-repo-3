@@ -33,7 +33,7 @@ class SLLidarClient(Node):
             angle_deg = math.degrees(angle_rad)
             # 음수 각도를 0~360 범위로 변환
             angle_deg = angle_deg % 360
-
+            self.get_logger().info(f"roscar_name {msg.roscar_name}")
             if range_value != float('inf'):
                 self.get_logger().info(f"Angle {angle_deg:.2f}°: {range_value:.2f} m")
 

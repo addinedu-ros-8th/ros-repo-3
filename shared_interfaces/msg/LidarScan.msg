@@ -1,3 +1,4 @@
+string roscar_name
 std_msgs/Header header # timestamp in the header is the acquisition time of
                              # the first ray in the scan.
                              #
