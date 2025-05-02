@@ -10,32 +10,39 @@ qos_profile = QoSProfile(
     depth=10
 )
 
-
 class SLLidarClient(Node):
     def __init__(self):
         super().__init__('sllidar_client')
 
-        qos_profile = QoSProfile(
-        reliability=QoSReliabilityPolicy.RELIABLE,
-        history=QoSHistoryPolicy.KEEP_LAST,
-        depth=10
-        )
         self.subscription = self.create_subscription(
-            LidarScan,  # 받은 메시지 타입 지정
-            '/robot/sensor/lidar',    # 구독할 토픽 이름
-            self.callback,  # 콜백 함수
-            qos_profile  # 큐 사이즈
+            LidarScan,
+            '/robot/sensor/lidar',
+            self.callback,
+            qos_profile
         )
 
+        self.is_printing = False
+
     def callback(self, msg):
-        for i, range_value in enumerate(msg.ranges):
-            angle_rad = msg.angle_min + i * msg.angle_increment
-            angle_deg = math.degrees(angle_rad)
-            # 음수 각도를 0~360 범위로 변환
-            angle_deg = angle_deg % 360
-            self.get_logger().info(f"roscar_name {msg.roscar_name}")
-            if range_value != float('inf'):
-                self.get_logger().info(f"Angle {angle_deg:.2f}°: {range_value:.2f} m")
+        total_angle = (msg.angle_max - msg.angle_min)
+        expected_count = int(total_angle / msg.angle_increment)
+
+        if len(msg.ranges) >= expected_count:
+            # 로스카 이름 출력 (로스카 프레임 헤더)
+            self.get_logger().info(f"\n[roscar: {msg.roscar_name}]\n" + "-"*30)
+            
+            # 거리 정보 출력
+            output_lines = []
+            for i, range_value in enumerate(msg.ranges):
+                angle_rad = msg.angle_min + i * msg.angle_increment
+                angle_deg = math.degrees(angle_rad) % 360
+                if range_value != float('inf'):
+                    output_lines.append(f"Angle {angle_deg:.2f}°: {range_value:.2f} m")
+
+            # 모두 한 번에 출력
+            full_output = "\n".join(output_lines)
+            self.get_logger().info(full_output + "\n" + "="*30)
+
 
 def main(args=None):
     rp.init(args=args)

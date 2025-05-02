@@ -52,9 +52,8 @@ public:
             "/robot/sensor/lidar", rclcpp::QoS(10).reliable().keep_last(10)
         );
 
-        // SSID 출력
-        std::string ssid = get_ap_ssid();
-        RCLCPP_INFO(this->get_logger(), "Connected AP SSID: %s", ssid.c_str());
+        ssid_ = get_ap_ssid();
+        RCLCPP_INFO(this->get_logger(), "Connected AP SSID: %s", ssid_.c_str());
 
         RCLCPP_INFO(this->get_logger(), "Starting SLLIDAR driver...");
         work_loop();
@@ -68,6 +67,7 @@ private:
     bool inverted_;
     bool angle_compensate_;
     bool need_exit_;
+    std::string ssid_;
 
     rclcpp::Publisher<shared_interfaces::msg::LidarScan>::SharedPtr scan_pub_;
 
@@ -112,8 +112,9 @@ private:
         float angle_min,
         float angle_max,
         float max_distance,
-        std::string frame_id)
-    {
+        std::string frame_id,
+        std::string roscar_name
+    ) {
         auto scan_msg = std::make_unique<shared_interfaces::msg::LidarScan>();
         scan_msg->header.stamp = start;
         scan_msg->header.frame_id = frame_id;
@@ -136,6 +137,8 @@ private:
             scan_msg->ranges[i] = read_value;
             scan_msg->intensities[i] = (float)(nodes[i].quality >> 2);
         }
+
+        scan_msg->roscar_name = roscar_name;
 
         pub->publish(std::move(scan_msg));
     }
@@ -176,7 +179,7 @@ private:
 
                 publish_scan(scan_pub_, nodes, count, scan_start,
                              1.0 / scan_frequency_, inverted_, 0.0f, 360.0f,
-                             8.0f, frame_id_);
+                             8.0f, frame_id_, ssid_);
             }
 
             rclcpp::spin_some(this->get_node_base_interface());
