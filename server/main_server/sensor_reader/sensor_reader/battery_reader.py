@@ -28,6 +28,7 @@ class SLLidarClient(Node):
         )
 
     def callback(self, msg):
+        print(msg.roscar_name)
         print(msg.percentage)
 
 def main(args=None):
