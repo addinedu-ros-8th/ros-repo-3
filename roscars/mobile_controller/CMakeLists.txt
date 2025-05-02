@@ -52,6 +52,13 @@ add_executable(sllidar_node
   ${SLLIDAR_SDK_SRC}
 )
 
+# imu_publisher_icm20948 노드
+add_executable(imu_publisher ros_nodes/robot_imu_publisher.cpp)
+ament_target_dependencies(imu_publisher
+  rclcpp
+  shared_interfaces
+)
+
 target_compile_definitions(sllidar_node PRIVATE
   SDK_PLATFORM_LINUX
 )
@@ -67,6 +74,7 @@ install(TARGETS
   robot_status_publisher
   robot_battery_publisher
   sllidar_node
+  imu_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
