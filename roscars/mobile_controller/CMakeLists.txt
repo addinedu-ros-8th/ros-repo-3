@@ -7,6 +7,10 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(shared_interfaces REQUIRED)
 
+# libgpiod 설정 추가
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBGPIOD REQUIRED libgpiod)
+
 # include 디렉토리 설정
 include_directories(
   include
@@ -15,6 +19,7 @@ include_directories(
   sdk/src/arch/linux
   sdk/src/hal
   sdk/src/net
+  ${LIBGPIOD_INCLUDE_DIRS}  # libgpiod include 추가
 )
 
 # SLLIDAR SDK 경로 설정
@@ -49,29 +54,36 @@ add_executable(robot_lidar_publisher
   ros_nodes/robot_lidar_publisher.cpp
   ${SLLIDAR_SDK_SRC}
 )
-
-# imu_publisher_icm20948 노드
-add_executable(imu_publisher ros_nodes/robot_imu_publisher.cpp)
-ament_target_dependencies(imu_publisher
-  rclcpp
-  shared_interfaces
-)
-
-target_compile_definitions(robot_lidar_publisher PRIVATE
-  SDK_PLATFORM_LINUX
-)
-
 ament_target_dependencies(robot_lidar_publisher
   rclcpp
   shared_interfaces
 )
+target_compile_definitions(robot_lidar_publisher PRIVATE
+  SDK_PLATFORM_LINUX
+)
+
+# imu_publisher_icm20948 노드
+add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp)
+ament_target_dependencies(robot_imu_publisher
+  rclcpp
+  shared_interfaces
+)
+
+# ultra_publisher 노드 (libgpiod 연동)
+add_executable(robot_ultra_publisher ros_nodes/robot_ultra_publisher.cpp)
+ament_target_dependencies(robot_ultra_publisher
+  rclcpp
+  shared_interfaces
+)
+target_link_libraries(robot_ultra_publisher ${LIBGPIOD_LIBRARIES})  # libgpiod 연결
 
 # 설치 설정
 install(TARGETS
   robot_register_publisher
   robot_battery_publisher
   robot_lidar_publisher
-  imu_publisher
+  robot_imu_publisher
+  robot_ultra_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 

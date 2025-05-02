@@ -1,4 +1,6 @@
 #include <memory>
+#include <fstream>
+#include <string>
 #include <rclcpp/rclcpp.hpp>
 #include "shared_interfaces/msg/lidar_scan.hpp"
 #include <sl_lidar.h>
@@ -7,6 +9,18 @@
 #define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
 
 using namespace sl;
+
+// SSID 가져오는 함수 정의
+std::string get_ap_ssid() {
+    std::ifstream hostapd_file("/etc/hostapd/hostapd.conf");
+    std::string line;
+    while (std::getline(hostapd_file, line)) {
+        if (line.find("ssid=") == 0) {
+            return line.substr(5);
+        }
+    }
+    return "UNKNOWN_SSID";
+}
 
 class SLLidarNode : public rclcpp::Node {
 public:
@@ -34,11 +48,14 @@ public:
         this->get_parameter("inverted", inverted_);
         this->get_parameter("angle_compensate", angle_compensate_);
 
-        //scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>("scan", rclcpp::SensorDataQoS());
         scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>(
             "/robot/sensor/lidar", rclcpp::QoS(10).reliable().keep_last(10)
         );
-        
+
+        // SSID 출력
+        std::string ssid = get_ap_ssid();
+        RCLCPP_INFO(this->get_logger(), "Connected AP SSID: %s", ssid.c_str());
+
         RCLCPP_INFO(this->get_logger(), "Starting SLLIDAR driver...");
         work_loop();
     }

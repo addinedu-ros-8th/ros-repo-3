@@ -14,6 +14,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotRegister.msg"  # 추가한 RobotStatus 메시지
   "msg/LidarScan.msg"
   "msg/ImuStatus.msg"
+  "msg/UltraStatus.msg"
   "srv/ManualOverride.srv"
   DEPENDENCIES std_msgs
 )
