@@ -45,8 +45,8 @@ ament_target_dependencies(robot_battery_publisher
 )
 
 # sllidar_node 노드
-add_executable(sllidar_node
-  ros_nodes/sllidar_node.cpp
+add_executable(robot_lidar_publisher
+  ros_nodes/robot_lidar_publisher.cpp
   ${SLLIDAR_SDK_SRC}
 )
 
@@ -57,13 +57,12 @@ ament_target_dependencies(imu_publisher
   shared_interfaces
 )
 
-target_compile_definitions(sllidar_node PRIVATE
+target_compile_definitions(robot_lidar_publisher PRIVATE
   SDK_PLATFORM_LINUX
 )
 
-ament_target_dependencies(sllidar_node
+ament_target_dependencies(robot_lidar_publisher
   rclcpp
-  std_msgs
   shared_interfaces
 )
 
@@ -71,7 +70,7 @@ ament_target_dependencies(sllidar_node
 install(TARGETS
   robot_register_publisher
   robot_battery_publisher
-  sllidar_node
+  robot_lidar_publisher
   imu_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
