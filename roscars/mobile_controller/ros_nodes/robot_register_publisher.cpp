@@ -38,7 +38,6 @@ private:
     void publish_status()
     {
         auto msg = RobotRegister();
-        msg.roscar_id = 1;
         msg.roscar_name = get_ap_ssid();
         msg.battery_percentage = 100;
         msg.operational_status = "STANDBY";
