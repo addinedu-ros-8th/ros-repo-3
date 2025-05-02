@@ -20,7 +20,6 @@ public:
     Battery(int min_value = 2396, int max_value = 3215)
         : min_value(min_value), max_value(max_value) {
 
-        // I2C 버스 열기
         if ((file = open(bus, O_RDWR)) < 0) {
             std::cerr << "I2C 버스 열기 실패\n";
             exit(1);
@@ -80,6 +79,17 @@ private:
     }
 };
 
+std::string get_ap_ssid() {
+    std::ifstream hostapd_file("/etc/hostapd/hostapd.conf");
+    std::string line;
+    while (std::getline(hostapd_file, line)) {
+        if (line.find("ssid=") == 0) {
+            return line.substr(5);  // "ssid=" 이후 부분만 반환
+        }
+    }
+    return "UNKNOWN_SSID";
+}
+
 class BatteryStatusPublisher : public rclcpp::Node {
 public:
     BatteryStatusPublisher() : Node("battery_status_publisher") {
@@ -90,12 +100,16 @@ public:
 private:
     void publish_status() {
         Battery battery;
-        float percentage = battery.get_battery();
+        float percentage_float = battery.get_battery();
+        int percentage = static_cast<int>(roundf(percentage_float));  // float → int 변환
+
+        std::string ssid = get_ap_ssid();
 
         BatteryStatusMsg msg;
         msg.percentage = percentage;
+        msg.roscar_name = ssid;
 
-        RCLCPP_INFO(this->get_logger(), "Battery Status → %.2f%%", msg.percentage);
+        RCLCPP_INFO(this->get_logger(), "Battery Status → %d%% (SSID: %s)", msg.percentage, ssid.c_str());
         publisher_->publish(msg);
     }
 
