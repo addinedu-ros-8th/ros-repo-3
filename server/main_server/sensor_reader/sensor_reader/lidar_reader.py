@@ -22,7 +22,7 @@ class SLLidarClient(Node):
         )
         self.subscription = self.create_subscription(
             LidarScan,  # 받은 메시지 타입 지정
-            '/scan',    # 구독할 토픽 이름
+            '/robot/sensor/lidar',    # 구독할 토픽 이름
             self.callback,  # 콜백 함수
             qos_profile  # 큐 사이즈
         )
