@@ -31,10 +31,9 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
 )
 
 # robot_status_publisher 노드
-add_executable(robot_status_publisher ros_nodes/robot_status_publisher.cpp)
-ament_target_dependencies(robot_status_publisher
+add_executable(robot_register_publisher ros_nodes/robot_register_publisher.cpp)
+ament_target_dependencies(robot_register_publisher
   rclcpp
-  std_msgs
   shared_interfaces
 )
 
@@ -42,7 +41,6 @@ ament_target_dependencies(robot_status_publisher
 add_executable(robot_battery_publisher ros_nodes/robot_battery_publisher.cpp)
 ament_target_dependencies(robot_battery_publisher
   rclcpp
-  std_msgs
   shared_interfaces
 )
 
@@ -71,7 +69,7 @@ ament_target_dependencies(sllidar_node
 
 # 설치 설정
 install(TARGETS
-  robot_status_publisher
+  robot_register_publisher
   robot_battery_publisher
   sllidar_node
   imu_publisher

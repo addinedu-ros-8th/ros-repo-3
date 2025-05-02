@@ -11,7 +11,8 @@
 #include <fstream>
 #include <string>
 
-// SSID 얻는 함수
+#define MAG_ADDR 0x0C
+
 std::string get_ap_ssid() {
     std::ifstream hostapd_file("/etc/hostapd/hostapd.conf");
     std::string line;
@@ -86,10 +87,45 @@ private:
     }
 
     void init_icm20948() {
-        write_reg(0, 0x06, 0x01);  // PWR_MGMT_1: 클럭 설정
+        write_reg(0, 0x06, 0x01);  // PWR_MGMT_1
         usleep(10000);
-        write_reg(0, 0x07, 0x00);  // PWR_MGMT_2: 모든 센서 활성화
+        write_reg(0, 0x07, 0x00);  // PWR_MGMT_2
         usleep(10000);
+        enable_mag();
+    }
+
+    void enable_mag() {
+        write_reg(0, 0x06, 0x01); // Clock
+        write_reg(0, 0x03, 0x01); // Enable I2C Master
+        usleep(10000);
+
+        write_reg(3, 0x03, MAG_ADDR);    // I2C_SLV0_ADDR
+        write_reg(3, 0x04, 0x0A);        // CNTL2
+        write_reg(3, 0x05, 0x01);        // Single Measurement Mode
+        write_reg(3, 0x06, 0x81);        // Enable + 1 byte
+        usleep(10000);
+    }
+
+    void read_mag_data(float& mx, float& my, float& mz) {
+        write_reg(3, 0x03, MAG_ADDR | 0x80);  // Read mode
+        write_reg(3, 0x04, 0x10);            // Start from ST1
+        write_reg(3, 0x05, 9);               // 9 bytes
+        write_reg(3, 0x06, 0x80 | 9);        // Enable
+        usleep(10000);
+
+        set_bank(0);
+        uint8_t cmd = 0x3B;
+        write(file_, &cmd, 1);
+        uint8_t data[9] = {0};
+        read(file_, data, 9);
+
+        int16_t raw_x = (data[1] << 8) | data[0];
+        int16_t raw_y = (data[3] << 8) | data[2];
+        int16_t raw_z = (data[5] << 8) | data[4];
+
+        mx = raw_x * 0.15;  // μT
+        my = raw_y * 0.15;
+        mz = raw_z * 0.15;
     }
 
     void publish_imu() {
@@ -100,18 +136,21 @@ private:
         int16_t gy = read_word(0, 0x35);
         int16_t gz = read_word(0, 0x37);
 
+        float mx = 0.0, my = 0.0, mz = 0.0;
+        read_mag_data(mx, my, mz);
+
         shared_interfaces::msg::ImuStatus imu_msg;
-        imu_msg.accel_x = ax / 2048.0;  // ±16g 기준 (단위: g)
+        imu_msg.accel_x = ax / 2048.0;
         imu_msg.accel_y = ay / 2048.0;
         imu_msg.accel_z = az / 2048.0;
 
-        imu_msg.gyro_x = gx / 16.4 * M_PI / 180.0;  // 단위: rad/s
+        imu_msg.gyro_x = gx / 16.4 * M_PI / 180.0;
         imu_msg.gyro_y = gy / 16.4 * M_PI / 180.0;
         imu_msg.gyro_z = gz / 16.4 * M_PI / 180.0;
 
-        imu_msg.mag_x = 0.0;  // 추후 mag 센서 통합 시 구현
-        imu_msg.mag_y = 0.0;
-        imu_msg.mag_z = 0.0;
+        imu_msg.mag_x = mx;
+        imu_msg.mag_y = my;
+        imu_msg.mag_z = mz;
 
         imu_msg.roscar_name = get_ap_ssid();
 

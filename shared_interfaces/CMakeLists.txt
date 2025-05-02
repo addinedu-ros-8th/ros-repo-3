@@ -11,7 +11,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/BatteryStatus.msg"
   "msg/Emergency.msg"
   "msg/TaskResult.msg"
-  "msg/RobotStatus.msg"  # 추가한 RobotStatus 메시지
+  "msg/RobotRegister.msg"  # 추가한 RobotStatus 메시지
   "msg/LidarScan.msg"
   "msg/ImuStatus.msg"
   "srv/ManualOverride.srv"
