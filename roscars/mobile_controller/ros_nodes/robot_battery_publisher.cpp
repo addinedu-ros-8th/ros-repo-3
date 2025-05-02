@@ -1,5 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/float32.hpp"  // 배터리 퍼센트를 나타내는 메시지
+#include "shared_interfaces/msg/battery_status.hpp"
+#include "mobile_controller/utils.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <fcntl.h>
@@ -7,31 +9,31 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <vector>
-#include <cstdint>  // uint8_t, uint16_t 타입을 사용하기 위한 헤더
+#include <cstdint>
 
+using BatteryStatusMsg = shared_interfaces::msg::BatteryStatus;
 using namespace std::chrono_literals;
+using namespace mobile_controller;
 
 class Battery {
 public:
     Battery(int min_value = 2396, int max_value = 3215)
         : min_value(min_value), max_value(max_value) {
 
-        // I2C bus 열기
+        // I2C 버스 열기
         if ((file = open(bus, O_RDWR)) < 0) {
-            std::cerr << "I2C bus open failed\n";
+            std::cerr << "I2C 버스 열기 실패\n";
             exit(1);
         }
 
-        // ADS1115 주소 설정
-        int addr = 0x48; // 기본 주소
+        int addr = 0x48; // ADS1115 기본 주소
         if (ioctl(file, I2C_SLAVE, addr) < 0) {
-            std::cerr << "Failed to connect to the device\n";
+            std::cerr << "ADS1115 디바이스 연결 실패\n";
             exit(1);
         }
     }
 
     ~Battery() {
-        // 자원 해제
         close(file);
     }
 
@@ -41,27 +43,21 @@ public:
         else if (value > max_value)
             return 100.0f;
         else
-            return (float)(value - min_value) / (max_value - min_value) * 100.0f;
+            return static_cast<float>(value - min_value) / (max_value - min_value) * 100.0f;
     }
 
     float get_battery(int sample_count = 10) {
         std::vector<int> values;
-
         for (int i = 0; i < sample_count; i++) {
-            int value = read_adc_value();
-            values.push_back(value);
+            values.push_back(read_adc_value());
             usleep(100000);  // 0.1초 대기
         }
 
-        // 평균값 계산
         int sum = 0;
-        for (int v : values) {
-            sum += v;
-        }
-        int avg_value = sum / values.size();
+        for (int v : values) sum += v;
+        int avg = sum / sample_count;
 
-        // 퍼센트 계산
-        return calculate_percentage(avg_value);
+        return calculate_percentage(avg);
     }
 
 private:
@@ -70,56 +66,44 @@ private:
     int min_value, max_value;
 
     int read_adc_value() {
-        // ADS1115에 읽기 명령 전송 (변환 시작)
-        uint8_t config[3] = {0x01, 0xC3, 0x83};  // AIN0, 4.096V, 128SPS, single-shot
+        uint8_t config[3] = {0x01, 0xC3, 0x83};  // 설정 레지스터
         write(file, config, 3);
 
-        // 변환 대기 후 레지스터 포인터로 읽기
-        uint8_t pointer[1] = {0x00};  // 데이터 레지스터 포인터
+        uint8_t pointer[1] = {0x00};
         write(file, pointer, 1);
-        usleep(100000);  // 변환 대기
+        usleep(100000);
 
         uint8_t data[2];
         read(file, data, 2);
 
-        // 16비트 데이터를 결합하여 반환
-        int16_t raw = (data[0] << 8) | data[1];
-        return raw;
+        return (data[0] << 8) | data[1];
     }
 };
 
-class BatteryStatusPublisher : public rclcpp::Node
-{
+class BatteryStatusPublisher : public rclcpp::Node {
 public:
-    BatteryStatusPublisher() : Node("battery_status_publisher")
-    {
-        publisher_ = this->create_publisher<std_msgs::msg::Float32>("/robot/status/battery", 10);
-        timer_ = this->create_wall_timer(
-            3s,
-            std::bind(&BatteryStatusPublisher::publish_status, this)
-        );
+    BatteryStatusPublisher() : Node("battery_status_publisher") {
+        publisher_ = this->create_publisher<BatteryStatusMsg>("/robot/status/battery", 10);
+        timer_ = this->create_wall_timer(3s, std::bind(&BatteryStatusPublisher::publish_status, this));
     }
 
 private:
-    void publish_status()
-    {
-        // 배터리 잔량 계산
+    void publish_status() {
         Battery battery;
-        float battery_percentage = battery.get_battery();
+        float percentage = battery.get_battery();
 
-        auto msg = std_msgs::msg::Float32();
-        msg.data = battery_percentage;
+        BatteryStatusMsg msg;
+        msg.percentage = percentage;
 
-        RCLCPP_INFO(this->get_logger(), "Publishing Battery Status: battery=%f%%", msg.data);
+        RCLCPP_INFO(this->get_logger(), "Battery Status → %.2f%%", msg.percentage);
         publisher_->publish(msg);
     }
 
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr publisher_;
+    rclcpp::Publisher<BatteryStatusMsg>::SharedPtr publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
 };
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char * argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<BatteryStatusPublisher>());
     rclcpp::shutdown();

@@ -34,8 +34,11 @@ public:
         this->get_parameter("inverted", inverted_);
         this->get_parameter("angle_compensate", angle_compensate_);
 
-        scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>("scan", rclcpp::SensorDataQoS());
-
+        //scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>("scan", rclcpp::SensorDataQoS());
+        scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>(
+            "scan", rclcpp::QoS(10).reliable().keep_last(10)
+        );
+        
         RCLCPP_INFO(this->get_logger(), "Starting SLLIDAR driver...");
         work_loop();
     }
