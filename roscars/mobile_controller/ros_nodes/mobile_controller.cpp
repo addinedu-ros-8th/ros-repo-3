@@ -31,8 +31,6 @@ public:
         registered_ = false;
         robot_state_ = "idle";
 
-        run_node("robot_register_publisher");
-
         reg_sub_ = this->create_subscription<std_msgs::msg::Bool>(
             "robot_registered", 10,
             std::bind(&ModeController::registered_callback, this, _1));
@@ -40,6 +38,9 @@ public:
         state_sub_ = this->create_subscription<std_msgs::msg::String>(
             "robot_state", 10,
             std::bind(&ModeController::state_callback, this, _1));
+
+        // Start the "robot_register_publisher" node initially
+        run_node("robot_register_publisher");
     }
 
 private:
@@ -50,6 +51,7 @@ private:
 
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reg_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr state_sub_;
+
     void registered_callback(const std_msgs::msg::Bool::SharedPtr msg) {
         if (registered_ != msg->data) {
             registered_ = msg->data;
@@ -88,7 +90,7 @@ private:
         if (processes_.find(executable_name) != processes_.end()) {
             return;
         }
-    
+
         pid_t pid = fork();
         if (pid == 0) {
             // 자식 프로세스
@@ -98,10 +100,6 @@ private:
             // 부모 프로세스
             processes_[executable_name] = pid;
             RCLCPP_INFO(this->get_logger(), "[실행] %s", executable_name.c_str());
-    
-            // 여기에 네임스페이스를 설정하거나, 노드 파라미터로 전달하는 코드 추가
-            std::string cmd = "ros2 param set /" + executable_name + " namespace " + namespace_;
-            system(cmd.c_str()); // system 명령어로 실행
         } else {
             RCLCPP_ERROR(this->get_logger(), "[실행 실패] %s", executable_name.c_str());
         }
@@ -114,6 +112,36 @@ private:
             RCLCPP_INFO(this->get_logger(), "[종료] %s", pair.first.c_str());
         }
         processes_.clear();
+    }
+
+    // 모든 노드를 종료하는 메소드
+    void stop_node(const std::string &node_name) {
+        // 지정된 노드만 종료
+        auto it = processes_.find(node_name);
+        if (it != processes_.end()) {
+            kill(it->second, SIGTERM);
+            waitpid(it->second, nullptr, 0);
+            RCLCPP_INFO(this->get_logger(), "[종료] %s", node_name.c_str());
+            processes_.erase(it); // 노드를 종료한 후 리스트에서 제거
+        }
+    }
+
+    // 모든 노드를 종료하는 메소드
+    void stop_all_nodes() {
+        for (const auto &pair : processes_) {
+            kill(pair.second, SIGTERM);
+            waitpid(pair.second, nullptr, 0);
+            RCLCPP_INFO(this->get_logger(), "[종료] %s", pair.first.c_str());
+        }
+        processes_.clear();
+    }
+
+    // 예시: 서버 응답을 처리하는 메소드 (실제 로직에 맞게 수정 가능)
+    void handle_server_response(const std::string &response) {
+        if (response == "connection_established") {
+            // 연결이 완료되면 모든 노드를 종료
+            stop_all_nodes();
+        }
     }
 };
 
