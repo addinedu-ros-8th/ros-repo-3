@@ -77,6 +77,13 @@ ament_target_dependencies(robot_ultra_publisher
 )
 target_link_libraries(robot_ultra_publisher ${LIBGPIOD_LIBRARIES})  # libgpiod 연결
 
+# imu_publisher_icm20948 노드
+add_executable(mobile_controller ros_nodes/mobile_controller.cpp)
+ament_target_dependencies(mobile_controller
+  rclcpp
+  shared_interfaces
+)
+
 # 설치 설정
 install(TARGETS
   robot_register_publisher
@@ -84,6 +91,7 @@ install(TARGETS
   robot_lidar_publisher
   robot_imu_publisher
   robot_ultra_publisher
+  mobile_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 
