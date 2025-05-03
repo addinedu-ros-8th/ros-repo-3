@@ -15,6 +15,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LidarScan.msg"
   "msg/ImuStatus.msg"
   "msg/UltraStatus.msg"
+  "msg/RobotInfo.msg"
+  "msg/AccessResult.msg"
   "srv/ManualOverride.srv"
   DEPENDENCIES std_msgs
 )

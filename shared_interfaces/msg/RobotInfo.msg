@@ -1,0 +1,2 @@
+string roscar_ip
+string roscar_name

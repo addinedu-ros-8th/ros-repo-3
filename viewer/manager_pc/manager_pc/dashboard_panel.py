@@ -1,9 +1,10 @@
+import rclpy
+from rclpy.node import Node
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from viewer.theme import apply_theme
-from shared_interfaces.msg import RobotInfo, AccessResult
-import requests
+from shared_interfaces.msg import RobotInfo
 
 class MonitorPanel(QWidget):
     def __init__(self):
@@ -11,9 +12,12 @@ class MonitorPanel(QWidget):
         apply_theme(self)
         self._init_ui()
 
+        # ROS2 초기화 및 Node 생성
+        rclpy.init(args=None)  # ROS2 초기화
+        self.node = Node('monitor_panel')  # Node 생성
+        
         # ROS2 퍼블리셔 생성
-        self.robot_info_publisher = self.create_publisher(RobotInfo, '/robot/access', 10)
-
+        self.robot_info_publisher = self.node.create_publisher(RobotInfo, '/robot/access', 10)
 
     def _init_ui(self):
         main_layout = QVBoxLayout()
@@ -107,25 +111,26 @@ class MonitorPanel(QWidget):
             self.show_message("Error", "Please provide both robot ID and IP address.")
             return
 
-        # 서버로 POST 요청
+        # ROS2 메시지 전송
         msg = RobotInfo()
         msg.roscar_name = robot_id
         msg.roscar_ip = robot_ip
         self.robot_info_publisher.publish(msg)
-        
-        # try:
-        #     response = requests.post("http://192.168.0.168:5000/add_robot", json=data)
-        #     if response.status_code == 200:
-        #         self.show_message("Success", "Robot added successfully!")
-        #         self.update_robot_list(robot_id)  # Update robot list in the GUI
-        #     else:
-        #         self.show_message("Failure", f"Failed to add robot: {response.text}")
-        # except requests.exceptions.RequestException as e:
-        #     self.show_message("Error", f"Error: {e}")
+
+        # 추가된 로봇 리스트에 표시
+        self.update_robot_list(robot_id)
+
+        self.show_message("Success", f"Robot {robot_id} added successfully!")
 
     def show_message(self, title, message):
         msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)  # 수정된 부분
+        msg.setIcon(QMessageBox.Icon.Information)
         msg.setWindowTitle(title)
         msg.setText(message)
         msg.exec()
+
+    def closeEvent(self, event):
+        # ROS2 노드 종료 처리
+        self.node.destroy_node()
+        rclpy.shutdown()
+        event.accept()
