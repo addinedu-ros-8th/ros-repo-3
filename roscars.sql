@@ -29,7 +29,8 @@ CREATE TABLE `Task` (
   `shoes_id` integer,
   `task_status` ENUM ('TO_DO', 'IN_PROGRESS', 'DONE'),
   `task_start_time` timestamp,
-  `task_end_time` timestamp
+  `task_end_time` timestamp,
+  `location_id` integer
 );
 
 CREATE TABLE `ShoesModel` (
@@ -47,7 +48,8 @@ CREATE TABLE `Location` (
   `map_x` float,
   `map_y` float,
   `aruco_id` integer,
-  `updated_at` timestamp
+  `updated_at` timestamp,
+  `destination` text
 );
 
 CREATE TABLE `Inventory` (
@@ -106,17 +108,39 @@ CREATE TABLE `InventoryEventLog` (
   `event_timestamp` timestamp
 );
 
+CREATE TABLE `FileSystemLog` (
+  `file_log_id` integer PRIMARY KEY,
+  `image_path` text,
+  `updatetime` timestamp
+);
+
+CREATE TABLE `PendingRosCars` (
+  `pending_id` integer PRIMARY KEY,
+  `roscar_name` varchar(255),
+  `roscar_ip_v4` text,
+  `requested_at` timestamp
+);
+
+CREATE TABLE `RosCarConnectionStatus` (
+  `status_id` integer PRIMARY KEY,
+  `roscar_id` integer,
+  `is_connected` boolean,
+  `last_heartbeat` timestamp
+);
+
 ALTER TABLE `RosCarDrivingStatus` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
 
 ALTER TABLE `Delivery` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
 
 ALTER TABLE `Delivery` ADD FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`);
 
-ALTER TABLE `Delivery` ADD FOREIGN KEY (`driving_status_id`) REFERENCES `RosCarDrivingStatus` (`status_type`);
+ALTER TABLE `Delivery` ADD FOREIGN KEY (`driving_status_id`) REFERENCES `RosCarDrivingStatus` (`driving_status_id`);
 
 ALTER TABLE `Task` ADD FOREIGN KEY (`delivery_id`) REFERENCES `Delivery` (`delivery_id`);
 
 ALTER TABLE `Task` ADD FOREIGN KEY (`shoes_id`) REFERENCES `ShoesModel` (`shoes_model_id`);
+
+ALTER TABLE `Task` ADD FOREIGN KEY (`location_id`) REFERENCES `Location` (`location_id`);
 
 ALTER TABLE `Inventory` ADD FOREIGN KEY (`location_id`) REFERENCES `Location` (`location_id`);
 
@@ -139,3 +163,5 @@ ALTER TABLE `InventoryEventLog` ADD FOREIGN KEY (`actor_user_id`) REFERENCES `Us
 ALTER TABLE `InventoryEventLog` ADD FOREIGN KEY (`item_id`) REFERENCES `Inventory` (`inventory_id`);
 
 ALTER TABLE `InventoryEventLog` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
+
+ALTER TABLE `RosCarConnectionStatus` ADD FOREIGN KEY (`roscar_id`) REFERENCES `RosCars` (`roscar_id`);
