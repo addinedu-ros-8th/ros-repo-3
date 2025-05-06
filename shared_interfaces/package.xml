@@ -7,11 +7,18 @@
   <maintainer email="your_email@example.com">Your Name</maintainer>
   <license>Apache-2.0</license>
 
+  <!-- 빌드 도구 -->
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
+  <!-- 의존성 패키지 -->
   <depend>rosidl_default_runtime</depend>
   <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
 
+  <!-- Python 바인딩용 의존성 -->
+  <exec_depend>rosidl_typesupport_python</exec_depend>
+
+  <!-- 인터페이스 패키지 그룹 지정 -->
   <member_of_group>rosidl_interface_packages</member_of_group>
 </package>
