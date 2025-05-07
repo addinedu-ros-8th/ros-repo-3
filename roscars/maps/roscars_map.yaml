@@ -1,4 +1,4 @@
-image: roscars_map.pgm
+image: roscars_map_fixed.pgm
 mode: trinary
 resolution: 0.05
 origin: [-1.14, -1.22, 0]
