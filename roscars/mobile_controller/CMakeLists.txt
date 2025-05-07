@@ -35,7 +35,7 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/dataunpacker/unpacker/*.cpp"
 )
 
-# robot_status_publisher 노드
+# robot_register_publisher 노드
 add_executable(robot_register_publisher ros_nodes/robot_register_publisher.cpp)
 ament_target_dependencies(robot_register_publisher
   rclcpp
@@ -49,7 +49,7 @@ ament_target_dependencies(robot_battery_publisher
   shared_interfaces
 )
 
-# sllidar_node 노드
+# robot_lidar_publisher 노드
 add_executable(robot_lidar_publisher
   ros_nodes/robot_lidar_publisher.cpp
   ${SLLIDAR_SDK_SRC}
@@ -62,14 +62,14 @@ target_compile_definitions(robot_lidar_publisher PRIVATE
   SDK_PLATFORM_LINUX
 )
 
-# imu_publisher_icm20948 노드
+# robot_imu_publisher 노드
 add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp)
 ament_target_dependencies(robot_imu_publisher
   rclcpp
   shared_interfaces
 )
 
-# ultra_publisher 노드 (libgpiod 연동)
+# robot_ultra_publisher 노드 (libgpiod 연동)
 add_executable(robot_ultra_publisher ros_nodes/robot_ultra_publisher.cpp)
 ament_target_dependencies(robot_ultra_publisher
   rclcpp
@@ -77,14 +77,14 @@ ament_target_dependencies(robot_ultra_publisher
 )
 target_link_libraries(robot_ultra_publisher ${LIBGPIOD_LIBRARIES})  # libgpiod 연결
 
-# imu_publisher_icm20948 노드
+# mobile_controller 노드
 add_executable(mobile_controller ros_nodes/mobile_controller.cpp)
 ament_target_dependencies(mobile_controller
   rclcpp
   shared_interfaces
 )
 
-# 설치 설정
+# 실행 파일 설치
 install(TARGETS
   robot_register_publisher
   robot_battery_publisher
@@ -93,6 +93,12 @@ install(TARGETS
   robot_ultra_publisher
   mobile_controller
   DESTINATION lib/${PROJECT_NAME}
+)
+
+# launch 폴더 설치
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()

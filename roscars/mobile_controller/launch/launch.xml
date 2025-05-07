@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="mobile_controller" exec="robot_battery_publisher" name="battery_node" output="screen"/>
+  <node pkg="mobile_controller" exec="robot_imu_publisher" name="imu_node" output="screen"/>
+  <node pkg="mobile_controller" exec="robot_lidar_publisher" name="lidar_node" output="screen"/>
+  <node pkg="mobile_controller" exec="robot_register_publisher" name="register_node" output="screen"/>
+  <node pkg="mobile_controller" exec="robot_ultra_publisher" name="ultra_node" output="screen"/>
+</launch>
