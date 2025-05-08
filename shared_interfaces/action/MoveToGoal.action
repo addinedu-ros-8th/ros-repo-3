@@ -1,0 +1,16 @@
+# Goal
+uint8 robot_id
+float32 goal_x
+float32 goal_y
+float32 theta
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+uint8 progress              # 진행률 (0~100)
+float32 current_x
+float32 current_y

@@ -1,0 +1,13 @@
+# Goal
+uint32 task_id
+uint8 robot_id
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+string phase                 # 진행 단계 ("PICKUP", "DELIVER", ...)
+string location              # 현재 위치 (예: "R3-B2")

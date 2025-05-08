@@ -1,0 +1,11 @@
+# Request
+uint32 task_id
+
+---
+# Response
+uint32 task_id
+uint32 delivery_id
+uint8 task_status        # 0: TO_DO, 1: IN_PROGRESS, 2: DONE
+uint8 progress
+string current_zone
+string message

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>shared_interfaces</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>Shared message and service definitions for ROSCars project</description>
 
-  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <maintainer email="yonmilk@icloud.com">Kim Yeonwoo</maintainer>
   <license>Apache-2.0</license>
 
   <!-- 빌드 도구 -->
@@ -12,6 +12,7 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <!-- 의존성 패키지 -->
+  <depend>builtin_interfaces</depend>
   <depend>rosidl_default_runtime</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>

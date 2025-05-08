@@ -1,0 +1,13 @@
+# Goal
+string scan_zone
+uint8 robot_id
+
+---
+# Result
+uint32 total_items
+bool success
+
+---
+# Feedback
+uint32 scanned_item
+string zone
