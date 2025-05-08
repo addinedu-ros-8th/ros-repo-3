@@ -13,12 +13,12 @@ find_package(cartographer_ros_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-# Python node
-ament_python_install_package(${PROJECT_NAME})
-install(PROGRAMS
-  pinky_navigation/initialpose.py
-  DESTINATION lib/${PROJECT_NAME}
-)
+# # Python node
+# ament_python_install_package(${PROJECT_NAME})
+# install(PROGRAMS
+#   pinky_navigation/initialpose.py
+#   DESTINATION lib/${PROJECT_NAME}
+# )
 
 # C++ node
 add_executable(initialpose_handler pinky_navigation/src/initialpose_handler.cpp)
