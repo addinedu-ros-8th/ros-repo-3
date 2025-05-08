@@ -29,98 +29,81 @@ public:
 private:
   void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
   {
-    pose_ = *msg;
+    latest_pose_ = *msg;
     RCLCPP_INFO(this->get_logger(), "Received initial pose, querying trajectory states...");
-    getLatestTrajectoryId();
-  }
 
-  void getLatestTrajectoryId()
-  {
-    if (!get_states_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!get_states_client_->wait_for_service(std::chrono::seconds(3))) {
       RCLCPP_ERROR(this->get_logger(), "GetTrajectoryStates service not available");
       return;
     }
 
     auto request = std::make_shared<cartographer_ros_msgs::srv::GetTrajectoryStates::Request>();
     auto future = get_states_client_->async_send_request(request,
-      std::bind(&InitialPoseHandler::getLatestTrajectoryCallback, this, std::placeholders::_1));
+      std::bind(&InitialPoseHandler::onGetTrajectoryStatesResponse, this, std::placeholders::_1));
   }
 
-  void getLatestTrajectoryCallback(rclcpp::Client<cartographer_ros_msgs::srv::GetTrajectoryStates>::SharedFuture future)
+  void onGetTrajectoryStatesResponse(rclcpp::Client<cartographer_ros_msgs::srv::GetTrajectoryStates>::SharedFuture future)
   {
     try {
       auto response = future.get();
-      const auto & ids = response->trajectory_states.trajectory_id;
 
-      if (!ids.empty()) {
-        int latest_id = ids.back();  // 마지막 요소
-        RCLCPP_INFO(this->get_logger(), "Latest trajectory_id: %d", latest_id);
-        setInitalpose(pose_, latest_id);
-        } else {
-            RCLCPP_ERROR(this->get_logger(), "No valid trajectory ID found.");
-        }
-    } catch (const std::exception & e) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to call GetTrajectoryStates service: %s", e.what());
+      if (response->trajectory_states.trajectory_id.empty()) {
+        RCLCPP_ERROR(this->get_logger(), "No trajectory IDs available");
+        return;
+      }
+
+      int latest_id = response->trajectory_states.trajectory_id.back();
+      RCLCPP_INFO(this->get_logger(), "Latest trajectory_id: %d", latest_id);
+      finishTrajectory(latest_id);
+
+    } catch (const std::exception &e) {
+      RCLCPP_ERROR(this->get_logger(), "Exception in GetTrajectoryStates callback: %s", e.what());
     }
   }
 
-  void setInitalpose(const geometry_msgs::msg::PoseWithCovarianceStamped & pose, int trajectory_id) 
+  void finishTrajectory(int trajectory_id)
   {
-    if (!finish_trajectory_client_->wait_for_service(std::chrono::seconds(5))) {
-        RCLCPP_ERROR(this->get_logger(), "FinishTrajectory service not available");
-        return;
+    if (!finish_client_->wait_for_service(std::chrono::seconds(3))) {
+      RCLCPP_ERROR(this->get_logger(), "FinishTrajectory service not available");
+      return;
     }
 
     auto request = std::make_shared<cartographer_ros_msgs::srv::FinishTrajectory::Request>();
     request->trajectory_id = trajectory_id;
-
-    finish_trajectory_client_->async_send_request(
-        request,
-        std::bind(&InitialPoseHandler::finishTrajectoryCallback, this, std::placeholders::_1));
+    auto future = finish_client_->async_send_request(request,
+      std::bind(&InitialPoseHandler::onFinishTrajectoryResponse, this, std::placeholders::_1));
   }
 
-  void finish_trajectory_callback(
-    rclcpp::Client<cartographer_ros_msgs::srv::FinishTrajectory>::SharedFuture future) {
+  void onFinishTrajectoryResponse(rclcpp::Client<cartographer_ros_msgs::srv::FinishTrajectory>::SharedFuture /*future*/)
+  {
+    RCLCPP_INFO(this->get_logger(), "Finished trajectory. Now starting new one...");
+    startTrajectory();
+  }
 
-    try {
-        auto response = future.get();
-        RCLCPP_INFO(this->get_logger(), "FinishTrajectory service called successfully");
-    } catch (const std::exception & e) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to call FinishTrajectory service: %s", e.what());
-        return;
-    }
-
-    if (!start_trajectory_client_->wait_for_service(std::chrono::seconds(5))) {
-        RCLCPP_ERROR(this->get_logger(), "StartTrajectory service not available");
-        return;
+  void startTrajectory()
+  {
+    if (!start_client_->wait_for_service(std::chrono::seconds(3))) {
+      RCLCPP_ERROR(this->get_logger(), "StartTrajectory service not available");
+      return;
     }
 
     auto request = std::make_shared<cartographer_ros_msgs::srv::StartTrajectory::Request>();
     request->configuration_directory = configuration_directory_;
     request->configuration_basename = configuration_basename_;
     request->use_initial_pose = true;
-
-    request->initial_pose.position = pose_.pose.pose.position;
-    request->initial_pose.orientation = pose_.pose.pose.orientation;
+    request->initial_pose.position = latest_pose_.pose.pose.position;
+    request->initial_pose.orientation = latest_pose_.pose.pose.orientation;
     request->relative_to_trajectory_id = 0;
 
-    start_trajectory_client_->async_send_request(
-        request,
-        std::bind(&InitialPoseHandler::startTrajectoryCallback, this, std::placeholders::_1));
+    auto future = start_client_->async_send_request(request,
+      std::bind(&InitialPoseHandler::onStartTrajectoryResponse, this, std::placeholders::_1));
   }
 
-  void startTrajectoryCallback()
+  void onStartTrajectoryResponse(rclcpp::Client<cartographer_ros_msgs::srv::StartTrajectory>::SharedFuture /*future*/)
   {
-        rclcpp::Client<cartographer_ros_msgs::srv::StartTrajectory>::SharedFuture future) {
-    try {
-        auto response = future.get();
-        RCLCPP_INFO(this->get_logger(), "StartTrajectory service called successfully");
-    } catch (const std::exception & e) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to call StartTrajectory service: %s", e.what());
-    }
+    RCLCPP_INFO(this->get_logger(), "Started new trajectory successfully.");
   }
 
-  geometry_msgs::msg::PoseWithCovarianceStamped pose_;
   geometry_msgs::msg::PoseWithCovarianceStamped latest_pose_;
   std::string configuration_directory_;
   std::string configuration_basename_;
