@@ -4,7 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+RoscarsLogBase = declarative_base()
 
 # Enum definitions
 class EventType(enum.Enum):
@@ -29,7 +29,7 @@ class ControlSource(enum.Enum):
     MANUAL_OVERRIDE = 'MANUAL_OVERRIDE'
 
 # Tables
-class DeliveryEventLog(Base):
+class DeliveryEventLog(RoscarsLogBase):
     __tablename__ = 'DeliveryEventLog'
 
     event_id = Column(Integer, primary_key=True)
@@ -39,7 +39,7 @@ class DeliveryEventLog(Base):
     changed_at = Column(TIMESTAMP)
     changed_by_user_id = Column(Integer)
 
-class TaskEventLog(Base):
+class TaskEventLog(RoscarsLogBase):
     __tablename__ = 'TaskEventLog'
 
     event_id = Column(Integer, primary_key=True)
@@ -48,7 +48,7 @@ class TaskEventLog(Base):
     new_event = Column(Enum(EventType))
     changed_at = Column(TIMESTAMP)
 
-class RosCarEventLog(Base):
+class RosCarEventLog(RoscarsLogBase):
     __tablename__ = 'RosCarEventLog'
 
     event_id = Column(Integer, primary_key=True)
@@ -57,7 +57,7 @@ class RosCarEventLog(Base):
     event_type = Column(Enum(RosCarEventType))
     event_timestamp = Column(TIMESTAMP)
 
-class InventoryEventLog(Base):
+class InventoryEventLog(RoscarsLogBase):
     __tablename__ = 'InventoryEventLog'
 
     event_id = Column(Integer, primary_key=True)
@@ -67,14 +67,14 @@ class InventoryEventLog(Base):
     quantity = Column(Integer)
     event_timestamp = Column(TIMESTAMP)
 
-class FileSystemLog(Base):
+class FileSystemLog(RoscarsLogBase):
     __tablename__ = 'FileSystemLog'
 
     file_log_id = Column(Integer, primary_key=True)
     image_path = Column(String)
     updatetime = Column(TIMESTAMP)
 
-class PrecisionStopLog(Base):
+class PrecisionStopLog(RoscarsLogBase):
     __tablename__ = 'PrecisionStopLog'
 
     log_id = Column(Integer, primary_key=True)
@@ -84,7 +84,7 @@ class PrecisionStopLog(Base):
     deviation_cm = Column(Float)
     timestamp = Column(TIMESTAMP)
 
-class RobotTrajectoryLog(Base):
+class RobotTrajectoryLog(RoscarsLogBase):
     __tablename__ = 'RobotTrajectoryLog'
 
     trajectory_id = Column(Integer, primary_key=True)
@@ -96,7 +96,7 @@ class RobotTrajectoryLog(Base):
     velocity = Column(Float)
     heading_angle = Column(Float)
 
-class SensorFusionRawLog(Base):
+class SensorFusionRawLog(RoscarsLogBase):
     __tablename__ = 'SensorFusionRawLog'
 
     sensor_log_id = Column(Integer, primary_key=True)
@@ -107,7 +107,7 @@ class SensorFusionRawLog(Base):
     ultrasonic_data = Column(JSON)
     camera_frame_id = Column(String(255))
 
-class ControlCommandLog(Base):
+class ControlCommandLog(RoscarsLogBase):
     __tablename__ = 'ControlCommandLog'
 
     command_id = Column(Integer, primary_key=True)
@@ -117,7 +117,7 @@ class ControlCommandLog(Base):
     angular_velocity = Column(Float)
     control_source = Column(Enum(ControlSource))
 
-class TrainingSample(Base):
+class TrainingSample(RoscarsLogBase):
     __tablename__ = 'TrainingSample'
 
     sample_id = Column(Integer, primary_key=True)
@@ -127,7 +127,7 @@ class TrainingSample(Base):
     is_used = Column(Boolean)
     created_at = Column(TIMESTAMP)
 
-class InferenceModel(Base):
+class InferenceModel(RoscarsLogBase):
     __tablename__ = 'InferenceModel'
 
     model_id = Column(Integer, primary_key=True)

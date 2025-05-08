@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from roscars_models import Base as RoscarsBase
-from roscars_log_models import Base as RoscarsLogBase
+from roscars_models import RoscarsBase
+from roscars_log_models import RoscarsLogBase
 
 from dotenv import load_dotenv
 
@@ -71,5 +71,5 @@ def run_sample_queries():
 # 전체 실행
 if __name__ == "__main__":
     create_all_tables()
-    insert_seed_data()
+    # insert_seed_data()
     run_sample_queries()

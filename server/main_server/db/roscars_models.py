@@ -5,7 +5,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+RoscarsBase = declarative_base()
 
 # Enum definitions
 class UserRole(enum.Enum):
@@ -72,7 +72,7 @@ class TaskStatus(enum.Enum):
     DONE = 'DONE'
 
 # Tables
-class User(Base):
+class User(RoscarsBase):
     __tablename__ = 'User'
 
     user_id = Column(Integer, primary_key=True)
@@ -81,7 +81,7 @@ class User(Base):
     can_call_roscar = Column(Boolean)
     password = Column(String(255))
 
-class ShoesModel(Base):
+class ShoesModel(RoscarsBase):
     __tablename__ = 'ShoesModel'
 
     shoes_model_id = Column(Integer, primary_key=True)
@@ -89,7 +89,7 @@ class ShoesModel(Base):
     size = Column(Integer)
     color_name = Column(Enum(ColorName))
 
-class Location(Base):
+class Location(RoscarsBase):
     __tablename__ = 'Location'
 
     location_id = Column(Integer, primary_key=True)
@@ -102,7 +102,7 @@ class Location(Base):
     updated_at = Column(TIMESTAMP)
     destination = Column(String(255))
 
-class Inventory(Base):
+class Inventory(RoscarsBase):
     __tablename__ = 'Inventory'
 
     inventory_id = Column(Integer, primary_key=True)
@@ -114,7 +114,7 @@ class Inventory(Base):
     location = relationship("Location")
     shoes_model = relationship("ShoesModel")
 
-class QRCode(Base):
+class QRCode(RoscarsBase):
     __tablename__ = 'QRCode'
 
     qrcode_id = Column(Integer, primary_key=True)
@@ -123,7 +123,7 @@ class QRCode(Base):
 
     inventory = relationship("Inventory")
 
-class RosCars(Base):
+class RosCars(RoscarsBase):
     __tablename__ = 'RosCars'
 
     roscar_id = Column(Integer, primary_key=True)
@@ -132,7 +132,7 @@ class RosCars(Base):
     operational_status = Column(Enum(OperationalStatus))
     roscar_ip_v4 = Column(String(15))
 
-class RosCarDrivingStatus(Base):
+class RosCarDrivingStatus(RoscarsBase):
     __tablename__ = 'RosCarDrivingStatus'
 
     driving_status_id = Column(Integer, primary_key=True)
@@ -142,7 +142,7 @@ class RosCarDrivingStatus(Base):
 
     roscar = relationship("RosCars")
 
-class Delivery(Base):
+class Delivery(RoscarsBase):
     __tablename__ = 'Delivery'
 
     delivery_id = Column(Integer, primary_key=True)
@@ -157,7 +157,7 @@ class Delivery(Base):
     user = relationship("User")
     driving_status = relationship("RosCarDrivingStatus")
 
-class Task(Base):
+class Task(RoscarsBase):
     __tablename__ = 'Task'
 
     task_id = Column(Integer, primary_key=True)
@@ -172,7 +172,7 @@ class Task(Base):
     shoes_model = relationship("ShoesModel")
     location = relationship("Location")
 
-class PendingRosCars(Base):
+class PendingRosCars(RoscarsBase):
     __tablename__ = 'PendingRosCars'
 
     pending_id = Column(Integer, primary_key=True)
@@ -180,7 +180,7 @@ class PendingRosCars(Base):
     roscar_ip_v4 = Column(String(15))
     requested_at = Column(TIMESTAMP)
 
-class RosCarConnectionStatus(Base):
+class RosCarConnectionStatus(RoscarsBase):
     __tablename__ = 'RosCarConnectionStatus'
 
     status_id = Column(Integer, primary_key=True)
