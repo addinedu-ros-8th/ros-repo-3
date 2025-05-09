@@ -1,0 +1,13 @@
+# Goal
+uint8 roscar_id
+string patrol_zone
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+string current_zone
+string event

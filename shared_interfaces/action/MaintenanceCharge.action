@@ -1,0 +1,13 @@
+# Goal
+uint8 roscar_id
+string charge_zone
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+string phase
+float32 battery_percent
