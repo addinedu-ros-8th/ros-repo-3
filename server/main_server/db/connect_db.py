@@ -41,15 +41,6 @@ def get_roscars_session():
 def get_roscars_log_session():
     return get_session(roscars_log_engine)
 
-def check_db_init():
-    try:
-        with roscars_engine.connect() as connection:
-            connection.execute("SELECT 1")
-            return True
-    except Exception as e:
-        print(f"Database initialization check failed: {e}")
-        return False
-
 def drop_all_tables(engine):
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
@@ -94,9 +85,13 @@ def check_db_init():
             return True
         else:
             print("DB 구조 불일치: 재초기화 수행")
-            recreate_all_tables()
-            return False
-
+            try:
+                recreate_all_tables()
+                print("DB 재초기화 완료")
+                return True
+            except Exception as e:
+                print(f"DB 재초기화 중 오류 발생: {e}")
+                return False
     except Exception as e:
         print(f"DB 초기화 검사 실패: {e}")
         return False

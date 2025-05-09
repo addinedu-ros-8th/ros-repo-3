@@ -7,6 +7,8 @@ from db.connect_db import check_db_init
 from db.roscars_models import RoscarsBase
 from db.roscars_log_models import RoscarsLogBase
 
+from db.query_service import query_service
+
 # 테이블 생성
 def create_all_tables():
     print("Creating tables for roscars...")
