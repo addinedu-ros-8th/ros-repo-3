@@ -36,4 +36,13 @@ install(
   DESTINATION share/${PROJECT_NAME}
   )
 
+install(
+  DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
+install(
+  PROGRAMS aruco_logger.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()

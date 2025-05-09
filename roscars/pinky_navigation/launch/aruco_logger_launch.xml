@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="pinky_navigation" exec="aruco_logger.py" name="aruco_logger" output="screen">
+    <rosparam command="load" file="$(find pinky_navigation)/config/aruco_logger_params.yaml"/>
+  </node>
+</launch>
