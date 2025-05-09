@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <node
+    pkg="pinky_navigation"
+    exec="aruco_logger.py"
+    name="aruco_logger"
+    output="screen">
+
+    <!-- YAML 파라미터 파일 전체 로드 (find → find-pkg-share 로 변경) -->
+    <param from="$(find-pkg-share pinky_navigation)/config/aruco_logger_params.yaml"/>
+  </node>
+</launch>
