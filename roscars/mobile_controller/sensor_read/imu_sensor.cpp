@@ -1,4 +1,5 @@
 #include "imu_sensor.hpp"
+#include "kalman_filter.hpp"
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -76,8 +77,8 @@ void ICM20948::enable_mag() {
 }
 
 void ICM20948::read_sensor(float& ax, float& ay, float& az,
-                           float& gx, float& gy, float& gz,
-                           float& mx, float& my, float& mz) {
+        float& gx, float& gy, float& gz,
+        float& mx, float& my, float& mz) {
     int16_t raw_ax = read_word(0, 0x2D);
     int16_t raw_ay = read_word(0, 0x2F);
     int16_t raw_az = read_word(0, 0x31);
@@ -85,13 +86,21 @@ void ICM20948::read_sensor(float& ax, float& ay, float& az,
     int16_t raw_gy = read_word(0, 0x35);
     int16_t raw_gz = read_word(0, 0x37);
 
-    ax = raw_ax / 2048.0;
-    ay = raw_ay / 2048.0;
-    az = raw_az / 2048.0;
+    float temp_ax = raw_ax / 2048.0;
+    float temp_ay = raw_ay / 2048.0;
+    float temp_az = raw_az / 2048.0;
 
-    gx = raw_gx / 16.4 * M_PI / 180.0;
-    gy = raw_gy / 16.4 * M_PI / 180.0;
-    gz = raw_gz / 16.4 * M_PI / 180.0;
+    float temp_gx = raw_gx / 16.4 * M_PI / 180.0;
+    float temp_gy = raw_gy / 16.4 * M_PI / 180.0;
+    float temp_gz = raw_gz / 16.4 * M_PI / 180.0;
+
+    ax = kalman_acc_x.update(temp_ax);
+    ay = kalman_acc_y.update(temp_ay);
+    az = kalman_acc_z.update(temp_az);
+
+    gx = kalman_gyro_x.update(temp_gx);
+    gy = kalman_gyro_y.update(temp_gy);
+    gz = kalman_gyro_z.update(temp_gz);
 
     read_mag_data(mx, my, mz);
 }

@@ -87,7 +87,8 @@ ament_target_dependencies(mobile_controller
 
 # imu_node 노드
 add_executable(imu_node ros_nodes/imu_node.cpp
-  sensor_read/imu_sensor.cpp)
+  sensor_read/imu_sensor.cpp
+  sensor_read/kalman_filter.cpp)
 ament_target_dependencies(imu_node
   rclcpp
   shared_interfaces

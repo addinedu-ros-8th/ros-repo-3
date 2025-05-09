@@ -20,12 +20,14 @@ class ICM20948Publisher : public rclcpp::Node {
 public:
     ICM20948Publisher() : Node("imu_publisher"), imu_("/dev/i2c-1", 0x68) {
         publisher_ = this->create_publisher<shared_interfaces::msg::ImuStatus>("/robot/sensor/imu", 10);
-        timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ICM20948Publisher::publish_imu, this));
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(100),
+            std::bind(&ICM20948Publisher::publish_imu, this)
+        );
 
-        // if (!imu_.initialize()) {
-        //     RCLCPP_FATAL(this->get_logger(), "IMU 초기화 실패");
-        //     std::exit(1);
-        // }
+        // ✅ 초기화 필수
+        imu_.initialize();
+        RCLCPP_INFO(this->get_logger(), "IMU 초기화 완료");
     }
 
 private:
@@ -35,7 +37,12 @@ private:
 
     void publish_imu() {
         float ax, ay, az, gx, gy, gz, mx, my, mz;
-        imu_.read_sensor(ax, ay, az, gx, gy, gz, mx, my, mz);
+        try {
+            imu_.read_sensor(ax, ay, az, gx, gy, gz, mx, my, mz);
+        } catch (const std::exception& e) {
+            RCLCPP_WARN(this->get_logger(), "센서 데이터 읽기 실패: %s", e.what());
+            return;
+        }
 
         shared_interfaces::msg::ImuStatus msg;
         msg.accel_x = ax;
@@ -51,6 +58,8 @@ private:
         msg.mag_z = mz;
 
         msg.roscar_name = get_ap_ssid();
+
+        RCLCPP_DEBUG(this->get_logger(), "IMU 전송 - ax: %.2f ay: %.2f az: %.2f", ax, ay, az);
 
         publisher_->publish(msg);
     }

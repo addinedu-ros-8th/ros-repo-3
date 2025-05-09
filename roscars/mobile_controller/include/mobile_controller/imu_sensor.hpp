@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <cmath>
+#include "kalman_filter.hpp"
 
 #define MAG_ADDR 0x0C
 
@@ -15,6 +16,7 @@ class ICM20948 {
 public:
     ICM20948(const char* device = "/dev/i2c-1", int addr = 0x68);
     ~ICM20948();
+
 
     void initialize();
     void read_sensor(float& ax, float& ay, float& az,
@@ -26,6 +28,13 @@ private:
     const char* device_;
     int addr_;
 
+    KalmanFilter kalman_acc_x = KalmanFilter(0.01f, 0.1f, 0.1f, 0.0f);
+    KalmanFilter kalman_acc_y = KalmanFilter(0.01f, 0.1f, 0.1f, 0.0f);
+    KalmanFilter kalman_acc_z = KalmanFilter(0.01f, 0.1f, 0.1f, 0.0f);
+
+    KalmanFilter kalman_gyro_x = KalmanFilter(0.01f, 0.1f, 0.1f, 0.0f);
+    KalmanFilter kalman_gyro_y = KalmanFilter(0.01f, 0.1f, 0.1f, 0.0f);
+    KalmanFilter kalman_gyro_z = KalmanFilter(0.01f, 0.1f, 0.1f, 0.0f);
     void open_i2c();
     void set_bank(uint8_t bank);
     void write_reg(uint8_t bank, uint8_t reg, uint8_t data);
