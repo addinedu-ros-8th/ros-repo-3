@@ -1,31 +1,31 @@
 #include "rclcpp/rclcpp.hpp"
-#include "shared_interfaces/msg/robot_register.hpp"
+#include "shared_interfaces/msg/roscar_register.hpp"
 #include "mobile_controller/utils.hpp"
 #include <fstream>
 #include <iostream>
 
-using RobotRegister = shared_interfaces::msg::RobotRegister;
+using RoscarRegister = shared_interfaces::msg::RoscarRegister;
 using namespace std::chrono_literals;
 using namespace mobile_controller;
 
-namespace robot_register_publisher {
+namespace roscar_register_publisher {
 
-class RobotRegisterPublisher : public rclcpp::Node
+class RoscarRegisterPublisher : public rclcpp::Node
 {
 public:
-    RobotRegisterPublisher() : Node("robot_register_publisher")
+    RoscarRegisterPublisher() : Node("roscar_register_publisher")
     {
         // SSID를 기반으로 토픽 네임스페이스 설정
         std::string ssid = get_ap_ssid();
-        std::string topic_name = "/" + ssid + "/robot/register";
+        std::string topic_name = "/" + ssid + "/roscar/register";
 
         // 로깅을 통해 topic_name 확인
         RCLCPP_INFO(this->get_logger(), "Using topic: %s", topic_name.c_str());
 
-        publisher_ = this->create_publisher<RobotRegister>(topic_name, 10);
+        publisher_ = this->create_publisher<RoscarRegister>(topic_name, 10);
         timer_ = this->create_wall_timer(
             3s,
-            std::bind(&RobotRegisterPublisher::publish_status, this)
+            std::bind(&RoscarRegisterPublisher::publish_status, this)
         );
     }
 
@@ -52,27 +52,27 @@ public:
 private:
     void publish_status()
     {
-        auto msg = RobotRegister();
+        auto msg = RoscarRegister();
         msg.roscar_name = get_ap_ssid();  // SSID 가져오기
         msg.battery_percentage = 100;
         msg.operational_status = "STANDBY";
         msg.roscar_ip_v4 = get_ip_address("wlan0");
 
-        RCLCPP_INFO(this->get_logger(), "Publishing RobotRegister: name=%s, ip=%s",
+        RCLCPP_INFO(this->get_logger(), "Publishing roscarRegister: name=%s, ip=%s",
                     msg.roscar_name.c_str(), msg.roscar_ip_v4.c_str());
         publisher_->publish(msg);
     }
 
-    rclcpp::Publisher<RobotRegister>::SharedPtr publisher_;
+    rclcpp::Publisher<RoscarRegister>::SharedPtr publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
 };
 
-}  // namespace robot_register_publisher
+}  // namespace roscar_register_publisher
 
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<robot_register_publisher::RobotRegisterPublisher>());
+    rclcpp::spin(std::make_shared<roscar_register_publisher::RoscarRegisterPublisher>());
     rclcpp::shutdown();
     return 0;
 }
