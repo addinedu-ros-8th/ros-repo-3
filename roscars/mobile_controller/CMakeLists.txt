@@ -14,6 +14,7 @@ pkg_check_modules(LIBGPIOD REQUIRED libgpiod)
 # include 디렉토리 설정
 include_directories(
   include
+  include/mobile_controller
   sdk/include
   sdk/src
   sdk/src/arch/linux
@@ -84,6 +85,14 @@ ament_target_dependencies(mobile_controller
   shared_interfaces
 )
 
+# imu_node 노드
+add_executable(imu_node ros_nodes/imu_node.cpp
+  sensor_read/imu_sensor.cpp)
+ament_target_dependencies(imu_node
+  rclcpp
+  shared_interfaces
+)
+
 # 실행 파일 설치
 install(TARGETS
   robot_register_publisher
@@ -92,6 +101,7 @@ install(TARGETS
   robot_imu_publisher
   robot_ultra_publisher
   mobile_controller
+  imu_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
