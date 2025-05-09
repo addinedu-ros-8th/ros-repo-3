@@ -23,41 +23,68 @@
 
     <group>
         <push-ros-namespace namespace="$(var namespace)"/>
-        <node pkg="rclcpp_components" exec="component_container_isolated" name='$(var container_name)' output="screen" args="--ros-args --log-level $(var log_level)">
+
+        <!-- Nav2 Core -->
+        <node pkg="rclcpp_components"
+              exec="component_container_isolated"
+              name="$(var container_name)"
+              output="screen"
+              args="--ros-args --log-level $(var log_level)">
             <param from="$(var params_file)"/>
-            <param name='map' value="$(var map)"/>
-            <param name='autostart' value="$(var autostart)"/>
-            <param name='use_sim_time' value="$(var use_sim_time)"/>
-            
-            <remap from="/tf" to="tf"/>
+            <param name="map"        value="$(var map)"/>
+            <param name="autostart"  value="$(var autostart)"/>
+            <param name="use_sim_time"  value="$(var use_sim_time)"/>
+            <remap from="/tf"        to="tf"/>
             <remap from="/tf_static" to="tf_static"/>
         </node>
 
+        <!-- Cartographer SLAM -->
         <include file="$(find-pkg-share pinky_cartographer)/launch/cartographer.launch.xml">
             <arg name="configuration_basename" value="$(var params_cartographer)"/>
             <arg name="use_nav2" value="True"/>
         </include>
 
+        <!-- Localization (AMCL) -->
         <include file="$(find-pkg-share pinky_navigation)/launch/localization_launch.xml">
-            <arg name="params_file" value="$(var params_file)"/>
-            <arg name="map" value="$(var map)"/>
-            <arg name="use_sim_time" value="$(var use_sim_time)"/>
-            <arg name="autostart" value="$(var autostart)"/>
-            <arg name="use_composition" value="$(var use_composition)"/>
-            <arg name="use_respawn" value="$(var use_respawn)"/>
-            <arg name="container_name" value="$(var container_name)"/>
-            <arg name='lifecycle_nodes' value="$(var lifecycle_nodes_local)"/>
+            <arg name="params_file"        value="$(var params_file)"/>
+            <arg name="map"                value="$(var map)"/>
+            <arg name="use_sim_time"       value="$(var use_sim_time)"/>
+            <arg name="autostart"          value="$(var autostart)"/>
+            <arg name="use_composition"    value="$(var use_composition)"/>
+            <arg name="use_respawn"        value="$(var use_respawn)"/>
+            <arg name="container_name"     value="$(var container_name)"/>
+            <arg name="lifecycle_nodes"    value="$(var lifecycle_nodes_local)"/>
         </include>
 
+        <!-- Navigation (Planner, Controller, Behavior, etc.) -->
         <include file="$(find-pkg-share pinky_navigation)/launch/navigation_launch.xml">
-            <arg name="params_file" value="$(var params_file)"/>
-            <arg name="use_sim_time" value="$(var use_sim_time)"/>
-            <arg name="autostart" value="$(var autostart)"/>
-            <arg name="use_composition" value="$(var use_composition)"/>
-            <arg name="use_respawn" value="$(var use_respawn)"/>
-            <arg name="container_name" value="$(var container_name)"/>
-            <arg name='lifecycle_nodes' value="$(var lifecycle_nodes_nav)"/>
+            <arg name="params_file"        value="$(var params_file)"/>
+            <arg name="use_sim_time"       value="$(var use_sim_time)"/>
+            <arg name="autostart"          value="$(var autostart)"/>
+            <arg name="use_composition"    value="$(var use_composition)"/>
+            <arg name="use_respawn"        value="$(var use_respawn)"/>
+            <arg name="container_name"     value="$(var container_name)"/>
+            <arg name="lifecycle_nodes"    value="$(var lifecycle_nodes_nav)"/>
         </include>
+
+        <!-- ArUco Detector Node -->
+        <node
+          pkg="pinky_navigation"
+          exec="aruco_detector.py"
+          name="aruco_detector"
+          output="screen">
+          <param from="$(find-pkg-share pinky_navigation)/config/aruco_logger_params.yaml"/>
+        </node>
+
+        <!-- ArUco Logger Node -->
+        <node
+          pkg="pinky_navigation"
+          exec="aruco_logger.py"
+          name="aruco_logger"
+          output="screen">
+          <param from="$(find-pkg-share pinky_navigation)/config/aruco_logger_params.yaml"/>
+        </node>
+
     </group>
 
 </launch>
