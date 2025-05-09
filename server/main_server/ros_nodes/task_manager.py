@@ -27,20 +27,20 @@ class TaskManager:
             task_id = self.db.insert_task(task_info)
             log_info(f"[TaskManager] Task created. Task ID: {task_id}")
 
-            idle_robots = self.db.query_idle_robots()
+            idle_roscars = self.db.query_idle_roscars()
 
-            if not idle_robots:
-                log_info("[TaskManager] No idle robots available. Task queued.")
+            if not idle_roscars:
+                log_info("[TaskManager] No idle roscars available. Task queued.")
                 self.db.queue_task(task_id)
                 return {"type": "CreateTaskResponse", "success": True, "queued": True}
 
-            best_robot = self.select_optimal_robot(idle_robots)
+            best_roscar = self.select_optimal_roscar(idle_roscars)
 
-            assigned = self.assign_task_to_robot(task_id, best_robot)
+            assigned = self.assign_task_to_roscar(task_id, best_roscar)
 
             if assigned:
-                log_info(f"[TaskManager] Task {task_id} assigned to Robot {best_robot['robot_id']}.")
-                return {"type": "CreateTaskResponse", "success": True, "robot_id": best_robot["robot_id"]}
+                log_info(f"[TaskManager] Task {task_id} assigned to Robot {best_roscar['roscar_id']}.")
+                return {"type": "CreateTaskResponse", "success": True, "roscar_id": best_roscar["roscar_id"]}
             else:
                 log_info(f"[TaskManager] Assignment failed. Task {task_id} queued.")
                 self.db.queue_task(task_id)
@@ -53,24 +53,24 @@ class TaskManager:
             log_error(f"[TaskManager] create_task Error: {str(e)}")
             return {"type": "CreateTaskResponse", "success": False, "error": str(e)}
 
-    def select_optimal_robot(self, robot_list):
+    def select_optimal_roscar(self, roscar_list):
         """Idle 로봇 중 하나를 선택한다. (심플: 랜덤 선택)"""
         try:
-            selected_robot = random.choice(robot_list)
-            log_info(f"[TaskManager] Selected Robot: {selected_robot['robot_id']}")
-            return selected_robot
+            selected_roscar = random.choice(roscar_list)
+            log_info(f"[TaskManager] Selected Robot: {selected_roscar['roscar_id']}")
+            return selected_roscar
         except Exception as e:
-            log_error(f"[TaskManager] select_optimal_robot Error: {str(e)}")
+            log_error(f"[TaskManager] select_optimal_roscar Error: {str(e)}")
             raise
 
-    def assign_task_to_robot(self, task_id, robot):
+    def assign_task_to_roscar(self, task_id, roscar):
         """선택된 로봇에게 작업을 할당한다."""
         try:
-            self.db.update_robot_status(robot["robot_id"], "WORKING")
-            self.db.update_task_status(task_id, "IN_PROGRESS", assigned_robot_id=robot["robot_id"])
+            self.db.update_roscar_status(roscar["roscar_id"], "WORKING")
+            self.db.update_task_status(task_id, "IN_PROGRESS", assigned_roscar_id=roscar["roscar_id"])
             return True
         except Exception as e:
-            log_error(f"[TaskManager] assign_task_to_robot Error: {str(e)}")
+            log_error(f"[TaskManager] assign_task_to_roscar Error: {str(e)}")
             return False
 
     def update_task_progress(self, task_id, progress_detail, current_location):

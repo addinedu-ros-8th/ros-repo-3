@@ -14,10 +14,6 @@ def main():
         # 데이터베이스 초기화
         init_db()
 
-        ### DB 연결
-        # roscars_session = get_roscars_session()
-        # roscars_log_session = get_roscars_log_session()
-
         service = MainService()
         service.start()
     except KeyboardInterrupt:

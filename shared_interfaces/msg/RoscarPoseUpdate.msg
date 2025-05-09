@@ -1,4 +1,4 @@
-uint8 robot_id
+uint8 roscar_id
 float32 pos_x
 float32 pos_y
 float32 heading_theta

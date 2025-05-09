@@ -12,7 +12,7 @@ def test_insert_task():
 
         # 가짜 task_info (DB 연결 안돼도 호출 자체는 가능해야 함)
         dummy_task_info = {
-            "robot_id": "robot_001",
+            "roscar_id": "roscar_001",
             "task_id": "task_dummy_001",
             "origin": "Station_A",
             "quantity": "2",

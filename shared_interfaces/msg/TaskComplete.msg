@@ -1,4 +1,4 @@
-uint8 robot_id
+uint8 roscar_id
 uint32 task_id
 bool is_success
 string result_code

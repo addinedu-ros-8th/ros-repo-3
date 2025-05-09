@@ -37,12 +37,12 @@ class DatabaseAccessor:
             self.connect()
             cursor = self.connection.cursor()
             query = """
-                INSERT INTO RequestTask (robot_id, task_id, origin, quantity, status, task_start_time)
+                INSERT INTO RequestTask (roscar_id, task_id, origin, quantity, status, task_start_time)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             values = (
-                task_info.get("robot_id", None),
+                task_info.get("roscar_id", None),
                 task_info.get("task_id", None),
                 task_info.get("origin", None),
                 task_info.get("quantity", ""),
@@ -83,7 +83,7 @@ class DatabaseAccessor:
             self.close()
 
     # 로봇 추가를 위한 메서드
-    def add_robot(self, robot_name, robot_ip):
+    def add_roscar(self, roscar_name, roscar_ip):
         """새로운 로봇을 데이터베이스에 추가한다."""
         try:
             self.connect()
@@ -92,13 +92,13 @@ class DatabaseAccessor:
                 INSERT INTO Robots (name, ip, status)
                 VALUES (%s, %s, 'IDLE')
             """
-            values = (robot_name, robot_ip)
+            values = (roscar_name, roscar_ip)
             cursor.execute(query, values)
             self.connection.commit()
-            log_info(f"[DatabaseAccessor] Added robot: {robot_name} with IP: {robot_ip}")
+            log_info(f"[DatabaseAccessor] Added roscar: {roscar_name} with IP: {roscar_ip}")
             return cursor.lastrowid  # 새로 삽입된 로봇의 ID 반환
         except Exception as e:
-            log_error(f"[DatabaseAccessor] add_robot Error: {str(e)}")
+            log_error(f"[DatabaseAccessor] add_roscar Error: {str(e)}")
             raise
         finally:
             self.close()
@@ -163,32 +163,32 @@ class DatabaseAccessor:
         finally:
             self.close()
 
-    def query_idle_robots(self):
+    def query_idle_roscars(self):
         """Idle 상태 로봇 목록 가져오기"""
         try:
             self.connect()
             cursor = self.connection.cursor(dictionary=True)
             query = "SELECT * FROM Robots WHERE status = 'IDLE'"
             cursor.execute(query)
-            robots = cursor.fetchall()
-            return robots
+            roscars = cursor.fetchall()
+            return roscars
         except Exception as e:
-            log_error(f"[DatabaseAccessor] query_idle_robots Error: {str(e)}")
+            log_error(f"[DatabaseAccessor] query_idle_roscars Error: {str(e)}")
             raise
         finally:
             self.close()
 
-    def search_robot_status(self):
+    def search_roscar_status(self):
         """로봇 상태 전체 조회"""
         try:
             self.connect()
             cursor = self.connection.cursor(dictionary=True)
-            query = "SELECT robot_id, status FROM Robots"
+            query = "SELECT roscar_id, status FROM Robots"
             cursor.execute(query)
-            robot_status = cursor.fetchall()
-            return robot_status
+            roscar_status = cursor.fetchall()
+            return roscar_status
         except Exception as e:
-            log_error(f"[DatabaseAccessor] search_robot_status Error: {str(e)}")
+            log_error(f"[DatabaseAccessor] search_roscar_status Error: {str(e)}")
             raise
         finally:
             self.close()
@@ -196,10 +196,10 @@ class DatabaseAccessor:
 # Wrapping functions for external imports
 db_accessor = DatabaseAccessor()
 
-def insert_task(robot, task_code, origin, quantity, status, time):
+def insert_task(roscar, task_code, origin, quantity, status, time):
     """viewer에서 import 해서 바로 쓰는 insert_task 함수 (DatabaseAccessor 래핑)"""
     task_info = {
-        "robot_id": robot,
+        "roscar_id": roscar,
         "task_id": task_code,
         "origin": origin,
         "quantity": quantity,

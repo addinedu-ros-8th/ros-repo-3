@@ -17,7 +17,7 @@ public:
     {
         // SSID를 기반으로 네임스페이스 적용
         std::string ssid = get_ap_ssid();
-        std::string topic_name = "/" + ssid + "/robot/sensor/ultra";
+        std::string topic_name = "/" + ssid + "/roscar/sensor/ultra";
 
         // 로깅을 통해 topic_name 확인
         RCLCPP_INFO(this->get_logger(), "Using topic name: %s", topic_name.c_str());

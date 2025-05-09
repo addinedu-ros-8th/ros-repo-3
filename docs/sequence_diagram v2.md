@@ -113,7 +113,7 @@ Main -> Staff : 작업 응답 (성공/실패)
 
 ---
 
-# 4. 로봇 상태 모니터링 및 관리 (robot_monitoring_and_management)
+# 4. 로봇 상태 모니터링 및 관리 (roscar_monitoring_and_management)
 
 ```plantuml
 @startuml
@@ -207,7 +207,7 @@ MainService -> Database : 결과 저장 (선택)
 
 ---
 
-# 8. 로봇 제어 및 동작 흐름 (robot_control_and_motor_flow)
+# 8. 로봇 제어 및 동작 흐름 (roscar_control_and_motor_flow)
 
 ```plantuml
 @startuml

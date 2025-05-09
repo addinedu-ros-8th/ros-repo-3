@@ -17,7 +17,7 @@ class MonitorPanel(QWidget):
         self.node = Node('monitor_panel')  # Node 생성
         
         # ROS2 퍼블리셔 생성
-        self.robot_info_publisher = self.node.create_publisher(RobotInfo, '/robot/access', 10)
+        self.roscar_info_publisher = self.node.create_publisher(RobotInfo, '/roscar/access', 10)
 
     def _init_ui(self):
         main_layout = QVBoxLayout()
@@ -34,56 +34,56 @@ class MonitorPanel(QWidget):
         top_layout.addWidget(self.map_label)
 
         # Robot 관리 영역
-        robot_manage_group = QGroupBox("Robot Management")
-        robot_manage_layout = QVBoxLayout()
+        roscar_manage_group = QGroupBox("Robot Management")
+        roscar_manage_layout = QVBoxLayout()
 
-        self.robot_list = QListWidget()
+        self.roscar_list = QListWidget()
         
         # 로봇 ID와 IP 입력 필드 추가
-        self.robot_id_input = QLineEdit(self)
-        self.robot_id_input.setPlaceholderText("Enter Robot ID")
-        robot_manage_layout.addWidget(self.robot_id_input)
+        self.roscar_id_input = QLineEdit(self)
+        self.roscar_id_input.setPlaceholderText("Enter Robot ID")
+        roscar_manage_layout.addWidget(self.roscar_id_input)
 
-        self.robot_ip_input = QLineEdit(self)
-        self.robot_ip_input.setPlaceholderText("Enter Robot IP Address")
-        robot_manage_layout.addWidget(self.robot_ip_input)
+        self.roscar_ip_input = QLineEdit(self)
+        self.roscar_ip_input.setPlaceholderText("Enter Robot IP Address")
+        roscar_manage_layout.addWidget(self.roscar_ip_input)
 
-        self.add_robot_btn = QPushButton("Add Robot")
-        self.remove_robot_btn = QPushButton("Remove Robot")
+        self.add_roscar_btn = QPushButton("Add Robot")
+        self.remove_roscar_btn = QPushButton("Remove Robot")
 
-        # 버튼 클릭 시 add_robot 함수 호출
-        self.add_robot_btn.clicked.connect(self.add_robot)
+        # 버튼 클릭 시 add_roscar 함수 호출
+        self.add_roscar_btn.clicked.connect(self.add_roscar)
 
-        robot_manage_layout.addWidget(self.robot_list)
-        robot_manage_layout.addWidget(self.add_robot_btn)
-        robot_manage_layout.addWidget(self.remove_robot_btn)
-        robot_manage_group.setLayout(robot_manage_layout)
+        roscar_manage_layout.addWidget(self.roscar_list)
+        roscar_manage_layout.addWidget(self.add_roscar_btn)
+        roscar_manage_layout.addWidget(self.remove_roscar_btn)
+        roscar_manage_group.setLayout(roscar_manage_layout)
 
-        top_layout.addWidget(robot_manage_group)
+        top_layout.addWidget(roscar_manage_group)
         main_layout.addLayout(top_layout)
 
         # 2. 중간: Robot Status 테이블
-        robot_status_group = QGroupBox("Robot Status Overview")
-        robot_status_layout = QVBoxLayout()
+        roscar_status_group = QGroupBox("Robot Status Overview")
+        roscar_status_layout = QVBoxLayout()
 
-        self.robot_table = QTableWidget(0, 3)
-        self.robot_table.setHorizontalHeaderLabels(["Robot ID", "Battery", "Status"])
-        self.robot_table.horizontalHeader().setStretchLastSection(True)
-        self.robot_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.roscar_table = QTableWidget(0, 3)
+        self.roscar_table.setHorizontalHeaderLabels(["Robot ID", "Battery", "Status"])
+        self.roscar_table.horizontalHeader().setStretchLastSection(True)
+        self.roscar_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-        robot_status_layout.addWidget(self.robot_table)
-        robot_status_group.setLayout(robot_status_layout)
-        main_layout.addWidget(robot_status_group)
+        roscar_status_layout.addWidget(self.roscar_table)
+        roscar_status_group.setLayout(roscar_status_layout)
+        main_layout.addWidget(roscar_status_group)
 
         # 3. 하단: Log Tabs (재고/로봇 이벤트/작업 로그)
         self.tab_widget = QTabWidget()
 
         self.stock_log_table = self._create_log_table(["Item", "Quantity", "Last Updated"])
-        self.robot_event_log_table = self._create_log_table(["Timestamp", "Robot", "Event"])
+        self.roscar_event_log_table = self._create_log_table(["Timestamp", "Robot", "Event"])
         self.task_log_table = self._create_log_table(["Timestamp", "Task ID", "Status"])
 
         self.tab_widget.addTab(self.stock_log_table, "Stock Log")
-        self.tab_widget.addTab(self.robot_event_log_table, "Robot Event Log")
+        self.tab_widget.addTab(self.roscar_event_log_table, "Robot Event Log")
         self.tab_widget.addTab(self.task_log_table, "Task Log")
 
         main_layout.addWidget(self.tab_widget)
@@ -98,29 +98,29 @@ class MonitorPanel(QWidget):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         return table
 
-    def update_robot_list(self, robot_name):
+    def update_roscar_list(self, roscar_name):
         # 로봇 리스트에 새로운 로봇 이름 추가
-        self.robot_list.addItem(robot_name)
+        self.roscar_list.addItem(roscar_name)
 
-    def add_robot(self):
+    def add_roscar(self):
         # 사용자가 입력한 로봇 ID와 IP 주소를 가져옵니다.
-        robot_id = self.robot_id_input.text()
-        robot_ip = self.robot_ip_input.text()
+        roscar_id = self.roscar_id_input.text()
+        roscar_ip = self.roscar_ip_input.text()
 
-        if not robot_id or not robot_ip:
-            self.show_message("Error", "Please provide both robot ID and IP address.")
+        if not roscar_id or not roscar_ip:
+            self.show_message("Error", "Please provide both roscar ID and IP address.")
             return
 
         # ROS2 메시지 전송
         msg = RobotInfo()
-        msg.roscar_name = robot_id
-        msg.roscar_ip = robot_ip
-        self.robot_info_publisher.publish(msg)
+        msg.roscar_name = roscar_id
+        msg.roscar_ip = roscar_ip
+        self.roscar_info_publisher.publish(msg)
 
         # 추가된 로봇 리스트에 표시
-        self.update_robot_list(robot_id)
+        self.update_roscar_list(roscar_id)
 
-        self.show_message("Success", f"Robot {robot_id} added successfully!")
+        self.show_message("Success", f"Robot {roscar_id} added successfully!")
 
     def show_message(self, title, message):
         msg = QMessageBox()

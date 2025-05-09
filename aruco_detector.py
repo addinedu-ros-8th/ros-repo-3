@@ -15,8 +15,8 @@ def get_transform_matrix(rvec, tvec):
 T_world_marker = np.eye(4)
 
 # 카메라가 로봇보다 z축 방향으로 6cm 위에 고정되어 있음
-T_cam2robot = np.eye(4)
-T_cam2robot[2, 3] = -0.06  # 단위: m
+T_cam2roscar = np.eye(4)
+T_cam2roscar[2, 3] = -0.06  # 단위: m
 
 cam = Camera()
 cam.set_calibration("camera_calibration.npz")
@@ -46,10 +46,10 @@ try:
                 T_cam_marker = get_transform_matrix(rvec, tvec)
                 T_marker_cam = np.linalg.inv(T_cam_marker)
                 T_world_cam = T_world_marker @ T_marker_cam
-                T_world_robot = T_world_cam @ T_cam2robot
+                T_world_roscar = T_world_cam @ T_cam2roscar
 
                 # 로봇 위치 출력
-                position = T_world_robot[:3, 3]
+                position = T_world_roscar[:3, 3]
                 print(f"🤖 로봇 위치 (x, y, z): {position.round(3)} m")
 
         time.sleep(0.1)

@@ -22,7 +22,7 @@ class SLLidarClient(Node):
         )
         self.subscription = self.create_subscription(
             UltraStatus,  # 받은 메시지 타입 지정
-            '/robot/sensor/ultra',    # 구독할 토픽 이름
+            '/roscar/sensor/ultra',    # 구독할 토픽 이름
             self.callback,  # 콜백 함수
             qos_profile  # 큐 사이즈
         )

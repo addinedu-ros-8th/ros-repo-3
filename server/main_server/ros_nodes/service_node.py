@@ -36,7 +36,7 @@ class MainService:
             log_info(f"[MainService] Routing message: {message}")
             
             # 메시지 파싱
-            if message.startswith("POST /add_robot"):
+            if message.startswith("POST /add_roscar"):
                 # 'Content-Length' 헤더의 길이를 확인해서 본문을 정확히 파싱합니다.
                 content_length = int(message.split("Content-Length:")[1].split("\r\n")[0].strip())
                 json_data = message.split("\r\n\r\n")[1][:content_length]
@@ -46,7 +46,7 @@ class MainService:
                 message_type = data.get("type")
 
                 if message_type == "AddRobotRequest":
-                    self.handle_add_robot_request(data, client_socket)
+                    self.handle_add_roscar_request(data, client_socket)
                 else:
                     self.send_error_response(client_socket, "Unknown message type")
 
@@ -127,37 +127,37 @@ class MainService:
             log_error(f"[MainService] handle_qrcode_search Error: {str(e)}")
             self.send_error_response(client_socket, "QR code search failed")
 
-    def handle_robot_status_request(self, data, client_socket):
+    def handle_roscar_status_request(self, data, client_socket):
         try:
-            robot_status = self.db.search_robot_status()
+            roscar_status = self.db.search_roscar_status()
             response = {
                 "type": "RobotStatusResponse",
-                "robot_status": robot_status
+                "roscar_status": roscar_status
             }
             client_socket.sendall(json.dumps(response).encode('utf-8'))
         except Exception as e:
-            log_error(f"[MainService] handle_robot_status_request Error: {str(e)}")
+            log_error(f"[MainService] handle_roscar_status_request Error: {str(e)}")
             self.send_error_response(client_socket, "Robot status request failed")
 
-    def handle_add_robot_request(self, data, client_socket):
+    def handle_add_roscar_request(self, data, client_socket):
         """로봇 추가 요청을 처리하는 메서드"""
         try:
-            robot_name = data.get("robot_name")
-            robot_ip = data.get("robot_ip")
+            roscar_name = data.get("roscar_name")
+            roscar_ip = data.get("roscar_ip")
 
-            if not robot_name or not robot_ip:
-                log_error(f"[MainService] Invalid robot data received: {data}")
-                self.send_error_response(client_socket, "Invalid robot data")
+            if not roscar_name or not roscar_ip:
+                log_error(f"[MainService] Invalid roscar data received: {data}")
+                self.send_error_response(client_socket, "Invalid roscar data")
                 return
 
             # 로봇 정보를 DB에 저장
-            robot_id = self.db.add_robot(robot_name, robot_ip)
+            roscar_id = self.db.add_roscar(roscar_name, roscar_ip)
             
             # 성공 응답 보내기
             response = {
                 "type": "AddRobotResponse",
-                "message": f"Robot {robot_name} added successfully!",
-                "robot_id": robot_id
+                "message": f"Robot {roscar_name} added successfully!",
+                "roscar_id": roscar_id
             }
             
             # 응답 로그 추가
@@ -166,11 +166,11 @@ class MainService:
             client_socket.sendall(json.dumps(response).encode('utf-8'))
 
         except Exception as e:
-            log_error(f"[MainService] handle_add_robot_request Error: {str(e)}")
+            log_error(f"[MainService] handle_add_roscar_request Error: {str(e)}")
             self.send_error_response(client_socket, "Robot addition failed")
 
-    def emergency_stop_robot(self, robot_id):
-        self.emergency_handler.trigger_emergency_stop(robot_id)
+    def emergency_stop_roscar(self, roscar_id):
+        self.emergency_handler.trigger_emergency_stop(roscar_id)
 
-    def clear_emergency(self, robot_id):
-        self.emergency_handler.clear_emergency(robot_id)
+    def clear_emergency(self, roscar_id):
+        self.emergency_handler.clear_emergency(roscar_id)

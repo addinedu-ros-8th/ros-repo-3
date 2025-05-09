@@ -5,20 +5,20 @@ from rclpy.node import Node
 
 class RobotRegisterRequester(Node):
     def __init__(self):
-        super().__init__('robot_requester')
+        super().__init__('roscar_requester')
         self.subscription = self.create_subscription(
             RobotRegister,
-            '/robot/register',
-            self.robot_status_callback,
+            '/roscar/register',
+            self.roscar_status_callback,
             10
         )
 
-    def robot_status_callback(self, msg):
+    def roscar_status_callback(self, msg):
         # DB에서 기존 로봇 정보 조회
-        existing_robot = get_roscar_info(msg.roscar_name)
+        existing_roscar = get_roscar_info(msg.roscar_name)
 
-        if existing_robot:
-            existing_ip = existing_robot['roscar_ip_v4']
+        if existing_roscar:
+            existing_ip = existing_roscar['roscar_ip_v4']
             if existing_ip != msg.roscar_ip_v4:
                 # IP 주소가 바뀐 경우 → 업데이트
                 update_roscar_ip(msg.roscar_name, msg.roscar_ip_v4)
@@ -35,9 +35,9 @@ class RobotRegisterRequester(Node):
             msg.roscar_ip_v4
         )
         self.get_logger().info(f"[등록 완료] 새로운 로봇: {msg.roscar_name}")
-        self.notify_gui_robot_added(msg)
+        self.notify_gui_roscar_added(msg)
 
-    def notify_gui_robot_added(self, msg):
+    def notify_gui_roscar_added(self, msg):
         data = {
             "type": "RobotAddedNotification",
             "roscar_name": msg.roscar_name,

@@ -16,7 +16,7 @@ class SLLidarClient(Node):
 
         self.subscription = self.create_subscription(
             LidarScan,
-            '/robot/sensor/lidar',
+            '/roscar/sensor/lidar',
             self.callback,
             qos_profile
         )

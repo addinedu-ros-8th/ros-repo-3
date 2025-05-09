@@ -36,47 +36,47 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/dataunpacker/unpacker/*.cpp"
 )
 
-# robot_register_publisher 노드
-add_executable(robot_register_publisher ros_nodes/robot_register_publisher.cpp)
-ament_target_dependencies(robot_register_publisher
+# roscar_register_publisher 노드
+add_executable(roscar_register_publisher ros_nodes/roscar_register_publisher.cpp)
+ament_target_dependencies(roscar_register_publisher
   rclcpp
   shared_interfaces
 )
 
-# robot_battery_publisher 노드
-add_executable(robot_battery_publisher ros_nodes/robot_battery_publisher.cpp)
-ament_target_dependencies(robot_battery_publisher
+# roscar_battery_publisher 노드
+add_executable(roscar_battery_publisher ros_nodes/roscar_battery_publisher.cpp)
+ament_target_dependencies(roscar_battery_publisher
   rclcpp
   shared_interfaces
 )
 
-# robot_lidar_publisher 노드
-add_executable(robot_lidar_publisher
-  ros_nodes/robot_lidar_publisher.cpp
+# roscar_lidar_publisher 노드
+add_executable(roscar_lidar_publisher
+  ros_nodes/roscar_lidar_publisher.cpp
   ${SLLIDAR_SDK_SRC}
 )
-ament_target_dependencies(robot_lidar_publisher
+ament_target_dependencies(roscar_lidar_publisher
   rclcpp
   shared_interfaces
 )
-target_compile_definitions(robot_lidar_publisher PRIVATE
+target_compile_definitions(roscar_lidar_publisher PRIVATE
   SDK_PLATFORM_LINUX
 )
 
-# robot_imu_publisher 노드
-# add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp)
-# ament_target_dependencies(robot_imu_publisher
+# roscar_imu_publisher 노드
+# add_executable(roscar_imu_publisher ros_nodes/roscar_imu_publisher.cpp)
+# ament_target_dependencies(roscar_imu_publisher
 #   rclcpp
 #   shared_interfaces
 # )
 
-# robot_ultra_publisher 노드 (libgpiod 연동)
-add_executable(robot_ultra_publisher ros_nodes/robot_ultra_publisher.cpp)
-ament_target_dependencies(robot_ultra_publisher
+# roscar_ultra_publisher 노드 (libgpiod 연동)
+add_executable(roscar_ultra_publisher ros_nodes/roscar_ultra_publisher.cpp)
+ament_target_dependencies(roscar_ultra_publisher
   rclcpp
   shared_interfaces
 )
-target_link_libraries(robot_ultra_publisher ${LIBGPIOD_LIBRARIES})  # libgpiod 연결
+target_link_libraries(roscar_ultra_publisher ${LIBGPIOD_LIBRARIES})  # libgpiod 연결
 
 # mobile_controller 노드
 add_executable(mobile_controller ros_nodes/mobile_controller.cpp)
@@ -85,22 +85,22 @@ ament_target_dependencies(mobile_controller
   shared_interfaces
 )
 
-# robot_imu_publisher 노드
-add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp
+# roscar_imu_publisher 노드
+add_executable(roscar_imu_publisher ros_nodes/roscar_imu_publisher.cpp
   sensor_read/imu_sensor.cpp
   sensor_read/kalman_filter.cpp)
-ament_target_dependencies(robot_imu_publisher
+ament_target_dependencies(roscar_imu_publisher
   rclcpp
   shared_interfaces
 )
 
 # 실행 파일 설치
 install(TARGETS
-  robot_register_publisher
-  robot_battery_publisher
-  robot_lidar_publisher
-  robot_imu_publisher
-  robot_ultra_publisher
+  roscar_register_publisher
+  roscar_battery_publisher
+  roscar_lidar_publisher
+  roscar_imu_publisher
+  roscar_ultra_publisher
   mobile_controller
   DESTINATION lib/${PROJECT_NAME}
 )

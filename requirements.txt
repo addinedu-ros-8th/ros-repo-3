@@ -1,4 +1,14 @@
 python-dotenv
 SQLAlchemy
-PyYAML
 PyMySQL
+catkin_pkg
+empy
+numpy
+lark
+lark-parser
+Cython
+setuptools
+pyyaml
+wheel
+pytest
+launch-ros

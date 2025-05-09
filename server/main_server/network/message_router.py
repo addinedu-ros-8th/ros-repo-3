@@ -1,5 +1,3 @@
-# network/message_router.py
-
 import json
 from service_node import MainService
 from logger import log_info, log_error
@@ -25,7 +23,7 @@ def route_message(message, client_socket):
             main_service.handle_qrcode_search(data, client_socket)
 
         elif message_type == "RequestRobotStatus":
-            main_service.handle_robot_status_request(data, client_socket)
+            main_service.handle_roscar_status_request(data, client_socket)
 
         else:
             log_error(f"[MessageRouter] Unknown message type: {message_type}")

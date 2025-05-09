@@ -29,24 +29,24 @@ public:
     : Node("mode_controller", get_ap_ssid()) {
         namespace_ = get_ap_ssid();
         registered_ = false;
-        robot_state_ = "idle";
+        roscar_state_ = "idle";
 
         reg_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-            "robot_registered", 10,
+            "roscar_registered", 10,
             std::bind(&ModeController::registered_callback, this, _1));
 
         state_sub_ = this->create_subscription<std_msgs::msg::String>(
-            "robot_state", 10,
+            "roscar_state", 10,
             std::bind(&ModeController::state_callback, this, _1));
 
-        // Start the "robot_register_publisher" node initially
-        run_node("robot_register_publisher");
+        // Start the "roscar_register_publisher" node initially
+        run_node("roscar_register_publisher");
     }
 
 private:
     std::string namespace_;
     bool registered_;
-    std::string robot_state_;
+    std::string roscar_state_;
     std::unordered_map<std::string, pid_t> processes_;
 
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reg_sub_;
@@ -61,9 +61,9 @@ private:
     }
 
     void state_callback(const std_msgs::msg::String::SharedPtr msg) {
-        if (robot_state_ != msg->data) {
-            robot_state_ = msg->data;
-            RCLCPP_INFO(this->get_logger(), "[로봇 상태 변경] robot_state = %s", robot_state_.c_str());
+        if (roscar_state_ != msg->data) {
+            roscar_state_ = msg->data;
+            RCLCPP_INFO(this->get_logger(), "[로봇 상태 변경] roscar_state = %s", roscar_state_.c_str());
             update_nodes();
         }
     }
@@ -72,17 +72,17 @@ private:
         terminate_all();
 
         if (!registered_) {
-            run_node("robot_register_publisher");
+            run_node("roscar_register_publisher");
         }
 
         if (registered_) {
-            run_node("robot_battery_publisher");
+            run_node("roscar_battery_publisher");
         }
 
-        if (robot_state_ == "driving") {
-            run_node("robot_imu_publisher");
-            run_node("robot_ultra_publisher");
-            run_node("robot_lidar_publisher");
+        if (roscar_state_ == "driving") {
+            run_node("roscar_imu_publisher");
+            run_node("roscar_ultra_publisher");
+            run_node("roscar_lidar_publisher");
         }
     }
 

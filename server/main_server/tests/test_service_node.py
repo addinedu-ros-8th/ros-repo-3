@@ -21,13 +21,13 @@ class MockDBAccessor:
     def insert_task(self, task_info):
         return 1
 
-    def query_idle_robots(self):
-        return [{"robot_id": "robot_001"}]
+    def query_idle_roscars(self):
+        return [{"roscar_id": "roscar_001"}]
 
-    def update_robot_status(self, robot_id, status):
+    def update_roscar_status(self, roscar_id, status):
         pass
 
-    def update_task_status(self, task_id, status, assigned_robot_id=None):
+    def update_task_status(self, task_id, status, assigned_roscar_id=None):
         pass
 
     def search_qr_code(self, qr_code):
@@ -40,8 +40,8 @@ class MockDBAccessor:
             return {"size": 270, "color": "black"}
         return None
 
-    def search_robot_status(self):
-        return [{"robot_id": "robot_001", "status": "IDLE"}]
+    def search_roscar_status(self):
+        return [{"roscar_id": "roscar_001", "status": "IDLE"}]
 
 # Mock client socket
 class MockSocket:
@@ -76,7 +76,7 @@ def test_qrcode_search_request(service):
     }
     service.route_message(json.dumps(message), MockSocket())
 
-def test_robot_status_request(service):
+def test_roscar_status_request(service):
     print("[Test] Sending RequestRobotStatus...")
     message = {
         "type": "RequestRobotStatus"
@@ -95,4 +95,4 @@ if __name__ == "__main__":
     print("-" * 40)
     test_qrcode_search_request(service)
     print("-" * 40)
-    test_robot_status_request(service)
+    test_roscar_status_request(service)

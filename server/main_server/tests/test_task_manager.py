@@ -10,24 +10,24 @@ from ros_nodes.task_manager import TaskManager
 class MockDBAccessor:
     def __init__(self):
         self.tasks = []
-        self.robots = [{"robot_id": "robot_001", "status": "IDLE"}]
+        self.roscars = [{"roscar_id": "roscar_001", "status": "IDLE"}]
 
     def insert_task(self, task_info):
         self.tasks.append(task_info)
         return len(self.tasks)  # task_id 대신 인덱스 반환 (더미)
 
-    def query_idle_robots(self):
-        return self.robots
+    def query_idle_roscars(self):
+        return self.roscars
 
-    def update_robot_status(self, robot_id, status):
-        for robot in self.robots:
-            if robot["robot_id"] == robot_id:
-                robot["status"] = status
+    def update_roscar_status(self, roscar_id, status):
+        for roscar in self.roscars:
+            if roscar["roscar_id"] == roscar_id:
+                roscar["status"] = status
 
-    def update_task_status(self, task_id, status, assigned_robot_id=None):
+    def update_task_status(self, task_id, status, assigned_roscar_id=None):
         if 0 < task_id <= len(self.tasks):
             self.tasks[task_id - 1]["status"] = status
-            self.tasks[task_id - 1]["assigned_robot_id"] = assigned_robot_id
+            self.tasks[task_id - 1]["assigned_roscar_id"] = assigned_roscar_id
 
     def queue_task(self, task_id):
         # 실제 큐잉은 생략하고 로그만 남긴다고 가정
@@ -45,16 +45,16 @@ def test_create_task_success():
             "priority": 1
         }
 
-        print("Testing create_task() with available robot ...")
+        print("Testing create_task() with available roscar ...")
         result = task_manager.create_task(dummy_task_data)
         print(f"Result: {result}")
     except Exception as e:
         print(f"Unexpected error in test_create_task_success: {e}")
 
-def test_create_task_no_idle_robot():
+def test_create_task_no_idle_roscar():
     try:
         mock_db = MockDBAccessor()
-        mock_db.robots = []  # Idle 로봇 없음 설정
+        mock_db.roscars = []  # Idle 로봇 없음 설정
         task_manager = TaskManager(mock_db)
 
         dummy_task_data = {
@@ -64,13 +64,13 @@ def test_create_task_no_idle_robot():
             "priority": 1
         }
 
-        print("Testing create_task() with no idle robot (should queue task) ...")
+        print("Testing create_task() with no idle roscar (should queue task) ...")
         result = task_manager.create_task(dummy_task_data)
         print(f"Result: {result}")
     except Exception as e:
-        print(f"Unexpected error in test_create_task_no_idle_robot: {e}")
+        print(f"Unexpected error in test_create_task_no_idle_roscar: {e}")
 
 if __name__ == "__main__":
     test_create_task_success()
     print("-" * 40)
-    test_create_task_no_idle_robot()
+    test_create_task_no_idle_roscar()

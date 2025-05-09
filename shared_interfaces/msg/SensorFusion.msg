@@ -1,4 +1,4 @@
-uint8 robot_id
+uint8 roscar_id
 float32 ir_front
 float32 ultrasonic_left
 float32 ultrasonic_right

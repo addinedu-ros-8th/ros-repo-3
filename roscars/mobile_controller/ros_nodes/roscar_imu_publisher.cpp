@@ -21,7 +21,7 @@ public:
     ICM20948Publisher() : Node("imu_publisher"), imu_("/dev/i2c-1", 0x68) {
         // SSID를 기반으로 네임스페이스 적용
         std::string ssid = get_ap_ssid();
-        std::string topic_name = "/" + ssid + "/robot/sensor/imu";
+        std::string topic_name = "/" + ssid + "/roscar/sensor/imu";
         
         publisher_ = this->create_publisher<shared_interfaces::msg::ImuStatus>(topic_name, 10);
         timer_ = this->create_wall_timer(

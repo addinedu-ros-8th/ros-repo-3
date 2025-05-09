@@ -50,7 +50,7 @@ public:
 
         // SSID 기반으로 네임스페이스 설정
         ssid_ = get_ap_ssid();
-        std::string topic_name = "/" + ssid_ + "/robot/sensor/lidar";
+        std::string topic_name = "/" + ssid_ + "/roscar/sensor/lidar";
 
         scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>(
             topic_name, rclcpp::QoS(10).reliable().keep_last(10)

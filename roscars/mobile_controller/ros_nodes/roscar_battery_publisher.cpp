@@ -95,7 +95,7 @@ public:
     BatteryStatusPublisher() : Node("battery_status_publisher") {
         // SSID를 기반으로 네임스페이스 생성
         std::string ssid = get_ap_ssid();
-        std::string topic_name = "/" + ssid + "/robot/status/battery";
+        std::string topic_name = "/" + ssid + "/roscar/status/battery";
         
         publisher_ = this->create_publisher<BatteryStatusMsg>(topic_name, 10);
         timer_ = this->create_wall_timer(3s, std::bind(&BatteryStatusPublisher::publish_status, this));

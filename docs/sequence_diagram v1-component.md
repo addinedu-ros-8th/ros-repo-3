@@ -284,7 +284,7 @@ activate Manager
 Manager -> Main : 로봇 이벤트 조회\n(event_id)
 activate Main
 Main -> Main : DB 로봇 이벤트 조회\n(event_id)
-Main --> Manager : 로봇 이벤트 조회\n[event_id, robot_id,\ntask_id, event_type,\nevent_timestamp]
+Main --> Manager : 로봇 이벤트 조회\n[event_id, roscar_id,\ntask_id, event_type,\nevent_timestamp]
 deactivate Main
 deactivate Manager
 @endum
@@ -454,8 +454,8 @@ MainService -> Database: InsertTask (task info)
 
 activate Database
 MainService -> Database: QueryIdleRobots (status=IDLE)
-Database --> MainService: RobotListResult (robot_id, location, battery_level)
-MainService -> MainService: SelectOptimalRobot (best robot)
+Database --> MainService: RobotListResult (roscar_id, location, battery_level)
+MainService -> MainService: SelectOptimalRobot (best roscar)
 
 == 작업 할당 ==
 
@@ -511,7 +511,7 @@ deactivate StaffPC
 
 == 대기 로봇 생긴 경우 대기 작업 할당 ==
 
-MobileController -> MainService: IdleStatusReport (robot_id)
+MobileController -> MainService: IdleStatusReport (roscar_id)
 deactivate MobileController
 
 MainService -> MainService: AssignQueuedTaskIfAvailable (if any)
@@ -537,7 +537,7 @@ activate StaffGUI
 activate MainService
 MainService -> Database: SearchUserByName (name)
 activate Database
-Database --> MainService: UserSearchResult (id, name, role, can_call_robot, password)
+Database --> MainService: UserSearchResult (id, name, role, can_call_roscar, password)
 deactivate Database
 MainService -> MainService: Verify password
 alt Password Match
@@ -590,14 +590,14 @@ alt Robot Status Found
     MainService -> MobileController: CheckAvailableRobot
     activate MobileController
     alt Available Robot Found
-        MainService -> MobileController: SendNavigationGoal (/robot/navigation/goal)
+        MainService -> MobileController: SendNavigationGoal (/roscar/navigation/goal)
         deactivate MobileController
 
         MainService -> Database: RecordTaskStatus (task creation and status)
         activate Database
         deactivate Database
     else No Available Robot
-        MainService -> StaffGUI: RobotAssignFailed (reason="No available robot")
+        MainService -> StaffGUI: RobotAssignFailed (reason="No available roscar")
     end
 else Robot Status Not Found
     MainService -> StaffGUI: RobotStatusSearchFailed (reason="Robot offline")
@@ -658,7 +658,7 @@ activate ManagerGUI
 activate MainService
 MainService -> Database: SearchRobotEventLog (필터)
 activate Database
-Database --> MainService: RobotEventLogResult (robot event list)
+Database --> MainService: RobotEventLogResult (roscar event list)
 deactivate Database
 MainService -> ManagerGUI: RobotEventLogResponse (event list)
 deactivate MainService
@@ -679,23 +679,23 @@ deactivate ManagerGUI
 
 == 로봇 상태 조회 ==
 
-ManagerGUI -> MainService: RequestRobotStatus (optional robot_id)
+ManagerGUI -> MainService: RequestRobotStatus (optional roscar_id)
 activate ManagerGUI
 activate MainService
-MainService -> Database: SearchRobotStatus (robot_id or 전체)
+MainService -> Database: SearchRobotStatus (roscar_id or 전체)
 activate Database
-Database --> MainService: RobotStatusResult (robot_id, battery, operation_state, carriage_state)
+Database --> MainService: RobotStatusResult (roscar_id, battery, operation_state, carriage_state)
 deactivate Database
-MainService -> ManagerGUI: RobotStatusResponse (robot status)
+MainService -> ManagerGUI: RobotStatusResponse (roscar status)
 deactivate MainService
 deactivate ManagerGUI
 
 == 로봇 등록 ==
 
-ManagerGUI -> MainService: RequestRobotRegistration (robot_id, robot_info)
+ManagerGUI -> MainService: RequestRobotRegistration (roscar_id, roscar_info)
 activate ManagerGUI
 activate MainService
-MainService -> Database: InsertRobot (robot info)
+MainService -> Database: InsertRobot (roscar info)
 activate Database
 Database --> MainService: InsertRobotResult (success/failure)
 deactivate Database
@@ -705,10 +705,10 @@ deactivate ManagerGUI
 
 == 로봇 삭제 ==
 
-ManagerGUI -> MainService: RequestRobotDeletion (robot_id)
+ManagerGUI -> MainService: RequestRobotDeletion (roscar_id)
 activate ManagerGUI
 activate MainService
-MainService -> Database: DeleteRobot (robot_id)
+MainService -> Database: DeleteRobot (roscar_id)
 activate Database
 Database --> MainService: DeleteRobotResult (success/failure)
 deactivate Database
@@ -791,7 +791,7 @@ MobileController -> MainService: BatteryStatusReport (battery_level, charging_st
 MobileController -> MainService: RobotStateUpdate (current_task_id, operation_state, carriage_state)
 deactivate MobileController
 
-MainService -> MainService: Update internal robot state
+MainService -> MainService: Update internal roscar state
 
 alt 배터리 부족
     MainService -> MobileController: MoveToChargingStation (charging_station_location)
@@ -801,7 +801,7 @@ end
 
 == 상태 저장 ==
 
-MainService -> Database: SaveRobotStatus (robot snapshot)
+MainService -> Database: SaveRobotStatus (roscar snapshot)
 deactivate MainService
 activate Database
 deactivate Database
@@ -853,7 +853,7 @@ deactivate MainService
 
 == 로봇이 다음 행동 요청 ==
 
-MobileController -> MainService: RequestNextAction (robot_id, status)
+MobileController -> MainService: RequestNextAction (roscar_id, status)
 activate MobileController
 activate MainService
 MainService -> MobileController: NextActionResponse (action)
@@ -887,19 +887,19 @@ deactivate SensorCollectorModule
 == Main Service로 센서 상태 전송 ==
 
 activate MainService
-SensorCollectorModule -> MainService: SensorDataReport (robot_id, aggregated sensor data, pressure_sensor_status, timestamp)
+SensorCollectorModule -> MainService: SensorDataReport (roscar_id, aggregated sensor data, pressure_sensor_status, timestamp)
 
 == Main Service가 상태 갱신 ==
 
-MainService -> MainService: UpdateSensorState (robot_id, sensor status including pressure sensor state)
+MainService -> MainService: UpdateSensorState (roscar_id, sensor status including pressure sensor state)
 
 == 압력 센서 상태를 StaffPC로 전송 (TCP) ==
 
-MainService -> StaffPC: SendPressureSensorDataTCP (robot_id, pressure_sensor_status, timestamp)
+MainService -> StaffPC: SendPressureSensorDataTCP (roscar_id, pressure_sensor_status, timestamp)
 
 == 압력 센서 상태를 ManagerPC로 전송 (ROS) ==
 
-MainService -> ManagerPC: SendPressureSensorDataROS (robot_id, pressure_sensor_status, timestamp)
+MainService -> ManagerPC: SendPressureSensorDataROS (roscar_id, pressure_sensor_status, timestamp)
 deactivate MainService
 @enduml
 ```
@@ -916,24 +916,24 @@ participant ManagerPC
 == 배터리 상태 실시간 수집 및 전달 ==
 
 activate MobileController
-MobileController -> MainService: BatteryStatusReport (robot_id, battery_level, charging_status, timestamp)
+MobileController -> MainService: BatteryStatusReport (roscar_id, battery_level, charging_status, timestamp)
 deactivate MobileController
 
 == Main Service가 상태 갱신 ==
 
 activate MainService
-MainService -> MainService: UpdateRobotHealthState (robot_id, battery_level, charging_status, timestamp)
+MainService -> MainService: UpdateRobotHealthState (roscar_id, battery_level, charging_status, timestamp)
 
 == Staff PC로 배터리 상태 전달 (TCP 통신) ==
 
 activate StaffPC
-MainService -> StaffPC: SendBatteryStatusTCP (robot_id, battery_level, charging_status, timestamp)
+MainService -> StaffPC: SendBatteryStatusTCP (roscar_id, battery_level, charging_status, timestamp)
 deactivate StaffPC
 
 == Manager PC로 배터리 상태 전달 (ROS 통신) ==
 
 activate ManagerPC
-MainService -> ManagerPC: SendBatteryStatusROS (robot_id, battery_level, charging_status, timestamp)
+MainService -> ManagerPC: SendBatteryStatusROS (roscar_id, battery_level, charging_status, timestamp)
 deactivate ManagerPC
 deactivate MainService
 @enduml
@@ -953,17 +953,17 @@ activate VideoSenderModule
 VideoSenderModule -> VideoSenderModule: CapturedFrame (frame, timestamp)
 VideoSenderModule -> VideoSenderModule: EncodeFrame (compression/formatting)
 
-== AI Server로 프레임 전송 (robot_id 추가) ==
+== AI Server로 프레임 전송 (roscar_id 추가) ==
 
 activate AIServer_ObjectDetector
-VideoSenderModule -> AIServer_ObjectDetector: MediaFrame (encoded frame, metadata, robot_id)
-AIServer_ObjectDetector -> AIServer_ObjectDetector: ReceiveFrame (handle incoming frame, robot_id)
+VideoSenderModule -> AIServer_ObjectDetector: MediaFrame (encoded frame, metadata, roscar_id)
+AIServer_ObjectDetector -> AIServer_ObjectDetector: ReceiveFrame (handle incoming frame, roscar_id)
 deactivate VideoSenderModule
 
 == ObjectDetector 결과를 MainService로 전송 ==
 
 activate MainService
-AIServer_ObjectDetector -> MainService: DetectionResult (robot_id, detected_objects, timestamp)
+AIServer_ObjectDetector -> MainService: DetectionResult (roscar_id, detected_objects, timestamp)
 deactivate MainService
 
 @enduml

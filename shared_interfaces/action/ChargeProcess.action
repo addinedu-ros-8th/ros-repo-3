@@ -1,5 +1,5 @@
 # Goal
-uint8 robot_id
+uint8 roscar_id
 string charge_zone
 
 ---

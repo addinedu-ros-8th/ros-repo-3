@@ -79,7 +79,7 @@ alt 서버 연결 성공 시
     alt 비밀번호 일치
         Main -> DB : SELECT * FROM admin_dashboard_data\nWHERE manager_id = "admin01"
         activate DB
-        DB --> Main : dashboardData\n(statusSummary, robotHealth, taskStats, inventoryOverview)
+        DB --> Main : dashboardData\n(statusSummary, roscarHealth, taskStats, inventoryOverview)
         deactivate DB
 
         Main --> Manager : ManagerLoginResponse\n{ success: true, dashboardData }
@@ -184,12 +184,12 @@ deactivate DB
 
 == 대기 로봇 검색 및 할당 ==
 
-Main -> DB : SELECT * FROM robots WHERE status=IDLE
+Main -> DB : SELECT * FROM roscars WHERE status=IDLE
 activate DB
-DB --> Main : robot_list = [RB01, RB02]
+DB --> Main : roscar_list = [RB01, RB02]
 deactivate DB
 
-Main -> Main : 최적 로봇 선택 (예: 거리 기반)\nbest_robot=RB01
+Main -> Main : 최적 로봇 선택 (예: 거리 기반)\nbest_roscar=RB01
 
 Main -> Mobile : AssignTask\ntask_id=TASK-101, item_id=ITEM-1234,\nfrom=R3-S2-B1, to=PACK_ZONE, priority=normal
 activate Mobile
@@ -236,7 +236,7 @@ deactivate Staff
 
 ---
 
-# 4. 로봇 상태 모니터링 및 관리 (robot_monitoring_and_management)
+# 4. 로봇 상태 모니터링 및 관리 (roscar_monitoring_and_management)
 
 ```plantuml
 @startuml
@@ -252,9 +252,9 @@ database "Robot table" as DB
 
 Manager -> GUI : 상태 확인 메뉴 클릭
 activate GUI
-GUI -> Main : RequestRobotStatus\nrobot_id=RB-01
+GUI -> Main : RequestRobotStatus\nroscar_id=RB-01
 activate Main
-Main -> Mobile : GetStatus\nrobot_id=RB-01
+Main -> Mobile : GetStatus\nroscar_id=RB-01
 activate Mobile
 Mobile --> Main : RobotStatus\nbattery=76%, status=DRIVING, carriage=LOADED
 deactivate Mobile
@@ -266,9 +266,9 @@ deactivate GUI
 
 Manager -> GUI : 등록 메뉴 → 정보 입력
 activate GUI
-GUI -> Main : RegisterRobotRequest\nrobot_id=RB-99, model=K2X, location=Dock-1
+GUI -> Main : RegisterRobotRequest\nroscar_id=RB-99, model=K2X, location=Dock-1
 activate Main
-Main -> DB : INSERT INTO robots (...) VALUES (...)
+Main -> DB : INSERT INTO roscars (...) VALUES (...)
 activate DB
 DB --> Main : OK
 deactivate DB
@@ -280,9 +280,9 @@ deactivate GUI
 
 Manager -> GUI : 로봇 선택 후 삭제 클릭
 activate GUI
-GUI -> Main : DeleteRobotRequest\nrobot_id=RB-99
+GUI -> Main : DeleteRobotRequest\nroscar_id=RB-99
 activate Main
-Main -> DB : DELETE FROM robots WHERE robot_id='RB-99'
+Main -> DB : DELETE FROM roscars WHERE roscar_id='RB-99'
 activate DB
 DB --> Main : OK
 deactivate DB
@@ -294,9 +294,9 @@ deactivate GUI
 
 Manager -> GUI : 위치 보기 탭 선택
 loop 주기적 위치 확인 (예: 5초 간격)
-    GUI -> Main : RequestRobotLocation\nrobot_id=RB-01
+    GUI -> Main : RequestRobotLocation\nroscar_id=RB-01
     activate Main
-    Main -> Mobile : GetLocation\nrobot_id=RB-01
+    Main -> Mobile : GetLocation\nroscar_id=RB-01
     activate Mobile
     Mobile --> Main : LocationInfo\nx=13.5, y=4.2, z=0
     deactivate Mobile
@@ -332,8 +332,8 @@ Main -> DB : SELECT * FROM task_logs\nWHERE created_at BETWEEN '2025-04-01' AND 
 activate DB
 DB --> Main : 2건 반환
 note right
-task_id=TASK-1001, status=CANCELLED, start=2025-04-05 10:23, robot_id=RB02  
-task_id=TASK-1010, status=CANCELLED, start=2025-04-12 14:02, robot_id=RB04
+task_id=TASK-1001, status=CANCELLED, start=2025-04-05 10:23, roscar_id=RB02  
+task_id=TASK-1010, status=CANCELLED, start=2025-04-12 14:02, roscar_id=RB04
 end note
 deactivate DB
 
@@ -366,19 +366,19 @@ deactivate GUI
 
 Manager -> GUI : 로봇 이벤트 탭 선택
 activate GUI
-GUI -> Main : RequestLogs\nlog_type=robot_event, date_from=2025-04-01, date_to=2025-04-30
+GUI -> Main : RequestLogs\nlog_type=roscar_event, date_from=2025-04-01, date_to=2025-04-30
 activate Main
 
-Main -> DB : SELECT * FROM robot_event_logs\nWHERE timestamp BETWEEN '2025-04-01' AND '2025-04-30'
+Main -> DB : SELECT * FROM roscar_event_logs\nWHERE timestamp BETWEEN '2025-04-01' AND '2025-04-30'
 activate DB
 DB --> Main : 2건 반환
 note right
-event_id=EVT-2001, robot_id=RB01, type=EmergencyStop, timestamp=2025-04-03 17:12  
-event_id=EVT-2002, robot_id=RB03, type=PathBlocked, timestamp=2025-04-07 11:45
+event_id=EVT-2001, roscar_id=RB01, type=EmergencyStop, timestamp=2025-04-03 17:12  
+event_id=EVT-2002, roscar_id=RB03, type=PathBlocked, timestamp=2025-04-07 11:45
 end note
 deactivate DB
 
-Main --> GUI : LogResponse\nlog_type=robot_event, count=2
+Main --> GUI : LogResponse\nlog_type=roscar_event, count=2
 deactivate Main
 GUI -> GUI : 로봇 이벤트 로그 테이블 표시
 deactivate GUI
@@ -426,13 +426,13 @@ activate Mobile
 Mobile -> Main : SensorDataReport\nimu=ok, lidar=ok, ultrasonic=3.2m, ir=1.1m,\npressure=1 (object detected), timestamp=14:03:21
 activate Main
 
-Main -> Main : UpdateSensorSnapshot\n(robot_id=RB02, status=OK)
+Main -> Main : UpdateSensorSnapshot\n(roscar_id=RB02, status=OK)
 
 == 2. 배터리 상태 보고 ==
 
 Mobile -> Main : BatteryStatusReport\nbattery=72%, charging=false, timestamp=14:03:22
 
-Main -> Main : UpdateBatteryState\n(robot_id=RB02, battery=72%)
+Main -> Main : UpdateBatteryState\n(roscar_id=RB02, battery=72%)
 
 == 3. 로봇 동작 상태 보고 ==
 
@@ -441,19 +441,19 @@ Main -> Main : UpdateRobotState
 
 == 4. 상태 저장 ==
 
-Main -> DB : INSERT INTO robot_status_log\n(robot_id=RB02, task_id=TASK-101, battery=72%,\nstatus=DRIVING, sensors=OK, time=14:03:22)
+Main -> DB : INSERT INTO roscar_status_log\n(roscar_id=RB02, task_id=TASK-101, battery=72%,\nstatus=DRIVING, sensors=OK, time=14:03:22)
 activate DB
 DB --> Main : OK
 deactivate DB
 
 == 5. 사용자 단말 전송 ==
 
-Main -> StaffPC : SendStatusTCP\nrobot_id=RB02, battery=72%, status=DRIVING, pressure=1
+Main -> StaffPC : SendStatusTCP\nroscar_id=RB02, battery=72%, status=DRIVING, pressure=1
 activate StaffPC
 StaffPC -> StaffPC : 상태 표시 UI 업데이트
 deactivate StaffPC
 
-Main -> ManagerPC : SendStatusROS\nrobot_id=RB02, sensors=OK, location=(x=14.2, y=4.9)
+Main -> ManagerPC : SendStatusROS\nroscar_id=RB02, sensors=OK, location=(x=14.2, y=4.9)
 activate ManagerPC
 ManagerPC -> ManagerPC : ROS 상태 노드에 publish
 deactivate ManagerPC
@@ -481,11 +481,11 @@ database "Inference DB" as DB
 == 1. 영상 프레임 전송 ==
 
 activate Video
-Video -> Detector : MediaFrame\nrobot_id=RB02, timestamp=14:05:02, frame_id=F123
+Video -> Detector : MediaFrame\nroscar_id=RB02, timestamp=14:05:02, frame_id=F123
 deactivate Video
 
 activate Detector
-Detector -> AI : AnalyzeFrame\nframe_path=/media/RB02/F123.jpg,\nmeta=robot_id=RB02, frame_id=F123
+Detector -> AI : AnalyzeFrame\nframe_path=/media/RB02/F123.jpg,\nmeta=roscar_id=RB02, frame_id=F123
 activate AI
 
 == 2. AI 추론 수행 ==
@@ -497,7 +497,7 @@ deactivate AI
 == 3. 인식 결과 처리 ==
 
 Detector -> Detector : validate result\n(Human, 91%)
-Detector -> Main : InferenceResult\nrobot_id=RB02, object=Human,\nconfidence=91%, location=(x=12.3, y=4.4)
+Detector -> Main : InferenceResult\nroscar_id=RB02, object=Human,\nconfidence=91%, location=(x=12.3, y=4.4)
 deactivate Detector
 
 activate Main
@@ -517,7 +517,7 @@ end
 
 == 5. 추론 결과 저장 ==
 
-Main -> DB : StoreInference\nrobot_id=RB02, object=Human,\nconfidence=91%, time=14:05:03
+Main -> DB : StoreInference\nroscar_id=RB02, object=Human,\nconfidence=91%, time=14:05:03
 activate DB
 DB --> Main : OK
 deactivate DB
@@ -529,7 +529,7 @@ deactivate Main
 
 ---
 
-# 8. 로봇 제어 및 동작 흐름 (robot_control_and_motor_flow)
+# 8. 로봇 제어 및 동작 흐름 (roscar_control_and_motor_flow)
 
 ```plantuml
 @startuml
@@ -544,7 +544,7 @@ participant "Manager PC" as Manager
 == 1. 이동 명령 시작 ==
 
 activate Main
-Main -> Mobile : MovementCommand\nrobot_id=RB02, destination=(x=14.5, y=3.2), speed=normal
+Main -> Mobile : MovementCommand\nroscar_id=RB02, destination=(x=14.5, y=3.2), speed=normal
 activate Mobile
 Mobile -> Motor : ExecuteMovement\npath=[(12.0,3.0) → (13.0,3.1) → (14.5,3.2)]
 activate Motor
@@ -553,7 +553,7 @@ activate Motor
 
 loop 장애물 감지 루프
     Motor -> Mobile : ObstacleDetected\ndistance=0.8m, direction=front-right
-    Mobile -> Main : ObstacleAlert\nrobot_id=RB02, distance=0.8m, direction=FRONT_RIGHT
+    Mobile -> Main : ObstacleAlert\nroscar_id=RB02, distance=0.8m, direction=FRONT_RIGHT
     Main -> Mobile : AvoidanceCommand\nrotate=15°, direction=LEFT
     Mobile -> Motor : ExecuteAvoidance\nrotate=15° left
 end
@@ -561,7 +561,7 @@ end
 == 3. 이동 피드백 ==
 
 Motor -> Mobile : MovementFeedback\nposition=(14.5,3.2), result=SUCCESS
-Mobile -> Main : CommandAck\nrobot_id=RB02, result=SUCCESS
+Mobile -> Main : CommandAck\nroscar_id=RB02, result=SUCCESS
 
 deactivate Motor
 deactivate Mobile
@@ -569,8 +569,8 @@ deactivate Mobile
 == 4. 이동 실패 시 분기 ==
 
 alt 이동 실패
-    Main -> Manager : SendErrorReport\nrobot_id=RB02, error=PathBlocked, time=14:10:43
-    Main -> Staff : SendErrorReport\nrobot_id=RB02, error=PathBlocked, time=14:10:43
+    Main -> Manager : SendErrorReport\nroscar_id=RB02, error=PathBlocked, time=14:10:43
+    Main -> Staff : SendErrorReport\nroscar_id=RB02, error=PathBlocked, time=14:10:43
 end
 
 deactivate Main

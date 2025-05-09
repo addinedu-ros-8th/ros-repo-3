@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 project(shared_interfaces)
 
+unset (CATKIN_INSTALL_INTO_PREFIX_ROOT)
+unset (CATKIN_SYMLINK_INSTALL)
+
 # 빌드 도구 및 메시지 생성 관련 패키지
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-
-# 메시지 타입에 필요한 의존 패키지
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-
+find_package(rosidl_default_generators REQUIRED)
 
 set(msg_files
   "msg/AccessResult.msg"
@@ -21,8 +21,8 @@ set(msg_files
   "msg/ImuStatus.msg"
   "msg/InventoryResult.msg"
   "msg/LidarScan.msg"
-  "msg/LogEvent.msg"
   "msg/LogEventAdmin.msg"
+  "msg/LogEvent.msg"
   "msg/NavigationGoal.msg"
   "msg/ObstacleAvoidanceCmd.msg"
   "msg/ObstacleDetected.msg"
@@ -30,8 +30,8 @@ set(msg_files
   "msg/PrecisionStopCmd.msg"
   "msg/PrecisionStopResult.msg"
   "msg/QRCodeScan.msg"
-  "msg/RoscarPoseUpdate.msg"
-  "msg/RoscarStatusLog.msg"
+  "msg/RobotPoseUpdate.msg"
+  "msg/RobotStatusLog.msg"
   "msg/RoscarInfo.msg"
   "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"

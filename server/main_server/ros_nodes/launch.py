@@ -8,19 +8,19 @@ class ROSNodeLauncher:
     def __init__(self):
         # ROS2 환경 설정
         self.ros_domain_id = os.environ.get('ROS_DOMAIN_ID', '0')
-        self.ros_namespace = "/robot"
+        self.ros_namespace = "/roscar"
 
     def launch_navigation_node(self):
         try:
             log_info("[ROSNodeLauncher] Launching Navigation Node...")
-            subprocess.Popen(["ros2", "launch", "robot_navigation", "navigation.launch.py"])
+            subprocess.Popen(["ros2", "launch", "roscar_navigation", "navigation.launch.py"])
         except Exception as e:
             log_error(f"[ROSNodeLauncher] Failed to launch navigation node: {str(e)}")
 
     def launch_bridge_node(self):
         try:
             log_info("[ROSNodeLauncher] Launching ROS-Gazebo Bridge Node...")
-            subprocess.Popen(["ros2", "run", "ros_gz_bridge", "parameter_bridge", "/model/robot/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry"])
+            subprocess.Popen(["ros2", "run", "ros_gz_bridge", "parameter_bridge", "/model/roscar/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry"])
         except Exception as e:
             log_error(f"[ROSNodeLauncher] Failed to launch bridge node: {str(e)}")
 

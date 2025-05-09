@@ -16,7 +16,7 @@ class ROSNodeStaff(QObject):
         self._node = rclpy.create_node('roskatsu_gui_node')
         self._node.create_subscription(
             String,
-            '/robot/status/battery',
+            '/roscar/status/battery',
             self._battery_callback,
             10
         )

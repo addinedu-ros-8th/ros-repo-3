@@ -1,5 +1,5 @@
 bool override     # 요청: 수동 제어 모드로 전환할지 여부
 
 ---
-
+# Response
 bool success      # 응답: 성공 여부

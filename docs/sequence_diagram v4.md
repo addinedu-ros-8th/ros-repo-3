@@ -43,7 +43,7 @@ alt 서버 연결 성공
         else user_role == ADMIN
             Main -> DB : SELECT * FROM admin_dashboard_data WHERE user_id = ?
             activate DB
-            DB --> Main : dashboardData\n(statusSummary, taskStats, robotHealth)
+            DB --> Main : dashboardData\n(statusSummary, taskStats, roscarHealth)
             deactivate DB
             Main --> GUI : LoginResponse(success=true, user_role=ADMIN)
         end
@@ -160,7 +160,7 @@ Main -> DB : SELECT * FROM RosCars WHERE status='STANDBY'
 activate DB
 DB --> Main : [RB01, RB02]
 deactivate DB
-Main -> Main : best_robot = RB01
+Main -> Main : best_roscar = RB01
 
 
 Main -> Mobile : AssignTask(task_id, item_id, from, to)
@@ -194,7 +194,7 @@ deactivate Main
 
 ---
 
-# 4. 로봇 상태 모니터링 및 관리 (robot_monitoring_and_management)
+# 4. 로봇 상태 모니터링 및 관리 (roscar_monitoring_and_management)
 
 ```plantuml
 @startuml
@@ -297,21 +297,21 @@ participant "Mobile Controller" as Mobile
 participant "Main Service" as Main
 participant "Staff PC" as StaffPC
 participant "Manager PC" as ManagerPC
-database "robot_status_log" as DB
+database "roscar_status_log" as DB
 
 activate Mobile
-Mobile -> Main : 상태 보고\n(SensorData, BatteryStatus, RobotState)\nrobot_id=RB02, task_id=TASK-101,\nbattery=72%, status=DRIVING,\nsensors=OK, pressure=1, time=14:03:22
+Mobile -> Main : 상태 보고\n(SensorData, BatteryStatus, RobotState)\nroscar_id=RB02, task_id=TASK-101,\nbattery=72%, status=DRIVING,\nsensors=OK, pressure=1, time=14:03:22
 activate Main
 
 Main -> Main : 내부 상태 업데이트\n(센서, 배터리, 동작)
 
 
-Main -> DB : INSERT INTO robot_status_log\n(robot_id, task_id, battery, status, sensors, time)
+Main -> DB : INSERT INTO roscar_status_log\n(roscar_id, task_id, battery, status, sensors, time)
 DB --> Main : OK
 
 
-Main -> StaffPC : SendStatusTCP\n(robot_id=RB02, battery=72%, status=DRIVING, pressure=1)
-Main -> ManagerPC : SendStatusROS\n(robot_id=RB02, sensors=OK, location=x,y)
+Main -> StaffPC : SendStatusTCP\n(roscar_id=RB02, battery=72%, status=DRIVING, pressure=1)
+Main -> ManagerPC : SendStatusROS\n(roscar_id=RB02, sensors=OK, location=x,y)
 
 deactivate Main
 deactivate Mobile
@@ -333,11 +333,11 @@ database "InferenceResult DB" as DB
 
 
 activate Video
-Video -> Detector : MediaFrame(robot_id=RB02, frame_id=F123, time=14:05:02)
+Video -> Detector : MediaFrame(roscar_id=RB02, frame_id=F123, time=14:05:02)
 deactivate Video
 
 activate Detector
-Detector -> AI : AnalyzeFrame(F123.jpg, meta: robot_id, time)
+Detector -> AI : AnalyzeFrame(F123.jpg, meta: roscar_id, time)
 deactivate Detector
 
 
@@ -347,7 +347,7 @@ AI --> Detector : AIResult(object=Human, confidence=91%)
 deactivate AI
 
 activate Detector
-Detector -> Main : InferenceResult(robot_id, object, confidence, location)
+Detector -> Main : InferenceResult(roscar_id, object, confidence, location)
 deactivate Detector
 
 activate Main
@@ -361,14 +361,14 @@ else 기타
     Main -> Main : UpdateTaskPhase()
 end
 
-Main -> DB : INSERT INTO InferenceResult(robot_id, object, confidence, location, time)
+Main -> DB : INSERT INTO InferenceResult(roscar_id, object, confidence, location, time)
 deactivate Main
 @enduml
 ```
 
 ---
 
-# 8. 로봇 제어 및 동작 흐름 (robot_control_and_motor_flow)
+# 8. 로봇 제어 및 동작 흐름 (roscar_control_and_motor_flow)
 
 ```plantuml
 @startuml
@@ -382,27 +382,27 @@ participant "Staff PC" as Staff
 participant "Manager PC" as Manager
 
 
-Main -> Mobile : MovementCommand(robot_id=RB02, destination, speed)
+Main -> Mobile : MovementCommand(roscar_id=RB02, destination, speed)
 Mobile -> Motor : ExecuteMovement(path=[...])
 
 
 loop 장애물 감지 중
     Motor -> Mobile : ObstacleDetected(distance, direction)
-    Mobile -> Main : ObstacleAlert(robot_id, distance, direction)
+    Mobile -> Main : ObstacleAlert(roscar_id, distance, direction)
     Main -> Mobile : AvoidanceCommand(rotate, direction)
     Mobile -> Motor : ExecuteAvoidance(rotate, direction)
 end
 
 
 Motor -> Mobile : MovementFeedback(position, result)
-Mobile -> Main : CommandAck(robot_id=RB02, result)
+Mobile -> Main : CommandAck(roscar_id=RB02, result)
 
 alt 이동 성공
     Main -> Main : 완료 처리 및 상태 갱신
 else 이동 실패
     par 에러 보고
-        Main -> Manager : SendErrorReport(robot_id, error, time)
-        Main -> Staff : SendErrorReport(robot_id, error, time)
+        Main -> Manager : SendErrorReport(roscar_id, error, time)
+        Main -> Staff : SendErrorReport(roscar_id, error, time)
     end
 end
 
