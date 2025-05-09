@@ -64,11 +64,11 @@ target_compile_definitions(robot_lidar_publisher PRIVATE
 )
 
 # robot_imu_publisher 노드
-add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp)
-ament_target_dependencies(robot_imu_publisher
-  rclcpp
-  shared_interfaces
-)
+# add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp)
+# ament_target_dependencies(robot_imu_publisher
+#   rclcpp
+#   shared_interfaces
+# )
 
 # robot_ultra_publisher 노드 (libgpiod 연동)
 add_executable(robot_ultra_publisher ros_nodes/robot_ultra_publisher.cpp)
@@ -85,11 +85,11 @@ ament_target_dependencies(mobile_controller
   shared_interfaces
 )
 
-# imu_node 노드
-add_executable(imu_node ros_nodes/imu_node.cpp
+# robot_imu_publisher 노드
+add_executable(robot_imu_publisher ros_nodes/robot_imu_publisher.cpp
   sensor_read/imu_sensor.cpp
   sensor_read/kalman_filter.cpp)
-ament_target_dependencies(imu_node
+ament_target_dependencies(robot_imu_publisher
   rclcpp
   shared_interfaces
 )
@@ -102,7 +102,6 @@ install(TARGETS
   robot_imu_publisher
   robot_ultra_publisher
   mobile_controller
-  imu_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
