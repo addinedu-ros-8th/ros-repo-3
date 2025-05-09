@@ -12,35 +12,51 @@ find_package(geometry_msgs REQUIRED)
 
 set(msg_files
   "msg/AccessResult.msg"
+  "msg/AIModuleStatus.msg"
   "msg/BatteryStatus.msg"
   "msg/ChargeCommand.msg"
   "msg/DashboardStatus.msg"
+  "msg/EmergencyAlert.msg"
+  "msg/EmergencyCommand.msg"
   "msg/ImuStatus.msg"
   "msg/InventoryResult.msg"
   "msg/LidarScan.msg"
+  "msg/LogEvent.msg"
+  "msg/LogEventAdmin.msg"
   "msg/NavigationGoal.msg"
-  "msg/EmergencyAlert.msg"
-  "msg/EmergencyCommand.msg"
-  "msg/RobotStatusLog.msg"
-  "msg/RobotInfo.msg"
+  "msg/ObstacleAvoidanceCmd.msg"
+  "msg/ObstacleDetected.msg"
+  "msg/ObstacleResponse.msg"
+  "msg/PrecisionStopCmd.msg"
+  "msg/PrecisionStopResult.msg"
+  "msg/QRCodeScan.msg"
   "msg/RobotPoseUpdate.msg"
-  "msg/RobotRegister.msg"
+  "msg/RobotStatusLog.msg"
+  "msg/RoscarInfo.msg"
+  "msg/RoscarPoseUpdate.msg"
+  "msg/RoscarRegister.msg"
+  "msg/RoscarStatusLog.msg"
   "msg/SensorFusion.msg"
-  "msg/TaskProgress.msg"
   "msg/TaskComplete.msg"
+  "msg/TaskProgress.msg"
   "msg/UltraStatus.msg"
 )
 
 set(srv_files
   "srv/ManualOverride.srv"
-  "srv/StartInventoryCheck.srv"
   "srv/QueryTaskStatus.srv"
+  "srv/RequestDiagnostics.srv"
+  "srv/StartInventoryCheck.srv"
 )
 
 set(action_files
+  "action/ChargeProcess.action"
+  "action/MaintenanceCharge.action"
   "action/MoveToGoal.action"
-  "action/StartDelivery.action"
+  "action/PatrolZone.action"
   "action/ScanInventory.action"
+  "action/SecurityPatrol.action"
+  "action/StartDelivery.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

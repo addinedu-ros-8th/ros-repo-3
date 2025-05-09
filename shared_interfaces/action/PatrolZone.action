@@ -1,0 +1,13 @@
+# Goal
+uint8 robot_id
+string patrol_zone
+
+---
+# Result
+bool success
+string message
+
+---
+# Feedback
+string current_zone
+string event
