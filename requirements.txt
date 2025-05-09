@@ -1,2 +1,4 @@
 python-dotenv
 SQLAlchemy
+PyYAML
+PyMySQL

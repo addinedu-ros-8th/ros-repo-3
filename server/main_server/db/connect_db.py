@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker
 
-from roscars_models import RoscarsBase
-from roscars_log_models import RoscarsLogBase
+from db.roscars_models import RoscarsBase
+from db.roscars_log_models import RoscarsLogBase
 
 load_dotenv()
 
@@ -90,7 +90,7 @@ def check_db_init():
         expected_log_tables = set(RoscarsLogBase.metadata.tables.keys())
 
         if existing_main_tables == expected_main_tables and existing_log_tables == expected_log_tables:
-            print("DB 구조 일치")
+            print("DB 연결 성공 및 구조 일치")
             return True
         else:
             print("DB 구조 불일치: 재초기화 수행")

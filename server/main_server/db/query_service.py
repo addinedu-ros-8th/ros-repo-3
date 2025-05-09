@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from roscars_models import RosCars, User, ShoesModel, Task, Delivery, Location
-from roscars_log_models import (
+from db.roscars_models import RosCars, User, ShoesModel, Task, Delivery, Location
+from db.roscars_log_models import (
     RosCarEventLog,
     TaskEventLog,
     DeliveryEventLog,

@@ -1,12 +1,11 @@
-from connect_db import (
+from db.connect_db import (
     roscars_engine, roscars_log_engine,
     RoscarsSession, RoscarsLogSession
 )
 
-from connect_db import check_db_init
-from roscars_models import RoscarsBase
-from roscars_log_models import RoscarsLogBase
-import query_service
+from db.connect_db import check_db_init
+from db.roscars_models import RoscarsBase
+from db.roscars_log_models import RoscarsLogBase
 
 # 테이블 생성
 def create_all_tables():
@@ -59,7 +58,7 @@ def run_sample_queries():
         main_session.close()
 
 # 전체 실행
-if __name__ == "__main__":
+def init_db():
     check_db_init()
     # insert_seed_data()
     # run_sample_queries()
