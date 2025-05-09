@@ -115,3 +115,7 @@ def get_sensor_for_training(session: Session):
         .join(RosCars, SensorFusionRawLog.roscar_id == RosCars.roscar_id)
         .all()
     )
+
+# TODO: insert_default_users
+# TODO: insert_sample_logs
+
