@@ -10,7 +10,7 @@ std::string get_ap_ssid() {
     std::string line;
     while (std::getline(file, line)) {
         if (line.find("ssid=") == 0) {
-            return line.substr(5);
+            return line.substr(5);  // "ssid=" 이후 부분만 반환
         }
     }
     return "UNKNOWN_SSID";
@@ -19,7 +19,11 @@ std::string get_ap_ssid() {
 class ICM20948Publisher : public rclcpp::Node {
 public:
     ICM20948Publisher() : Node("imu_publisher"), imu_("/dev/i2c-1", 0x68) {
-        publisher_ = this->create_publisher<shared_interfaces::msg::ImuStatus>("/robot/sensor/imu", 10);
+        // SSID를 기반으로 네임스페이스 적용
+        std::string ssid = get_ap_ssid();
+        std::string topic_name = "/" + ssid + "/robot/sensor/imu";
+        
+        publisher_ = this->create_publisher<shared_interfaces::msg::ImuStatus>(topic_name, 10);
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&ICM20948Publisher::publish_imu, this)

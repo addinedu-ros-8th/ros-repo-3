@@ -48,13 +48,15 @@ public:
         this->get_parameter("inverted", inverted_);
         this->get_parameter("angle_compensate", angle_compensate_);
 
+        // SSID 기반으로 네임스페이스 설정
+        ssid_ = get_ap_ssid();
+        std::string topic_name = "/" + ssid_ + "/robot/sensor/lidar";
+
         scan_pub_ = this->create_publisher<shared_interfaces::msg::LidarScan>(
-            "/robot/sensor/lidar", rclcpp::QoS(10).reliable().keep_last(10)
+            topic_name, rclcpp::QoS(10).reliable().keep_last(10)
         );
 
-        ssid_ = get_ap_ssid();
         RCLCPP_INFO(this->get_logger(), "Connected AP SSID: %s", ssid_.c_str());
-
         RCLCPP_INFO(this->get_logger(), "Starting SLLIDAR driver...");
         work_loop();
     }

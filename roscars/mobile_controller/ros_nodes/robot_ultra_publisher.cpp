@@ -8,12 +8,21 @@
 
 using namespace std::chrono_literals;
 
+namespace ultra_publisher {
+
 class UltraPublisher : public rclcpp::Node {
 public:
     UltraPublisher()
         : Node("ultra_publisher")
     {
-        publisher_ = this->create_publisher<shared_interfaces::msg::UltraStatus>("/robot/sensor/ultra", 10);
+        // SSID를 기반으로 네임스페이스 적용
+        std::string ssid = get_ap_ssid();
+        std::string topic_name = "/" + ssid + "/robot/sensor/ultra";
+
+        // 로깅을 통해 topic_name 확인
+        RCLCPP_INFO(this->get_logger(), "Using topic name: %s", topic_name.c_str());
+
+        publisher_ = this->create_publisher<shared_interfaces::msg::UltraStatus>(topic_name, 10);
         timer_ = this->create_wall_timer(500ms, std::bind(&UltraPublisher::read_and_publish, this));
 
         chip = gpiod_chip_open_by_name("gpiochip4"); // GPIO 23, 24 = BCM 기준 chip 4
@@ -93,9 +102,11 @@ private:
     struct gpiod_line *echo_line;
 };
 
+}  // namespace ultra_publisher
+
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<UltraPublisher>());
+    rclcpp::spin(std::make_shared<ultra_publisher::UltraPublisher>());
     rclcpp::shutdown();
     return 0;
 }
