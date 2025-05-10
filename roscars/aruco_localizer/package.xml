@@ -7,14 +7,17 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
   <build_depend>rclpy</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>opencv</build_depend>
+
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>opencv</exec_depend>
+  <exec_depend>transforms3d</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

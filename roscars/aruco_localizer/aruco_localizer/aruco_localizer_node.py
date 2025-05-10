@@ -1,4 +1,4 @@
-# aruco_localizer/aruco_localizer_node.py
+import os
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -6,7 +6,7 @@ from geometry_msgs.msg import PoseStamped
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
-import tf_transformations
+from transforms3d.quaternions import mat2quat
 
 
 class ArucoLocalizer(Node):
@@ -17,7 +17,8 @@ class ArucoLocalizer(Node):
             Image,
             '/camera/image_raw',
             self.image_callback,
-            10)
+            10
+        )
 
         self.publisher = self.create_publisher(PoseStamped, '/aruco_pose', 10)
         self.bridge = CvBridge()
@@ -25,8 +26,9 @@ class ArucoLocalizer(Node):
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
         self.aruco_params = cv2.aruco.DetectorParameters_create()
 
-        # 캘리브레이션 불러오기
-        with np.load('~/ros-repo-3/roscars/aruco_localizer/camera_calibration.npz') as data:
+        # 캘리브레이션 불러오기 (안전한 경로 처리)
+        calib_path = os.path.expanduser('~/ros-repo-3/roscars/aruco_localizer/camera_calibration.npz')
+        with np.load(calib_path) as data:
             self.camera_matrix = data['camera_matrix']
             self.dist_coeffs = data['distortion_coefficients']
 
@@ -40,7 +42,9 @@ class ArucoLocalizer(Node):
 
         if ids is not None:
             for i, corner in enumerate(corners):
-                rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corner, self.marker_size, self.camera_matrix, self.dist_coeffs)
+                rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(
+                    corner, self.marker_size, self.camera_matrix, self.dist_coeffs
+                )
 
                 pose = PoseStamped()
                 pose.header.stamp = self.get_clock().now().to_msg()
@@ -51,12 +55,13 @@ class ArucoLocalizer(Node):
                 pose.pose.position.z = tvec[0][0][2]
 
                 rot_matrix, _ = cv2.Rodrigues(rvec[0])
-                quat = tf_transformations.quaternion_from_matrix(np.vstack((np.hstack((rot_matrix, np.zeros((3, 1)))), [0, 0, 0, 1])))
+                quat = mat2quat(rot_matrix)  # [w, x, y, z]
 
-                pose.pose.orientation.x = quat[0]
-                pose.pose.orientation.y = quat[1]
-                pose.pose.orientation.z = quat[2]
-                pose.pose.orientation.w = quat[3]
+                # ROS의 quaternion은 [x, y, z, w] 순서
+                pose.pose.orientation.x = quat[1]
+                pose.pose.orientation.y = quat[2]
+                pose.pose.orientation.z = quat[3]
+                pose.pose.orientation.w = quat[0]
 
                 self.publisher.publish(pose)
                 self.get_logger().info(f"Published ArUco Pose: {pose.pose.position}")
