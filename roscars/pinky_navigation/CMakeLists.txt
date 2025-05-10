@@ -17,8 +17,6 @@ ament_python_install_package(${PROJECT_NAME})
 install(
   PROGRAMS
     pinky_navigation/initialpose.py
-    aruco_logger.py
-    aruco_detector.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -5,7 +5,6 @@ from visualization_msgs.msg import Marker, MarkerArray
 from cv_bridge import CvBridge
 import numpy as np
 import cv2
-import cv2.aruco as aruco
 from pinkylib import Camera
 
 def get_transform_matrix(rvec, tvec):
@@ -46,16 +45,9 @@ class ArucoLocalizer(Node):
 
             if pose_list:
                 for i, pose in enumerate(pose_list):
-                    if isinstance(pose, (list, tuple)) and len(pose) == 2:
-                        rvec, tvec = pose
-                    else:
-                        self.get_logger().warn(f"Unsupported pose format: {pose}")
-                        continue
-
                     marker = Marker()
                     marker.header.frame_id = 'camera_link'
                     marker.header.stamp = self.get_clock().now().to_msg()
-                    marker.id = i
                     marker.type = Marker.CUBE
                     marker.action = Marker.ADD
                     marker.scale.x = 0.02
@@ -66,12 +58,31 @@ class ArucoLocalizer(Node):
                     marker.color.b = 0.0
                     marker.color.a = 1.0
 
-                    # pose
-                    marker.pose.position.x = float(tvec[0])
-                    marker.pose.position.y = float(tvec[1])
-                    marker.pose.position.z = float(tvec[2])
+                    # ✅ 형식 1: [id, x, y, z]
+                    if isinstance(pose, (list, tuple)) and len(pose) == 4:
+                        marker.id = int(pose[0])
+                        marker.pose.position.x = float(pose[1])
+                        marker.pose.position.y = float(pose[2])
+                        marker.pose.position.z = float(pose[3])
+                        marker.pose.orientation.w = 1.0  # 기본 orientation
 
-                    # 방향 (orientation은 기본값 유지 또는 변환 가능)
+                        self.get_logger().info(
+                            f"id: {pose[0]} x: {pose[1]:.2f}, y: {pose[2]:.2f}, z: {pose[3]:.2f}"
+                        )
+
+                    # ✅ 형식 2: (rvec, tvec)
+                    elif isinstance(pose, (list, tuple)) and len(pose) == 2:
+                        rvec, tvec = pose
+                        marker.id = i
+                        marker.pose.position.x = float(tvec[0])
+                        marker.pose.position.y = float(tvec[1])
+                        marker.pose.position.z = float(tvec[2])
+                        marker.pose.orientation.w = 1.0  # 필요 시 변환 추가
+
+                    else:
+                        self.get_logger().warn(f"Unsupported pose format: {pose}")
+                        continue
+
                     marker_array.markers.append(marker)
 
             self.publisher.publish(marker_array)
