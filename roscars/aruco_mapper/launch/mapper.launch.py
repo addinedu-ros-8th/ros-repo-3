@@ -3,12 +3,6 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        # Node(
-        #     package='aruco_mapper',
-        #     executable='camera_publisher',
-        #     name='camera_publisher',
-        #     output='screen'
-        # ),
         Node(
             package='aruco_mapper',
             executable='aruco_localizer_node',

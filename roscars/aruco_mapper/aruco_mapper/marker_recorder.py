@@ -3,6 +3,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import MarkerArray
 from tf2_ros import Buffer, TransformListener
+from rclpy.duration import Duration
 import tf2_geometry_msgs
 import csv
 import os
@@ -12,14 +13,17 @@ class MarkerRecorder(Node):
         super().__init__('marker_recorder')
         self.subscription = self.create_subscription(
             MarkerArray,
-            '/aruco_markers',  # 마커 위치를 발행하는 토픽
+            '/aruco_markers',
             self.marker_callback,
             10
         )
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.saved_ids = set()
-        self.output_file = os.path.join(os.path.expanduser('~'), 'aruco_marker_positions.csv')
+
+        output_dir = os.path.expanduser('~/ros-repo-3/roscars/aruco_mapper')
+        os.makedirs(output_dir, exist_ok=True)
+        self.output_file = os.path.join(output_dir, 'aruco_marker_positions.csv')
 
         with open(self.output_file, 'w') as f:
             writer = csv.writer(f)
@@ -29,20 +33,21 @@ class MarkerRecorder(Node):
         for marker in msg.markers:
             marker_id = marker.id
             if marker_id in self.saved_ids:
-                continue  # 중복 저장 방지
+                continue
 
             try:
                 stamped_pose = PoseStamped()
                 stamped_pose.header = marker.header
-                stamped_pose.pose = marker.pose.pose
+                stamped_pose.pose = marker.pose
 
-                # map 기준으로 변환
                 transformed = self.tf_buffer.transform(
                     stamped_pose, 'map',
-                    timeout=rclpy.duration.Duration(seconds=1.0)
+                    timeout=Duration(seconds=1.0)
                 )
 
-                self.get_logger().info(f"[Saved] Marker {marker_id} → x: {transformed.pose.position.x:.2f}, y: {transformed.pose.position.y:.2f}")
+                self.get_logger().info(
+                    f"[Saved] Marker {marker_id} → x: {transformed.pose.position.x:.2f}, y: {transformed.pose.position.y:.2f}"
+                )
 
                 with open(self.output_file, 'a') as f:
                     writer = csv.writer(f)
