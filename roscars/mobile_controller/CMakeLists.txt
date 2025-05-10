@@ -44,16 +44,9 @@ ament_target_dependencies(roscar_register_publisher
 )
 
 # roscar_battery_publisher 노드
-add_executable(roscar_battery_publisher ros_nodes/roscar_battery_publisher.cpp)
-ament_target_dependencies(roscar_battery_publisher
-  rclcpp
-  shared_interfaces
-)
-
-# roscar_battery_publisher 노드
-add_executable(battery_node ros_nodes/battery_node.cpp
+add_executable(roscar_battery_publisher ros_nodes/roscar_battery_publisher.cpp
   sensor_read/battery.cpp)
-ament_target_dependencies(battery_node
+ament_target_dependencies(roscar_battery_publisher
   rclcpp
   shared_interfaces
 )
@@ -72,7 +65,8 @@ target_compile_definitions(roscar_lidar_publisher PRIVATE
 )
 
 # roscar_ultra_publisher 노드 (libgpiod 연동)
-add_executable(roscar_ultra_publisher ros_nodes/roscar_ultra_publisher.cpp)
+add_executable(roscar_ultra_publisher ros_nodes/roscar_ultra_publisher.cpp
+  sensor_read/ultra_sensor.cpp)
 ament_target_dependencies(roscar_ultra_publisher
   rclcpp
   shared_interfaces

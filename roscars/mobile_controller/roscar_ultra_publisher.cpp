@@ -1,7 +1,12 @@
+#include <chrono>
 #include <rclcpp/rclcpp.hpp>
 #include "shared_interfaces/msg/ultra_status.hpp"
+#include <cmath>
+#include <gpiod.h>
 #include <fstream>
-#include "ultra_sensor.hpp"
+#include <string>
+
+using namespace std::chrono_literals;
 
 namespace ultra_publisher {
 
@@ -20,7 +25,24 @@ public:
         publisher_ = this->create_publisher<shared_interfaces::msg::UltraStatus>(topic_name, 10);
         timer_ = this->create_wall_timer(500ms, std::bind(&UltraPublisher::read_and_publish, this));
 
-        ultra_sensor_ = std::make_shared<UltraSensor>();
+        chip = gpiod_chip_open_by_name("gpiochip4"); // GPIO 23, 24 = BCM 기준 chip 4
+        if (!chip) {
+            RCLCPP_FATAL(this->get_logger(), "Failed to open gpiochip4");
+            rclcpp::shutdown();
+            return;
+        }
+
+        trig_line = gpiod_chip_get_line(chip, 23); // TRIG = GPIO 23
+        echo_line = gpiod_chip_get_line(chip, 24); // ECHO = GPIO 24
+
+        gpiod_line_request_output(trig_line, "ultra_trig", 0);
+        gpiod_line_request_input(echo_line, "ultra_echo");
+    }
+
+    ~UltraPublisher() {
+        gpiod_line_release(trig_line);
+        gpiod_line_release(echo_line);
+        gpiod_chip_close(chip);
     }
 
 private:
@@ -36,8 +58,28 @@ private:
     }
 
     void read_and_publish() {
-        // 초음파 센서로부터 거리 읽기
-        float distance = ultra_sensor_->read_distance();
+        // 10us high trigger pulse
+        gpiod_line_set_value(trig_line, 1);
+        rclcpp::sleep_for(10us);
+        gpiod_line_set_value(trig_line, 0);
+
+        // Wait for echo start
+        auto start = std::chrono::high_resolution_clock::now();
+        while (gpiod_line_get_value(echo_line) == 0) {
+            start = std::chrono::high_resolution_clock::now();
+        }
+
+        // Wait for echo end
+        auto end = start;
+        while (gpiod_line_get_value(echo_line) == 1) {
+            end = std::chrono::high_resolution_clock::now();
+        }
+
+        std::chrono::duration<float> duration = end - start;
+        float distance = (duration.count() * 34300.0) / 2.0; // cm 단위
+
+        // 소수점 2자리까지 반올림하여 저장
+        distance = std::round(distance * 100.0) / 100.0;  // 소수점 2자리 반올림
 
         // 메시지로 저장
         auto msg = shared_interfaces::msg::UltraStatus();
@@ -54,7 +96,10 @@ private:
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<shared_interfaces::msg::UltraStatus>::SharedPtr publisher_;
-    std::shared_ptr<UltraSensor> ultra_sensor_;
+
+    struct gpiod_chip *chip;
+    struct gpiod_line *trig_line;
+    struct gpiod_line *echo_line;
 };
 
 }  // namespace ultra_publisher
