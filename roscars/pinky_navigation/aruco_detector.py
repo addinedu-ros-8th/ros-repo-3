@@ -1,4 +1,4 @@
-from pinkylib import Camera
+from .camera import Camera
 import cv2
 import numpy as np
 import time
