@@ -18,7 +18,9 @@ public:
         RCLCPP_INFO(this->get_logger(), "Using topic name: %s", topic_name.c_str());
 
         publisher_ = this->create_publisher<shared_interfaces::msg::UltraStatus>(topic_name, 10);
-        timer_ = this->create_wall_timer(500ms, std::bind(&UltraPublisher::read_and_publish, this));
+        
+        // C++14 이전 환경에서도 동작할 수 있도록 수정
+        timer_ = this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&UltraPublisher::read_and_publish, this));
 
         ultra_sensor_ = std::make_shared<UltraSensor>();
     }
@@ -29,10 +31,10 @@ private:
         std::string line;
         while (std::getline(hostapd_file, line)) {
             if (line.find("ssid=") == 0) {
-                return line.substr(5);
+                return line.substr(5); // SSID 추출
             }
         }
-        return "UNKNOWN_SSID";
+        return "UNKNOWN_SSID"; // SSID를 찾지 못했을 경우
     }
 
     void read_and_publish() {
@@ -49,7 +51,7 @@ private:
         // 데이터를 publish하기 전에 출력시 소수점 2자리로 포맷팅
         RCLCPP_INFO(this->get_logger(), "Distance: %.2f cm, SSID: %s", msg.distance, msg.roscar_name.c_str());
 
-        publisher_->publish(msg);
+        publisher_->publish(msg); // 데이터 전송
     }
 
     rclcpp::TimerBase::SharedPtr timer_;

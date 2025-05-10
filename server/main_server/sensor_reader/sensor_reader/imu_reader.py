@@ -11,7 +11,7 @@ qos_profile = QoSProfile(
 )
 
 
-class SLLidarClient(Node):
+class ImuReader(Node):
     def __init__(self):
         super().__init__('imu_reader')
 
@@ -34,7 +34,7 @@ class SLLidarClient(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = SLLidarClient()
+    node = ImuReader()
     rp.spin(node)
     rp.shutdown()
 

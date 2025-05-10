@@ -11,9 +11,9 @@ qos_profile = QoSProfile(
 )
 
 
-class SLLidarClient(Node):
+class BatteryReader(Node):
     def __init__(self):
-        super().__init__('sllidar_client')
+        super().__init__('battery_reader')
 
         qos_profile = QoSProfile(
         reliability=QoSReliabilityPolicy.RELIABLE,
@@ -33,7 +33,7 @@ class SLLidarClient(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = SLLidarClient()
+    node = BatteryReader()
     rp.spin(node)
     rp.shutdown()
 

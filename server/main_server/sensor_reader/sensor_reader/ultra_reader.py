@@ -11,7 +11,7 @@ qos_profile = QoSProfile(
 )
 
 
-class SLLidarClient(Node):
+class UltraReader(Node):
     def __init__(self):
         super().__init__('ultra_reader')
 
@@ -33,7 +33,7 @@ class SLLidarClient(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = SLLidarClient()
+    node = UltraReader()
     rp.spin(node)
     rp.shutdown()
 

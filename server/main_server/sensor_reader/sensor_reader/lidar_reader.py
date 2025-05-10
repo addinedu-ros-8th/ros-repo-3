@@ -10,9 +10,9 @@ qos_profile = QoSProfile(
     depth=10
 )
 
-class SLLidarClient(Node):
+class SLLidarReader(Node):
     def __init__(self):
-        super().__init__('sllidar_client')
+        super().__init__('sllidar_reader')
 
         self.subscription = self.create_subscription(
             LidarScan,
@@ -46,7 +46,7 @@ class SLLidarClient(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = SLLidarClient()
+    node = SLLidarReader()
     rp.spin(node)
     rp.shutdown()
 

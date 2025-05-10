@@ -2,6 +2,8 @@
 #include <chrono>
 #include <gpiod.h>
 #include <cmath>
+#include <stdexcept>  // 추가: std::runtime_error를 사용하려면 필요
+#include <thread>     // 추가: std::this_thread::sleep_for를 사용하려면 필요
 
 UltraSensor::UltraSensor() {
     chip = gpiod_chip_open_by_name("gpiochip4"); // GPIO 23, 24 = BCM 기준 chip 4
@@ -25,7 +27,7 @@ UltraSensor::~UltraSensor() {
 float UltraSensor::read_distance() {
     // 10us high trigger pulse
     gpiod_line_set_value(trig_line, 1);
-    std::this_thread::sleep_for(std::chrono::microseconds(10));
+    std::this_thread::sleep_for(std::chrono::microseconds(10));  // 10us 대기
     gpiod_line_set_value(trig_line, 0);
 
     // Wait for echo start
