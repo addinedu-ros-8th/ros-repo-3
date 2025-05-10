@@ -3,6 +3,7 @@
 #include "mobile_controller/utils.hpp"
 #include <fstream>
 #include <iostream>
+#include <cstdlib>  // 환경 변수 접근을 위한 헤더
 
 using RoscarRegister = shared_interfaces::msg::RoscarRegister;
 using namespace std::chrono_literals;
@@ -49,6 +50,28 @@ public:
         return "UNKNOWN_SSID";
     }
 
+    unsigned char get_domain_id()
+    {
+        const char* domain_id = std::getenv("ROS_DOMAIN_ID");  // ROS_DOMAIN_ID 환경 변수
+        if (domain_id)
+        {
+            try
+            {
+                RCLCPP_INFO(this->get_logger(), "Found ROS_DOMAIN_ID: %s", domain_id);
+                return static_cast<unsigned char>(std::stoi(domain_id));  // 문자열을 unsigned char로 변환
+            }
+            catch (const std::invalid_argument& e)
+            {
+                RCLCPP_WARN(this->get_logger(), "Invalid ROS_DOMAIN_ID format, using default.");
+            }
+        }
+        else
+        {
+            RCLCPP_WARN(this->get_logger(), "ROS_DOMAIN_ID not found, returning default value.");
+        }
+        return 0;  // 기본값 0
+    }
+
 private:
     void publish_status()
     {
@@ -57,9 +80,11 @@ private:
         msg.battery_percentage = 100;
         msg.operational_status = "STANDBY";
         msg.roscar_ip_v4 = get_ip_address("wlan0");
+        msg.from_domain_id = get_domain_id();  // 도메인 ID 가져오기
+        msg.to_domain_id = 25;
 
-        RCLCPP_INFO(this->get_logger(), "Publishing roscarRegister: name=%s, ip=%s",
-                    msg.roscar_name.c_str(), msg.roscar_ip_v4.c_str());
+        RCLCPP_INFO(this->get_logger(), "Publishing roscarRegister: name=%s, ip=%s, from_domain_id=%u",
+                    msg.roscar_name.c_str(), msg.roscar_ip_v4.c_str(), msg.from_domain_id);
         publisher_->publish(msg);
     }
 
