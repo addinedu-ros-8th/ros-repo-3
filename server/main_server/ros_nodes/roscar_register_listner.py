@@ -1,5 +1,4 @@
-from shared_interfaces.msg import RobotRegister
-from std_msgs.msg import String
+from shared_interfaces.msg import RoscarRegister
 import rclpy
 from rclpy.node import Node
 
@@ -7,7 +6,7 @@ class RobotRegisterRequester(Node):
     def __init__(self):
         super().__init__('roscar_requester')
         self.subscription = self.create_subscription(
-            RobotRegister,
+            RoscarRegister,
             '/roscar/register',
             self.roscar_status_callback,
             10
