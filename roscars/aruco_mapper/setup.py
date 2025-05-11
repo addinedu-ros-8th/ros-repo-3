@@ -9,6 +9,7 @@ setup(
     data_files=[
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/mapper.launch.py']),
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),  # ✅ 추가됨
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -25,3 +26,4 @@ setup(
         ],
     },
 )
+
