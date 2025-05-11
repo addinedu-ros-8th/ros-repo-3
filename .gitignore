@@ -194,6 +194,7 @@ __pycache__/
 # Python virtual environments (optional)
 venv/
 .env/
+.roscars_venv/
 
 # Yolo
 .pt

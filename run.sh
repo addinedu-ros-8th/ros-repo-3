@@ -1,26 +1,51 @@
 #!/bin/bash
 
-# This script installs the required dependencies for the project.
+# 시스템 패키지 최신화
 sudo apt update && sudo apt upgrade -y
 
+# 가상환경 비활성화 (이미 활성화되어 있던 경우)
 deactivate 2>/dev/null || true
 
-# Install Python dependencies
-if [ -d ".roscars_venv" ]; then
-    source .roscars_venv/bin/activate
-else
-    python3 -m venv .roscars_venv
-    source .roscars_venv/bin/activate
-    pip install -r requirements.txt
+# 가상환경 경로 지정
+VENV_DIR=".roscars_venv"
+
+# 가상환경 생성
+if [ ! -d "$VENV_DIR" ]; then
+    echo "[INFO] Creating Python virtual environment in $VENV_DIR..."
+    python3 -m venv "$VENV_DIR"
 fi
 
+# 가상환경 활성화
+echo "[INFO] Activating virtual environment..."
+source "$VENV_DIR/bin/activate"
+
+# Python 의존성 설치 (한 번만)
+if [ ! -f "$VENV_DIR/.installed" ]; then
+    echo "[INFO] Installing Python dependencies with --break-system-packages..."
+    pip install --upgrade pip setuptools wheel --break-system-packages
+    pip install -r requirements.txt --break-system-packages
+    touch "$VENV_DIR/.installed"
+    echo "[INFO] Python dependencies installed"
+fi
+
+# ROS2 환경 설정
+echo "[INFO] Sourcing ROS2 setup..."
+source /opt/ros/jazzy/setup.bash
+
+# 시스템 의존성 설치
+echo "[INFO] Installing system dependencies..."
 sudo apt install -y libgpiod-dev
 
+# 이전 빌드 정리
+echo "[INFO] Cleaning previous build artifacts..."
 rm -rf build install log
-
 export PYTHONWARNINGS="ignore::UserWarning"
+find . -type d -name "__pycache__" -exec rm -rf {} +
+find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
-
-find . -type d -name "__pycache__" -exec rm -rf {} + && find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
-
+# colcon 빌드
+echo "[INFO] Building workspace with colcon..."
 colcon build --symlink-install
+
+echo "[INFO] Build complete"
+
