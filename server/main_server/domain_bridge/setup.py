@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'domain_bridge'
+package_name = 'domain_bridge_controller'
 
 setup(
     name=package_name,
@@ -20,8 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'launch_domain_bridge = domain_bridge.launch_domain_bridge:main',
-            'domain_bridge_manager = domain_bridge.domain_bridge_manager:main',
+            'launch_domain_bridge = domain_bridge_controller.launch_domain_bridge:main',
+            'domain_bridge_manager = domain_bridge_controller.domain_bridge_manager:main',
         ],
     },
 )

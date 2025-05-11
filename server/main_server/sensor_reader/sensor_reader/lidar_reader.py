@@ -3,6 +3,8 @@ from rclpy.node import Node
 from shared_interfaces.msg import LidarScan
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import math
+import sys
+from rclpy.utilities import remove_ros_args
 
 qos_profile = QoSProfile(
     reliability=QoSReliabilityPolicy.RELIABLE,
@@ -11,17 +13,21 @@ qos_profile = QoSProfile(
 )
 
 class SLLidarReader(Node):
-    def __init__(self):
+    def __init__(self, namespace: str):
         super().__init__('sllidar_reader')
+
+        # 동적으로 토픽을 구성
+        topic = f'/{namespace}/roscar/sensor/lidar'
 
         self.subscription = self.create_subscription(
             LidarScan,
-            '/roscar/sensor/lidar',
+            topic,
             self.callback,
             qos_profile
         )
 
         self.is_printing = False
+        self.get_logger().info(f"✅ Subscribed to topic: {topic}")
 
     def callback(self, msg):
         total_angle = (msg.angle_max - msg.angle_min)
@@ -46,8 +52,19 @@ class SLLidarReader(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = SLLidarReader()
+
+    # ROS argument 제거 후 사용자 인자 추출
+    user_args = remove_ros_args(args if args else sys.argv)
+    if len(user_args) < 2:
+        print("❗ 사용법: ros2 run <your_package_name> sllidar_reader <namespace>")
+        rp.shutdown()
+        return
+
+    namespace = user_args[1]
+
+    node = SLLidarReader(namespace)
     rp.spin(node)
+    node.destroy_node()
     rp.shutdown()
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 
+# Base class for all models
 RoscarsLogBase = declarative_base()
 
 # Enum definitions
@@ -34,8 +35,8 @@ class DeliveryEventLog(RoscarsLogBase):
 
     event_id = Column(Integer, primary_key=True)
     delivery_id = Column(Integer)
-    previous_event = Column(Enum(EventType))
-    new_event = Column(Enum(EventType))
+    previous_event = Column(Enum(EventType, name="event_type_enum"))
+    new_event = Column(Enum(EventType, name="event_type_enum"))
     changed_at = Column(TIMESTAMP)
     changed_by_user_id = Column(Integer)
 
@@ -44,8 +45,8 @@ class TaskEventLog(RoscarsLogBase):
 
     event_id = Column(Integer, primary_key=True)
     task_id = Column(Integer)
-    previous_event = Column(Enum(EventType))
-    new_event = Column(Enum(EventType))
+    previous_event = Column(Enum(EventType, name="event_type_enum"))
+    new_event = Column(Enum(EventType, name="event_type_enum"))
     changed_at = Column(TIMESTAMP)
 
 class RosCarEventLog(RoscarsLogBase):
@@ -54,7 +55,7 @@ class RosCarEventLog(RoscarsLogBase):
     event_id = Column(Integer, primary_key=True)
     roscar_id = Column(Integer)
     task_id = Column(Integer)
-    event_type = Column(Enum(RosCarEventType))
+    event_type = Column(Enum(RosCarEventType, name="roscar_event_type_enum"))
     event_timestamp = Column(TIMESTAMP)
 
 class InventoryEventLog(RoscarsLogBase):
@@ -71,7 +72,7 @@ class FileSystemLog(RoscarsLogBase):
     __tablename__ = 'FileSystemLog'
 
     file_log_id = Column(Integer, primary_key=True)
-    image_path = Column(String)
+    image_path = Column(String(255))  # 길이 지정
     updatetime = Column(TIMESTAMP)
 
 class PrecisionStopLog(RoscarsLogBase):
@@ -115,14 +116,14 @@ class ControlCommandLog(RoscarsLogBase):
     timestamp = Column(TIMESTAMP)
     linear_velocity = Column(Float)
     angular_velocity = Column(Float)
-    control_source = Column(Enum(ControlSource))
+    control_source = Column(Enum(ControlSource, name="control_source_enum"))
 
 class TrainingSample(RoscarsLogBase):
     __tablename__ = 'TrainingSample'
 
     sample_id = Column(Integer, primary_key=True)
     sensor_log_id = Column(Integer)
-    image_path = Column(String)
+    image_path = Column(String(255))  # 길이 지정
     label = Column(JSON)
     is_used = Column(Boolean)
     created_at = Column(TIMESTAMP)

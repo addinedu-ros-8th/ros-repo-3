@@ -1,16 +1,19 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(shared_interfaces)
 
-unset (CATKIN_INSTALL_INTO_PREFIX_ROOT)
-unset (CATKIN_SYMLINK_INSTALL)
+# Compiler flags for GNU and Clang
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-# 빌드 도구 및 메시지 생성 관련 패키지
+# Find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)   # std_msgs 의존성 추가
+find_package(geometry_msgs REQUIRED)  # geometry_msgs 의존성 추가
 
-set(msg_files
+# Generate messages, services, and actions
+rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AccessResult.msg"
   "msg/AIModuleStatus.msg"
   "msg/BatteryStatus.msg"
@@ -33,21 +36,17 @@ set(msg_files
   "msg/RobotPoseUpdate.msg"
   "msg/RobotStatusLog.msg"
   "msg/RoscarInfo.msg"
+  "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"
+  "msg/RoscarStatusLog.msg"
   "msg/SensorFusion.msg"
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
   "msg/UltraStatus.msg"
-)
-
-set(srv_files
   "srv/ManualOverride.srv"
   "srv/QueryTaskStatus.srv"
   "srv/RequestDiagnostics.srv"
   "srv/StartInventoryCheck.srv"
-)
-
-set(action_files
   "action/ChargeProcess.action"
   "action/MaintenanceCharge.action"
   "action/MoveToGoal.action"
@@ -55,20 +54,15 @@ set(action_files
   "action/ScanInventory.action"
   "action/SecurityPatrol.action"
   "action/StartDelivery.action"
+  DEPENDENCIES std_msgs geometry_msgs  # 의존성 추가
 )
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  ${msg_files}
-  ${srv_files}
-  ${action_files}
-  DEPENDENCIES builtin_interfaces geometry_msgs
-)
+# Testing dependencies
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
-# Python 타입 서포트 및 CPP 타입 서포트 지정 (Python 바인딩 생성을 위해 필요)
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
-rosidl_get_typesupport_target(python_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_python")
-
-ament_export_dependencies(rosidl_default_runtime)
-
-# 패키지 설치 정의
 ament_package()

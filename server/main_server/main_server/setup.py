@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'sensor_reader'
+package_name = 'main_server'
 
 setup(
     name=package_name,
@@ -11,8 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools',
-                      'shared_interfaces'],
+    install_requires=['setuptools'],
     zip_safe=True,
     maintainer='sang',
     maintainer_email='hinoonyaso@gmail.com',
@@ -21,11 +20,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'lidar_reader = sensor_reader.lidar_reader:main',
-            'battery_reader = sensor_reader.battery_reader:main',
-            'imu_reader = sensor_reader.imu_reader:main',
-            'ultra_reader = sensor_reader.ultra_reader:main',
-            'roscar_register_listner = sensor_reader.roscar_register_listner:main',
         ],
     },
 )

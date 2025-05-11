@@ -1,31 +1,26 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>shared_interfaces</name>
-  <version>0.1.0</version>
-  <description>Shared message and service definitions for ROSCars project</description>
+  <version>0.1.0</version>  <!-- 버전 정보 추가 -->
+  <description>Shared interfaces for ROS2 communication</description> <!-- 설명 추가 -->
+  <maintainer email="hinoonyaso@gmail.com">sang</maintainer>
+  <license>MIT</license> <!-- 라이센스 정보 추가 -->
 
-  <maintainer email="yonmilk@icloud.com">Kim Yeonwoo</maintainer>
-  <license>Apache-2.0</license>
-
-  <!-- 빌드 도구 -->
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <!-- 빌드 및 실행 의존성 -->
-  <build_depend>rosidl_default_generators</build_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
-  <!-- 의존 패키지 -->
-  <depend>builtin_interfaces</depend>
+  <!-- Add rosidl_default_generators dependency -->
+  <depend>rosidl_default_generators</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>action_msgs</depend>
-  <depend>service_msgs</depend>
 
-  <!-- Python 바인딩용 -->
-  <exec_depend>rosidl_typesupport_python</exec_depend>
-
-  <!-- 인터페이스 패키지 그룹 지정 -->
+  <!-- Add member_of_group tag for ROS2 interface packages -->
   <member_of_group>rosidl_interface_packages</member_of_group>
-</package>
 
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

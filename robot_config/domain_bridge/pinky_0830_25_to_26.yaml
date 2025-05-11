@@ -1,0 +1,21 @@
+domain_bridge:
+  - topic: /roscar/register
+    type: shared_interfaces/msg/RoscarRegister
+    from_domain: 25
+    to_domain: 26
+  - topic: /pinky_0830/roscar/sensor/imu
+    type: shared_interfaces/msg/ImuStatus
+    from_domain: 25
+    to_domain: 26
+  - topic: /pinky_0830/roscar/status/battery
+    type: shared_interfaces/msg/BatteryStatus
+    from_domain: 25
+    to_domain: 26
+  - topic: /pinky_0830/roscar/sensor/lidar
+    type: shared_interfaces/msg/LidarScan
+    from_domain: 25
+    to_domain: 26
+  - topic: /pinky_0830/roscar/sensor/ultra
+    type: shared_interfaces/msg/UltraStatus
+    from_domain: 25
+    to_domain: 26

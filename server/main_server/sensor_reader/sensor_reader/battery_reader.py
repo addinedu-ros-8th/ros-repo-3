@@ -1,8 +1,11 @@
-import rclpy as rp
+import sys
+import rclpy
 from rclpy.node import Node
-from shared_interfaces.msg import BatteryStatus
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
-import math
+from rclpy.utilities import remove_ros_args
+
+from shared_interfaces.msg import BatteryStatus
+
 
 qos_profile = QoSProfile(
     reliability=QoSReliabilityPolicy.RELIABLE,
@@ -12,30 +15,39 @@ qos_profile = QoSProfile(
 
 
 class BatteryReader(Node):
-    def __init__(self):
+    def __init__(self, namespace: str):
         super().__init__('battery_reader')
+        topic = f'/{namespace}/roscar/status/battery'
 
-        qos_profile = QoSProfile(
-        reliability=QoSReliabilityPolicy.RELIABLE,
-        history=QoSHistoryPolicy.KEEP_LAST,
-        depth=10
-        )
         self.subscription = self.create_subscription(
-            BatteryStatus,  # 받은 메시지 타입 지정
-            '/roscar/status/battery',    # 구독할 토픽 이름
-            self.callback,  # 콜백 함수
-            qos_profile  # 큐 사이즈
+            BatteryStatus,
+            topic,
+            self.callback,
+            qos_profile
         )
+        self.get_logger().info(f"✅ Subscribed to topic: {topic}")
 
     def callback(self, msg):
-        print(msg.roscar_name)
-        print(msg.percentage)
+        self.get_logger().info(f"[Battery Info] {msg.roscar_name} → {msg.percentage:.2f}%")
+
 
 def main(args=None):
-    rp.init(args=args)
-    node = BatteryReader()
-    rp.spin(node)
-    rp.shutdown()
+    rclpy.init(args=args)
+
+    # ROS argument 제거 후 사용자 인자 추출
+    user_args = remove_ros_args(args if args else sys.argv)
+    if len(user_args) < 2:
+        print("❗ 사용법: ros2 run <your_package_name> battery_reader <namespace>")
+        rclpy.shutdown()
+        return
+
+    namespace = user_args[1]
+
+    node = BatteryReader(namespace)
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

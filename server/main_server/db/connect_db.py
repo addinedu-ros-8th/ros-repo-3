@@ -41,33 +41,46 @@ def get_roscars_session():
 def get_roscars_log_session():
     return get_session(roscars_log_engine)
 
-def drop_all_tables(engine):
+from sqlalchemy import text, inspect
+from sqlalchemy.engine import Engine
+
+# 외래 키 제약을 제거하고 테이블을 삭제하는 함수
+def drop_all_tables(engine: Engine):
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
 
     with engine.connect() as conn:
         trans = conn.begin()
         try:
+            # 외래 키 제약을 비활성화
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+            
             for table in table_names:
                 conn.execute(text(f"DROP TABLE IF EXISTS `{table}`"))
+            
+            # 외래 키 제약을 활성화
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+            
             trans.commit()
             print(f"{engine.url.database}의 모든 테이블 삭제 완료")
         except Exception as e:
             trans.rollback()
             print(f"테이블 삭제 중 오류 발생: {e}")
 
+# 테이블을 삭제 후 재생성하는 함수
 def recreate_all_tables():
     print("테이블 구조 불일치: 기존 테이블 삭제 후 재생성 시작...")
 
-    # Drop all
+    # Drop all tables
     drop_all_tables(roscars_engine)
     drop_all_tables(roscars_log_engine)
 
-    # Create all
+    # Create all tables
     RoscarsBase.metadata.create_all(bind=roscars_engine)
     RoscarsLogBase.metadata.create_all(bind=roscars_log_engine)
 
     print("테이블 재생성 완료")
+
 
 def check_db_init():
     try:
