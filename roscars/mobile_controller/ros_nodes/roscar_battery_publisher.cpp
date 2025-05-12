@@ -1,53 +1,58 @@
 #include <chrono>
 #include "rclcpp/rclcpp.hpp"
-#include "shared_interfaces/msg/battery_status.hpp"  // ✅ 명세 맞게 메시지 확인 필요
+#include "shared_interfaces/msg/battery_status.hpp"
 #include "battery.hpp"
 #include <iostream>
 #include <fstream>
-#include <regex>
+#include "rclcpp/qos.hpp"
+
+using std::placeholders::_1;
 
 std::string get_ap_ssid() {
     std::ifstream hostapd_file("/etc/hostapd/hostapd.conf");
     std::string line;
     while (std::getline(hostapd_file, line)) {
         if (line.find("ssid=") == 0) {
-            return line.substr(5);
+            return line.substr(5);  // "ssid=" 이후 문자열
         }
     }
     return "UNKNOWN_SSID";
-}
-
-// 숫자 ID를 SSID에서 추출 (예: pinky_07db → 7)
-uint8_t extract_robot_id(const std::string& ssid) {
-    std::regex re("\\d+");
-    std::smatch match;
-    if (std::regex_search(ssid, match, re)) {
-        return static_cast<uint8_t>(std::stoi(match.str()));
-    }
-    return 0;
 }
 
 class BatteryStatusPublisher : public rclcpp::Node {
 public:
     BatteryStatusPublisher() : Node("battery_status_publisher"), battery_() {
         std::string ssid = get_ap_ssid();
-        std::string topic_name = "/" + ssid + "/roscar/status/battery";  // ✅ topic path 수정
+        std::string topic_name = "/" + ssid + "/roscar/status/battery";
 
-        publisher_ = this->create_publisher<shared_interfaces::msg::BatteryStatus>(topic_name, 10);
-        timer_ = this->create_wall_timer(std::chrono::seconds(3), std::bind(&BatteryStatusPublisher::publish_status, this));
+        // ✅ QoS 설정
+        rclcpp::QoS qos_profile(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+        qos_profile.keep_last(10);
+        qos_profile.reliable();
+
+        publisher_ = this->create_publisher<shared_interfaces::msg::BatteryStatus>(
+            topic_name,
+            qos_profile
+        );
+
+        timer_ = this->create_wall_timer(
+            std::chrono::seconds(3),
+            std::bind(&BatteryStatusPublisher::publish_status, this)
+        );
+
+        RCLCPP_INFO(this->get_logger(), "BatteryStatusPublisher initialized for topic: %s", topic_name.c_str());
     }
 
 private:
     void publish_status() {
         std::string ssid = get_ap_ssid();
-        uint8_t robot_id = extract_robot_id(ssid);  // SSID에서 ID 추출
-        float battery_percent = battery_.get_battery();  // 0.0 ~ 100.0
+        float battery_percent = battery_.get_battery();
 
         shared_interfaces::msg::BatteryStatus msg;
-        msg.robot_id = robot_id;
+        msg.robot_name = ssid;  // ✅ SSID 직접 포함
         msg.battery_percent = battery_percent;
-        msg.is_charging = false;  // ✅ 센서 연동 시 갱신
-        msg.stamp = this->get_clock()->now();  // 현재 타임스탬프 설정
+        msg.is_charging = false;  // 필요시 실제 센서 연결
+        msg.stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
 
         RCLCPP_INFO(this->get_logger(), "[%s] 배터리 잔량: %.1f%%", ssid.c_str(), battery_percent);
         publisher_->publish(msg);
