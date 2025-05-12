@@ -16,9 +16,8 @@ class RoscarRegisterPublisher : public rclcpp::Node
 public:
     RoscarRegisterPublisher() : Node("roscar_register_publisher")
     {
-        // SSID를 기반으로 토픽 네임스페이스 설정
-        std::string ssid = get_ap_ssid();
-        std::string topic_name = "/" + ssid + "/roscar/register";
+        // 공통 등록 토픽 사용
+        std::string topic_name = "/roscar/register";
 
         // 로깅을 통해 topic_name 확인
         RCLCPP_INFO(this->get_logger(), "Using topic: %s", topic_name.c_str());
@@ -34,31 +33,28 @@ public:
     {
         std::ifstream hostapd_file("/etc/hostapd/hostapd.conf");
         std::string line;
-        bool found_ssid = false;
         while (std::getline(hostapd_file, line))
         {
             if (line.find("ssid=") == 0)
             {
-                found_ssid = true;
                 RCLCPP_INFO(this->get_logger(), "Found SSID: %s", line.substr(5).c_str());
                 return line.substr(5);
             }
         }
 
-        // SSID를 찾지 못한 경우 로깅을 추가하고 기본값 반환
         RCLCPP_WARN(this->get_logger(), "SSID not found, returning default value.");
         return "UNKNOWN_SSID";
     }
 
     unsigned char get_domain_id()
     {
-        const char* domain_id = std::getenv("ROS_DOMAIN_ID");  // ROS_DOMAIN_ID 환경 변수
+        const char* domain_id = std::getenv("ROS_DOMAIN_ID");
         if (domain_id)
         {
             try
             {
                 RCLCPP_INFO(this->get_logger(), "Found ROS_DOMAIN_ID: %s", domain_id);
-                return static_cast<unsigned char>(std::stoi(domain_id));  // 문자열을 unsigned char로 변환
+                return static_cast<unsigned char>(std::stoi(domain_id));
             }
             catch (const std::invalid_argument& e)
             {
@@ -69,19 +65,19 @@ public:
         {
             RCLCPP_WARN(this->get_logger(), "ROS_DOMAIN_ID not found, returning default value.");
         }
-        return 0;  // 기본값 0
+        return 0;
     }
 
 private:
     void publish_status()
     {
         auto msg = RoscarRegister();
-        msg.roscar_name = get_ap_ssid();  // SSID 가져오기
+        msg.roscar_name = get_ap_ssid();
         msg.battery_percentage = 100;
         msg.operational_status = "STANDBY";
         msg.roscar_ip_v4 = get_ip_address("wlan0");
-        msg.from_domain_id = get_domain_id();  // 도메인 ID 가져오기
-        msg.to_domain_id = 25;
+        msg.from_domain_id = get_domain_id();
+        msg.to_domain_id = 26;
 
         RCLCPP_INFO(this->get_logger(), "Publishing roscarRegister: name=%s, ip=%s, from_domain_id=%u",
                     msg.roscar_name.c_str(), msg.roscar_ip_v4.c_str(), msg.from_domain_id);
