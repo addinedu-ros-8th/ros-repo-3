@@ -67,23 +67,6 @@
             <arg name="lifecycle_nodes"    value="$(var lifecycle_nodes_nav)"/>
         </include>
 
-        <!-- ArUco Detector Node -->
-        <node
-          pkg="pinky_navigation"
-          exec="aruco_detector.py"
-          name="aruco_detector"
-          output="screen">
-          <param from="$(find-pkg-share pinky_navigation)/config/aruco_logger_params.yaml"/>
-        </node>
-
-        <!-- ArUco Logger Node -->
-        <node
-          pkg="pinky_navigation"
-          exec="aruco_logger.py"
-          name="aruco_logger"
-          output="screen">
-          <param from="$(find-pkg-share pinky_navigation)/config/aruco_logger_params.yaml"/>
-        </node>
 
     </group>
 
