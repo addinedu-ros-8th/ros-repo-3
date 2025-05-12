@@ -9,7 +9,10 @@ class DomainBridgeManager(Node):
         super().__init__('domain_bridge_manager')
 
         # 파라미터 선언
-        self.declare_parameter('config_dir', 'roscars_config/domain_bridge')
+        self.declare_parameter(
+            'config_dir',
+            'server/main_server/domain_bridge/roscars_config/domain_bridge'
+        )
         self.declare_parameter('from_domain_id', 36)
         self.declare_parameter('to_domain_id', 14)
 
