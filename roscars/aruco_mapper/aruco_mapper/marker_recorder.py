@@ -60,6 +60,7 @@ class MarkerRecorder(Node):
             except Exception as e:
                 self.get_logger().warn(f"TF 변환 실패: {e}")
 
+
 def main(args=None):
     rclpy.init(args=args)
     node = MarkerRecorder()
