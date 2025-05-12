@@ -1,14 +1,14 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from std_msgs.msg import Float32
 from shared_interfaces.msg import (
-    ImuStatus,
-    LidarScan,
+    BatteryStatus,
     RoscarRegister,
-    BatteryStatus
+    SensorData  # ✅ 통합 메시지
 )
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from datetime import datetime
+import json
 
 class SensorListener(Node):
     def __init__(self):
@@ -21,39 +21,23 @@ class SensorListener(Node):
             history=HistoryPolicy.KEEP_LAST
         )
 
-        # ✅ 배터리 토픽 구독 (특정 SSID 기반으로 확장 가능)
+        # 배터리 메시지
         self.battery_sub = self.create_subscription(
             BatteryStatus,
-            '/pinky_07db/roscar/status/battery',  # 필요 시 다수 SSID도 루프 돌려 추가 가능
+            '/pinky_07db/roscar/status/battery',
             self.battery_callback,
             qos
         )
 
-        # 초음파
-        self.ultra_sub = self.create_subscription(
-            Float32,
-            '/pinky_07db/roscar/sensor/ultra',
-            self.ultra_callback,
-            10
+        # 통합 SensorData 토픽
+        self.sensor_data_sub = self.create_subscription(
+            SensorData,
+            '/pinky_07db/roscar/sensor_data',
+            self.sensor_data_callback,
+            qos
         )
 
-        # IMU
-        self.imu_sub = self.create_subscription(
-            ImuStatus,
-            '/pinky_07db/roscar/sensor/imu',
-            self.imu_callback,
-            10
-        )
-
-        # LiDAR
-        self.lidar_sub = self.create_subscription(
-            LidarScan,
-            '/pinky_07db/roscar/sensor/lidar',
-            self.lidar_callback,
-            10
-        )
-
-        # Register
+        # Register 메시지
         self.register_sub = self.create_subscription(
             RoscarRegister,
             '/roscar/register',
@@ -72,20 +56,39 @@ class SensorListener(Node):
             f'time={dt.strftime("%Y-%m-%d %H:%M:%S")}'
         )
 
-    def ultra_callback(self, msg):
-        self.get_logger().info(f'[ULTRA] 거리: {msg.data:.2f} cm')
+    def sensor_data_callback(self, msg: SensorData):
+        # timestamp 출력
+        t = msg.stamp.sec + msg.stamp.nanosec * 1e-9
+        dt = datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S')
+        self.get_logger().info(f'[SensorData] 수신 - robot_id={msg.robot_id}, time={dt}')
 
-    def imu_callback(self, msg):
-        self.get_logger().info(
-            f'[IMU] accel=({msg.accel_x:.2f}, {msg.accel_y:.2f}, {msg.accel_z:.2f}), '
-            f'gyro=({msg.gyro_x:.2f}, {msg.gyro_y:.2f}, {msg.gyro_z:.2f}), '
-            f'mag=({msg.mag_x:.2f}, {msg.mag_y:.2f}, {msg.mag_z:.2f})'
-        )
 
-    def lidar_callback(self, msg):
-        self.get_logger().info(
-            f'[LIDAR] angle_min={msg.angle_min}, ranges_len={len(msg.ranges)}'
-        )
+        # ✅ LiDAR
+        try:
+            lidar = json.loads(msg.lidar_raw)
+            ranges = lidar.get("ranges", [])
+            self.get_logger().info(f'  ▸ LiDAR ranges: {len(ranges)}개')
+        except Exception as e:
+            self.get_logger().warn(f'  ❌ LiDAR JSON 파싱 실패: {e}')
+
+        # ✅ IMU
+        try:
+            imu = json.loads(msg.imu_data)
+            a = imu.get("accel", [0, 0, 0])
+            g = imu.get("gyro", [0, 0, 0])
+            m = imu.get("mag", [0, 0, 0])
+            self.get_logger().info(
+                f'  ▸ IMU accel={a}, gyro={g}, mag={m}'
+            )
+        except Exception as e:
+            self.get_logger().warn(f'  ❌ IMU JSON 파싱 실패: {e}')
+
+        # ✅ 초음파
+        try:
+            ultra = json.loads(msg.ultrasonic_data)
+            self.get_logger().info(f'  ▸ 초음파 거리: {ultra.get("front", -1):.2f} cm')
+        except Exception as e:
+            self.get_logger().warn(f'  ❌ 초음파 JSON 파싱 실패: {e}')
 
     def register_callback(self, msg):
         self.get_logger().info(
