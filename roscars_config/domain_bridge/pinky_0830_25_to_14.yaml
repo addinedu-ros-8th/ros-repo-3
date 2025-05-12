@@ -1,13 +1,13 @@
 name: my_bridge
 from_domain: 25
-to_domain: 26
+to_domain: 14
 
 topics:
   roscar_register:
     topic: /roscar/register
     type: shared_interfaces/msg/RoscarRegister
     from_domain_id: 25
-    to_domain_id: 26
+    to_domain_id: 14
     qos:
       reliability: reliable
       durability: volatile
@@ -16,22 +16,22 @@ topics:
     topic: /pinky_0830/roscar/sensor/imu
     type: shared_interfaces/msg/ImuStatus
     from_domain_id: 25
-    to_domain_id: 26
+    to_domain_id: 14
 
   battery_status:
     topic: /pinky_0830/roscar/status/battery
     type: shared_interfaces/msg/BatteryStatus
     from_domain_id: 25
-    to_domain_id: 26
+    to_domain_id: 14
 
   lidar_scan:
     topic: /pinky_0830/roscar/sensor/lidar
     type: shared_interfaces/msg/LidarScan
     from_domain_id: 25
-    to_domain_id: 26
+    to_domain_id: 14
 
   ultra_status:
     topic: /pinky_0830/roscar/sensor/ultra
     type: shared_interfaces/msg/UltraStatus
     from_domain_id: 25
-    to_domain_id: 26
+    to_domain_id: 14

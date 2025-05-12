@@ -9,10 +9,10 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)   # std_msgs 의존성 추가
-find_package(geometry_msgs REQUIRED)  # geometry_msgs 의존성 추가
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
-# Generate messages, services, and actions
+# Interface generation
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AccessResult.msg"
   "msg/AIModuleStatus.msg"
@@ -52,15 +52,18 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ScanInventory.action"
   "action/SecurityPatrol.action"
   "action/StartDelivery.action"
-  DEPENDENCIES std_msgs geometry_msgs  # 의존성 추가
+  DEPENDENCIES std_msgs geometry_msgs
 )
 
-# Testing dependencies
+# Test dependencies
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+# 🟨 Export dependencies
+ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()

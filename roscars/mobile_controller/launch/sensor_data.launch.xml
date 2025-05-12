@@ -1,7 +1,14 @@
 <launch>
+  <!-- 센서 퍼블리셔 노드들 -->
   <node pkg="mobile_controller" exec="roscar_battery_publisher" name="battery_node" output="screen"/>
   <node pkg="mobile_controller" exec="roscar_imu_publisher" name="imu_node" output="screen"/>
   <node pkg="mobile_controller" exec="roscar_lidar_publisher" name="lidar_node" output="screen"/>
   <node pkg="mobile_controller" exec="roscar_register_publisher" name="register_node" output="screen"/>
   <node pkg="mobile_controller" exec="roscar_ultra_publisher" name="ultra_node" output="screen"/>
+
+  <!-- Domain Bridge 실행 추가 (절대 경로 사용) -->
+  <include>
+    <path>$(find-pkg-share domain_bridge)/launch/domain_bridge.launch.xml</path>
+    <arg name="config" value="./roscars_config/domain_bridge/pinky_07db_36_to_14.yaml"/>
+  </include>
 </launch>

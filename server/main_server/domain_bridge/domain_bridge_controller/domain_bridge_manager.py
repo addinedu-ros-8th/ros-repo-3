@@ -9,17 +9,18 @@ class DomainBridgeManager(Node):
         super().__init__('domain_bridge_manager')
 
         # 파라미터 선언
-        self.declare_parameter('config_dir', 'robot_config/domain_bridge')
+        self.declare_parameter('config_dir', 'roscars_config/domain_bridge')
+        self.declare_parameter('from_domain_id', 36)
+        self.declare_parameter('to_domain_id', 14)
+
         self.config_dir = self.get_parameter('config_dir').value
         os.makedirs(self.config_dir, exist_ok=True)
 
-        self.launched = set()
-        self.processes = []
-
-        self.declare_parameter('from_domain_id', 25)
-        self.declare_parameter('to_domain_id', 26)
         self.from_domain = self.get_parameter('from_domain_id').value
         self.to_domain = self.get_parameter('to_domain_id').value
+
+        self.launched = set()
+        self.processes = []
 
         # /roscar/register 구독 시작
         self.subscription = self.create_subscription(

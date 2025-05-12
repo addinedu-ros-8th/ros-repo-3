@@ -54,6 +54,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # ROS2 워크스페이스 적용
-source ./install/setup.bash
+source install/local_setup.bash
 
 echo "[INFO] ✅ Build complete and environment ready."
