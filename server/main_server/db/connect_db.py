@@ -18,8 +18,8 @@ DB_URI = f"mysql+pymysql://{DB_USER}:{DB_PSWD}@{DB_HOST}"
 ROSCARS_URL = f"{DB_URI}/roscars"
 ROSCARS_LOG_URL = f"{DB_URI}/roscars_log"
 
-roscars_engine = create_engine(ROSCARS_URL, echo=False, pool_pre_ping=True)
-roscars_log_engine = create_engine(ROSCARS_LOG_URL, echo=False, pool_pre_ping=True)
+roscars_engine = create_engine(ROSCARS_URL, echo=False, pool_pre_ping=True, connect_args={"ssl_disabled": "True"})
+roscars_log_engine = create_engine(ROSCARS_LOG_URL, echo=False, pool_pre_ping=True, connect_args={"ssl_disabled": "True"})
 
 RoscarsSession = sessionmaker(bind=roscars_engine, autocommit=False, autoflush=False)
 RoscarsLogSession = sessionmaker(bind=roscars_log_engine, autocommit=False, autoflush=False)
@@ -28,8 +28,12 @@ def get_db_url(db_name):
     return f"{DB_URI}/{db_name}"
 
 def get_engine(db_name):
-    db_url = get_db_url(db_name)
-    return create_engine(db_url, echo=False, pool_pre_ping=True)
+    if db_name == "roscars":
+        return roscars_engine
+    elif db_name == "roscars_log":
+        return roscars_log_engine
+    else:
+        raise ValueError("Invalid database name")
 
 def get_session(engine):
     Session = sessionmaker(bind=engine, autocommit=False, autoflush=False)
