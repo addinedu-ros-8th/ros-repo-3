@@ -45,17 +45,17 @@ find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 find . -type d -name "__pycache__" -exec rm -rf {} + && find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
 # Define aliases as functions for use within script
-ID=214
+# ID=0
 
-ros_domain() {
-  export ROS_DOMAIN_ID=$ID
-  echo "ROS_DOMAINID is set to $ID !"
-}
+# ros_domain() {
+#   export ROS_DOMAIN_ID=$ID
+#   echo "ROS_DOMAINID is set to $ID !"
+# }
 
-active_venv_jazzy() {
-  source ~/venv/jazzy/bin/activate
-  echo "Venv Jazzy is activated."
-}
+# active_venv_jazzy() {
+#   source ~/venv/jazzy/bin/activate
+#   echo "Venv Jazzy is activated."
+# }
 
 jazzy() {
   active_venv_jazzy
