@@ -22,7 +22,7 @@ for path in [current_dir, project_root]:
 
 from db import connect_db
 from sensor_reader import battery_reader, imu_reader, lidar_reader, ultra_reader, roscar_register_listner
-from domain_bridge.domain_bridge_controller import domain_bridge_manager, launch_domain_bridge
+# from domain_bridge.domain_bridge_controller import domain_bridge_manager, launch_domain_bridge
 
 # -------------------------------
 # 메인 실행 함수
@@ -38,13 +38,13 @@ def main():
     rclpy.init()
 
     # 노드 생성
-    domain_node = domain_bridge_manager.DomainBridgeManager()
+    # domain_node = domain_bridge_manager.DomainBridgeManager()
     # roscar_node = roscar_register_listner.RobotRegisterRequester()
 
     # 다중 실행을 위한 Executor 구성
     from rclpy.executors import MultiThreadedExecutor
     executor = MultiThreadedExecutor()
-    executor.add_node(domain_node)
+    # executor.add_node(domain_node)
     # executor.add_node(roscar_node)
 
     try:
@@ -52,7 +52,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        domain_node.destroy_node()
+        # domain_node.destroy_node()
         # roscar_node.destroy_node()
         rclpy.shutdown()
 
