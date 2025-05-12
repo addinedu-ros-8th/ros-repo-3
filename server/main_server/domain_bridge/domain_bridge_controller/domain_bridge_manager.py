@@ -1,5 +1,4 @@
 import os
-import yaml
 import rclpy
 import subprocess
 from rclpy.node import Node
@@ -8,8 +7,8 @@ from shared_interfaces.msg import RoscarRegister
 class DomainBridgeManager(Node):
     def __init__(self):
         super().__init__('domain_bridge_manager')
-        
-        # 파라미터 선언 및 기본값 설정
+
+        # 파라미터 선언
         self.declare_parameter('config_dir', 'robot_config/domain_bridge')
         self.config_dir = self.get_parameter('config_dir').value
         os.makedirs(self.config_dir, exist_ok=True)
@@ -22,10 +21,10 @@ class DomainBridgeManager(Node):
         self.from_domain = self.get_parameter('from_domain_id').value
         self.to_domain = self.get_parameter('to_domain_id').value
 
-        # 메시지 구독 설정
+        # /roscar/register 구독 시작
         self.subscription = self.create_subscription(
             RoscarRegister,
-            'roscar/register',  # 수신할 토픽 이름
+            '/roscar/register',
             self.listener_callback,
             10
         )
@@ -33,39 +32,40 @@ class DomainBridgeManager(Node):
         self.get_logger().info("✅ DomainBridgeManager 초기화 완료")
 
     def listener_callback(self, msg):
-        # 메시지 수신 시 동작
-        namespace = msg.roscar_name  # 예: "pinky_0830"
-        from_domain = self.from_domain
-        to_domain = self.to_domain
-        unique_id = f"{namespace}_{from_domain}_to_{to_domain}"
+        self.get_logger().info(f"📥 수신됨: {msg.roscar_name} (from {msg.from_domain_id} → to {msg.to_domain_id})")
+
+        namespace = msg.roscar_name
+        unique_id = f"{namespace}_{self.from_domain}_to_{self.to_domain}"
 
         if unique_id in self.launched:
             self.get_logger().info(f"🔁 이미 실행됨: {unique_id}")
             return
 
-        yaml_filename = f"{namespace}_{from_domain}_to_{to_domain}.yaml"
-        yaml_path = os.path.join(self.config_dir, yaml_filename)
+        yaml_filename = f"{namespace}_{self.from_domain}_to_{self.to_domain}.yaml"
+        yaml_path = os.path.abspath(os.path.join(self.config_dir, yaml_filename))
 
         if os.path.exists(yaml_path):
             self.launch_domain_bridge(yaml_path)
             self.launch_sensors(namespace)
             self.launched.add(unique_id)
-            self.get_logger().info(f"🟢 Domain bridge + 센서 실행 완료: {namespace}")
+            self.get_logger().info(f"🟢 Bridge + 센서 실행 완료: {unique_id}")
         else:
-            self.get_logger().error(f"[오류] YAML 파일 없음: {yaml_path}")
+            self.get_logger().error(f"[❌] YAML 파일 없음: {yaml_path}")
 
     def launch_domain_bridge(self, yaml_path):
         try:
-            # 일시적으로 디버깅용 출력 허용
             process = subprocess.Popen(
-                ['ros2', 'run', 'domain_bridge', 'domain_bridge', yaml_path],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                [
+                    'ros2', 'launch', 'domain_bridge', 'domain_bridge.launch.xml',
+                    f'config:={yaml_path}'
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
             )
-
             self.processes.append(process)
             self.get_logger().info(f"🌉 domain_bridge 실행됨 (PID: {process.pid})")
         except Exception as e:
-            self.get_logger().error(f"[오류] domain_bridge 실행 실패: {e}")
+            self.get_logger().error(f"[❌] domain_bridge 실행 실패: {e}")
 
     def launch_sensors(self, namespace):
         sensors = ['battery_reader', 'lidar_reader', 'imu_reader', 'ultra_reader']
@@ -75,14 +75,14 @@ class DomainBridgeManager(Node):
     def launch_reader(self, namespace, reader_name):
         try:
             process = subprocess.Popen(
-            ['ros2', 'run', 'sensor_reader', reader_name, namespace],
-            stdout=None,
-            stderr=None
+                ['ros2', 'run', 'sensor_reader', reader_name, namespace],
+                stdout=None,
+                stderr=None
             )
             self.processes.append(process)
             self.get_logger().info(f"📡 센서 실행됨: {reader_name} (PID: {process.pid})")
         except Exception as e:
-            self.get_logger().error(f"[오류] {reader_name} 실행 실패: {e}")
+            self.get_logger().error(f"[❌] {reader_name} 실행 실패: {e}")
 
     def check_processes(self):
         for process in self.processes[:]:
@@ -93,7 +93,6 @@ class DomainBridgeManager(Node):
 def main(args=None):
     rclpy.init(args=args)
     manager = DomainBridgeManager()
-    
     try:
         while rclpy.ok():
             rclpy.spin_once(manager, timeout_sec=0.5)

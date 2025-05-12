@@ -13,25 +13,25 @@ topics:
       durability: volatile
 
   imu_status:
-    topic: /pinky_0830/roscar/sensor/imu
+    topic: /pinky_07db/roscar/sensor/imu
     type: shared_interfaces/msg/ImuStatus
     from_domain_id: 25
     to_domain_id: 26
 
   battery_status:
-    topic: /pinky_0830/roscar/status/battery
+    topic: /pinky_07db/roscar/status/battery
     type: shared_interfaces/msg/BatteryStatus
     from_domain_id: 25
     to_domain_id: 26
 
   lidar_scan:
-    topic: /pinky_0830/roscar/sensor/lidar
+    topic: /pinky_07db/roscar/sensor/lidar
     type: shared_interfaces/msg/LidarScan
     from_domain_id: 25
     to_domain_id: 26
 
   ultra_status:
-    topic: /pinky_0830/roscar/sensor/ultra
+    topic: /pinky_07db/roscar/sensor/ultra
     type: shared_interfaces/msg/UltraStatus
     from_domain_id: 25
     to_domain_id: 26
