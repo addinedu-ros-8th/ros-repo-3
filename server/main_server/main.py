@@ -22,7 +22,7 @@ for path in [current_dir, project_root]:
 
 from db import connect_db
 from sensor_reader import battery_reader, imu_reader, lidar_reader, ultra_reader, roscar_register_listner
-from domain_bridge_controller import domain_bridge_manager, launch_domain_bridge
+from domain_bridge.domain_bridge_controller import domain_bridge_manager, launch_domain_bridge
 
 # -------------------------------
 # 메인 실행 함수

@@ -42,11 +42,40 @@ rm -rf build install log
 export PYTHONWARNINGS="ignore::UserWarning"
 find . -type d -name "__pycache__" -exec rm -rf {} +
 find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
+find . -type d -name "__pycache__" -exec rm -rf {} + && find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
-# colcon 빌드
-echo "[INFO] Building workspace with colcon..."
-colcon build
-source install/setup.bash
+# Define aliases as functions for use within script
+ID=214
+
+ros_domain() {
+  export ROS_DOMAIN_ID=$ID
+  echo "ROS_DOMAINID is set to $ID !"
+}
+
+active_venv_jazzy() {
+  source ~/venv/jazzy/bin/activate
+  echo "Venv Jazzy is activated."
+}
+
+jazzy() {
+  active_venv_jazzy
+  source /opt/ros/jazzy/setup.bash
+  ros_domain
+  echo "ROS2 Jazzy is activated."
+}
+
+# Activate environment
+jazzy
+
+colcon build --symlink-install
+if [ $? -ne 0 ]; then
+  echo "Fail"
+  exit 1
+fi
+
+source ./install/setup.bash
+# source ./install/local_setup.bash
 
 echo "[INFO] Build complete"
 
+# ros2 run
