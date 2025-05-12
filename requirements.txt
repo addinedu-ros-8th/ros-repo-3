@@ -12,3 +12,5 @@ pyyaml
 wheel
 pytest
 cryptography
+jinja2
+typeguard

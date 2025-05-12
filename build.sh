@@ -30,6 +30,8 @@ fi
 
 # ROS2 환경 설정
 echo "[INFO] Sourcing ROS2 setup..."
+unset AMENT_PREFIX_PATH
+unset CMAKE_PREFIX_PATH
 source /opt/ros/jazzy/setup.bash
 
 # 시스템 의존성 설치
@@ -38,43 +40,20 @@ sudo apt install -y libgpiod-dev
 
 # 이전 빌드 정리
 echo "[INFO] Cleaning previous build artifacts..."
-rm -rf build install log
+rm -rf build/ install/ log/
 export PYTHONWARNINGS="ignore::UserWarning"
 find . -type d -name "__pycache__" -exec rm -rf {} +
 find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
-find . -type d -name "__pycache__" -exec rm -rf {} + && find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
-# Define aliases as functions for use within script
-# ID=0
-
-# ros_domain() {
-#   export ROS_DOMAIN_ID=$ID
-#   echo "ROS_DOMAINID is set to $ID !"
-# }
-
-# active_venv_jazzy() {
-#   source ~/venv/jazzy/bin/activate
-#   echo "Venv Jazzy is activated."
-# }
-
-# jazzy() {
-#   active_venv_jazzy
-#   source /opt/ros/jazzy/setup.bash
-#   ros_domain
-#   echo "ROS2 Jazzy is activated."
-# }
-
-# # Activate environment
-# jazzy
-
-colcon build --symlink-install
+# colcon 빌드
+echo "[INFO] Starting colcon build..."
+colcon build --merge-install
 if [ $? -ne 0 ]; then
-  echo "Fail"
+  echo "[ERROR] Build failed"
   exit 1
 fi
 
+# ROS2 워크스페이스 적용
 source ./install/setup.bash
-# source ./install/local_setup.bash
 
-echo "[INFO] Build complete"
-
+echo "[INFO] ✅ Build complete and environment ready."
