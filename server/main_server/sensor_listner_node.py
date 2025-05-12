@@ -6,7 +6,7 @@ from shared_interfaces.msg import (
     ImuStatus,
     LidarScan,
     RoscarRegister,
-    BatteryStatus  # ✅ BatteryStatus 메시지 추가
+    BatteryStatus  # ✅ BatteryStatus 메시지 포함
 )
 
 class SensorListener(Node):
@@ -22,7 +22,7 @@ class SensorListener(Node):
             10
         )
 
-        # 배터리 (✅ 메시지 타입 수정)
+        # 배터리 (✅ 메시지 타입 BatteryStatus로 통일)
         self.battery_sub = self.create_subscription(
             BatteryStatus,
             '/pinky_07db/roscar/status/battery',
