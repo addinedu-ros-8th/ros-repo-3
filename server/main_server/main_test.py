@@ -1,7 +1,7 @@
 # main_test.py
 
 import rclpy
-from sensor_listner_node import SensorListener
+from sensor_listener_node import SensorListener
 
 def main():
     rclpy.init()

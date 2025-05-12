@@ -6,7 +6,7 @@ from shared_interfaces.msg import (
     ImuStatus,
     LidarScan,
     RoscarRegister,
-    BatteryStatus  # ✅ BatteryStatus 메시지 포함
+    BatteryStatus  # ✅ 최신 명세 기준 메시지
 )
 
 class SensorListener(Node):
@@ -22,10 +22,10 @@ class SensorListener(Node):
             10
         )
 
-        # 배터리 (✅ 메시지 타입 BatteryStatus로 통일)
+        # 배터리
         self.battery_sub = self.create_subscription(
             BatteryStatus,
-            '/pinky_07db/roscar/status/battery',
+            '/pinky_07db/roscar/status/battery',  # ✅ 토픽 경로 변경됨
             self.battery_callback,
             10
         )
@@ -59,9 +59,10 @@ class SensorListener(Node):
 
     def battery_callback(self, msg):
         self.get_logger().info(
-            f'[BATTERY] name={msg.roscar_name}, id={msg.roscar_id}, '
-            f'voltage={msg.voltage:.2f}V, current={msg.current:.2f}A, '
-            f'percentage={msg.percentage}%'
+            f'[BATTERY] robot_id={msg.robot_id}, '
+            f'battery={msg.battery_percent:.1f}%, '
+            f'is_charging={"YES" if msg.is_charging else "NO"}, '
+            f'time={msg.stamp.sec}.{msg.stamp.nanosec}'
         )
 
     def imu_callback(self, msg):
