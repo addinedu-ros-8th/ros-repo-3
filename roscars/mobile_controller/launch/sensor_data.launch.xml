@@ -7,7 +7,4 @@
   <node pkg="mobile_controller" exec="roscar_ultra_publisher" name="ultra_node" output="screen"/>
 
   <!-- domain_bridge 실행 (상대 경로로 지정) -->
-  <include file="$(find-pkg-share domain_bridge)/launch/domain_bridge.launch.xml">
-    <arg name="config" value="roscars/mobile_controller/roscars_config/domain_bridge/pinky_07db_36_to_14.yaml"/>
-  </include>
 </launch>
