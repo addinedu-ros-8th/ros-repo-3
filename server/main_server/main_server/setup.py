@@ -15,11 +15,12 @@ setup(
     zip_safe=True,
     maintainer='sang',
     maintainer_email='hinoonyaso@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Main Server ROS2 node',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'main_server = main_server.main:main',
         ],
     },
 )

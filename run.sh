@@ -45,7 +45,7 @@ find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
 # colcon 빌드
 echo "[INFO] Building workspace with colcon..."
-colcon build --symlink-install
+colcon build
 
 echo "[INFO] Build complete"
 
