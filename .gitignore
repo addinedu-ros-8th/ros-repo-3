@@ -135,6 +135,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.roscars_venv/
 
 # Spyder project settings
 .spyderproject
@@ -194,7 +195,6 @@ __pycache__/
 # Python virtual environments (optional)
 venv/
 .env/
-.roscars_venv/
 
 # Yolo
 .pt

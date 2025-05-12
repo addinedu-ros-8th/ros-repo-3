@@ -33,8 +33,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PrecisionStopCmd.msg"
   "msg/PrecisionStopResult.msg"
   "msg/QRCodeScan.msg"
-  "msg/RobotPoseUpdate.msg"
-  "msg/RobotStatusLog.msg"
   "msg/RoscarInfo.msg"
   "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"
