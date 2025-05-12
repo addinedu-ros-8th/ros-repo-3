@@ -74,7 +74,7 @@ private:
     if (!drv_) return;
 
     auto msg = shared_interfaces::msg::SensorData();
-    msg.robot_id = 1;
+    msg.robot_id = ssid_;
     msg.stamp = this->now();
 
     // ✅ LiDAR JSON
