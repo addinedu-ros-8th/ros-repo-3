@@ -11,6 +11,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)  # ✅ SensorData에서 Time 타입 사용 시 필요
 
 # Interface generation
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -38,6 +39,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RoscarRegister.msg"
   "msg/RoscarStatusLog.msg"
   "msg/SensorFusion.msg"
+  "msg/SensorData.msg"  # ✅ 새로 추가된 메시지
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
   "msg/UltraStatus.msg"
@@ -52,7 +54,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ScanInventory.action"
   "action/SecurityPatrol.action"
   "action/StartDelivery.action"
-  DEPENDENCIES std_msgs geometry_msgs
+  DEPENDENCIES std_msgs geometry_msgs builtin_interfaces  # ✅ builtin_interfaces 추가
 )
 
 # Test dependencies
@@ -63,7 +65,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# 🟨 Export dependencies
+# Export dependencies
 ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
