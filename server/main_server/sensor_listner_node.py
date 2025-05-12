@@ -2,7 +2,12 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Float32
-from shared_interfaces.msg import ImuStatus, LidarScan, RoscarRegister  # ✅ 커스텀 메시지 import
+from shared_interfaces.msg import (
+    ImuStatus,
+    LidarScan,
+    RoscarRegister,
+    BatteryStatus  # ✅ BatteryStatus 메시지 추가
+)
 
 class SensorListener(Node):
     def __init__(self):
@@ -17,9 +22,9 @@ class SensorListener(Node):
             10
         )
 
-        # 배터리
+        # 배터리 (✅ 메시지 타입 수정)
         self.battery_sub = self.create_subscription(
-            Float32,
+            BatteryStatus,
             '/pinky_07db/roscar/status/battery',
             self.battery_callback,
             10
@@ -59,7 +64,6 @@ class SensorListener(Node):
             f'percentage={msg.percentage}%'
         )
 
-
     def imu_callback(self, msg):
         self.get_logger().info(
             f'[IMU] accel=({msg.accel_x:.2f}, {msg.accel_y:.2f}, {msg.accel_z:.2f}), '
@@ -80,3 +84,12 @@ class SensorListener(Node):
             f'to_domain_id={msg.to_domain_id}'
         )
 
+def main(args=None):
+    rclpy.init(args=args)
+    node = SensorListener()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
