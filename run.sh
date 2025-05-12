@@ -2,4 +2,4 @@
 
 bash build.sh
 
-ros2 run
+# ros2 run

@@ -57,15 +57,15 @@ find . -type d -name "__pycache__" -exec rm -rf {} + && find . -type f \( -name 
 #   echo "Venv Jazzy is activated."
 # }
 
-jazzy() {
-  active_venv_jazzy
-  source /opt/ros/jazzy/setup.bash
-  ros_domain
-  echo "ROS2 Jazzy is activated."
-}
+# jazzy() {
+#   active_venv_jazzy
+#   source /opt/ros/jazzy/setup.bash
+#   ros_domain
+#   echo "ROS2 Jazzy is activated."
+# }
 
-# Activate environment
-jazzy
+# # Activate environment
+# jazzy
 
 colcon build --symlink-install
 if [ $? -ne 0 ]; then
