@@ -35,8 +35,11 @@ private:
         std::string ssid = get_ap_ssid();
 
         shared_interfaces::msg::BatteryStatus msg;
-        msg.percentage = percentage;
+        msg.roscar_id = 1;                   // ✅ 예시: ID 하드코딩 또는 설정값 사용
         msg.roscar_name = ssid;
+        msg.voltage = 12.5;                  // ✅ 예시값 또는 측정값 사용
+        msg.current = 1.2;                   // ✅ 예시값 또는 측정값 사용
+        msg.percentage = percentage;
 
         RCLCPP_INFO(this->get_logger(), "Battery Status → %d%% (SSID: %s)", msg.percentage, ssid.c_str());
         publisher_->publish(msg);
