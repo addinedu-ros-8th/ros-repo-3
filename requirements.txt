@@ -11,4 +11,4 @@ setuptools
 pyyaml
 wheel
 pytest
-launch-ros
+cryptography
