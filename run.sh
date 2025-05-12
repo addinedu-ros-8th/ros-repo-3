@@ -46,6 +46,7 @@ find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 # colcon 빌드
 echo "[INFO] Building workspace with colcon..."
 colcon build
+source install/setup.bash
 
 echo "[INFO] Build complete"
 
