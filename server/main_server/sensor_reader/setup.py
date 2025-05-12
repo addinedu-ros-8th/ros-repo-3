@@ -18,7 +18,7 @@ setup(
     maintainer_email='hinoonyaso@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
+    # tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'lidar_reader = sensor_reader.lidar_reader:main',

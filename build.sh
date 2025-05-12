@@ -27,6 +27,8 @@ if [ ! -f "$VENV_DIR/.installed" ]; then
     touch "$VENV_DIR/.installed"
     echo "[INFO] Python dependencies installed"
 fi
+# 패키지 설치
+sudo apt install ros-jazzy-domain-bridge
 
 # ROS2 환경 설정
 echo "[INFO] Sourcing ROS2 setup..."
@@ -47,13 +49,13 @@ find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
 # colcon 빌드
 echo "[INFO] Starting colcon build..."
-colcon build --merge-install
+colcon build
 if [ $? -ne 0 ]; then
   echo "[ERROR] Build failed"
   exit 1
 fi
 
 # ROS2 워크스페이스 적용
-source install/local_setup.bash
+source install/setup.bash
 
 echo "[INFO] ✅ Build complete and environment ready."

@@ -6,9 +6,8 @@
   <node pkg="mobile_controller" exec="roscar_register_publisher" name="register_node" output="screen"/>
   <node pkg="mobile_controller" exec="roscar_ultra_publisher" name="ultra_node" output="screen"/>
 
-  <!-- Domain Bridge 실행 추가 (절대 경로 사용) -->
-  <include>
-    <path>$(find-pkg-share domain_bridge)/launch/domain_bridge.launch.xml</path>
-    <arg name="config" value="./roscars_config/domain_bridge/pinky_07db_36_to_14.yaml"/>
+  <!-- Domain Bridge 실행 추가 (file= 으로 수정) -->
+  <include file="$(find-pkg-share domain_bridge)/launch/domain_bridge.launch.xml">
+    <arg name="config" value="./rocars_config/domain_bridge/pinky_07db_36_to_14.yaml"/>
   </include>
 </launch>

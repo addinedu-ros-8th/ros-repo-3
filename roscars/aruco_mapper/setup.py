@@ -17,7 +17,7 @@ setup(
     maintainer_email='your@email.com',
     description='ArUco 마커의 map 기준 좌표를 저장하는 도구',
     license='MIT',
-    tests_require=['pytest'],
+    # tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'marker_recorder = aruco_mapper.marker_recorder:main',
