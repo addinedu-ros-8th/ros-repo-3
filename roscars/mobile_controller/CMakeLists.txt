@@ -38,8 +38,17 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/dataunpacker/unpacker/*.cpp"
 )
 
-# 존재하는 노드만 추가 (sensor_data_publisher만 유지)
+# ✅ roscar_battery_publisher 노드 추가
+add_executable(roscar_battery_publisher
+  ros_nodes/roscar_battery_publisher.cpp
+  sensor_read/battery.cpp
+)
+ament_target_dependencies(roscar_battery_publisher
+  rclcpp
+  shared_interfaces
+)
 
+# ✅ SensorData 퍼블리셔 (Lidar + IMU + 초음파 통합)
 add_executable(sensor_data_publisher
   ros_nodes/sensor_data_publisher.cpp
   sensor_read/imu_sensor.cpp
@@ -59,6 +68,7 @@ target_link_libraries(sensor_data_publisher
 
 # 실행 파일 설치
 install(TARGETS
+  roscar_battery_publisher
   sensor_data_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
