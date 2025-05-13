@@ -20,7 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_aruco_node = video_sender.camera_aruco_node:main',
+            'camera_publisher = video_sender.camera_publisher:main',
+            'aruco_localizer_node = video_sender.aruco_localizer_node:main',
+            'marker_recorder = video_sender.marker_recorder:main',
             'udp_streamer_node = video_sender.udp_streamer_node:main',
         ],
     },
