@@ -196,7 +196,7 @@ __pycache__/
 venv/
 .env/
 
-# Yolo
+# Yolo 모델
 .pt
 
 

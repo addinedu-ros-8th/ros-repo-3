@@ -4,7 +4,7 @@
 sudo apt update && sudo apt upgrade -y
 
 # 가상환경 비활성화 (이미 활성화되어 있던 경우)
-deactivate 2>/dev/null || true
+# deactivate 2>/dev/null || true
 
 # 가상환경 경로 지정
 VENV_DIR=".roscars_venv"
@@ -27,6 +27,7 @@ if [ ! -f "$VENV_DIR/.installed" ]; then
     touch "$VENV_DIR/.installed"
     echo "[INFO] Python dependencies installed"
 fi
+
 # 패키지 설치
 sudo apt install ros-jazzy-domain-bridge
 
