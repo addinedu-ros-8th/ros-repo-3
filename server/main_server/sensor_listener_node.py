@@ -81,7 +81,7 @@ class SensorListener(Node):
             f'to_domain_id={msg.to_domain_id}'
         )
 
-        # ✅ RosCars 테이블 UPSERT
+        # RosCars 테이블 UPSERT
         session = get_roscars_session()
         try:
             stmt = mysql_insert(RosCars).values(
@@ -95,10 +95,10 @@ class SensorListener(Node):
             )
             session.execute(stmt)
             session.commit()
-            self.get_logger().info(f"✅ RosCars DB에 '{msg.roscar_name}' 정보 업데이트 완료")
+            self.get_logger().info(f"RosCars DB에 '{msg.roscar_name}' 정보 업데이트 완료")
         except Exception as e:
             session.rollback()
-            self.get_logger().error(f"❌ RosCars UPSERT 실패: {e}")
+            self.get_logger().error(f"RosCars UPSERT 실패: {e}")
         finally:
             session.close()
 

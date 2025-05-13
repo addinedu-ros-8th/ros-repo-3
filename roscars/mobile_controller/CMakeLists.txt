@@ -38,6 +38,15 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/dataunpacker/unpacker/*.cpp"
 )
 
+# ✅ roscar_register_publisher 노드 추가
+add_executable(roscar_register_publisher
+  ros_nodes/roscar_register_publisher.cpp
+)
+ament_target_dependencies(roscar_register_publisher
+  rclcpp
+  shared_interfaces
+)
+
 # ✅ roscar_battery_publisher 노드 추가
 add_executable(roscar_battery_publisher
   ros_nodes/roscar_battery_publisher.cpp
@@ -68,6 +77,7 @@ target_link_libraries(sensor_data_publisher
 
 # 실행 파일 설치
 install(TARGETS
+  roscar_register_publisher
   roscar_battery_publisher
   sensor_data_publisher
   DESTINATION lib/${PROJECT_NAME}
