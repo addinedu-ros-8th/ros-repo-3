@@ -8,16 +8,18 @@ setup(
     packages=[package_name],
     data_files=[
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/vision_udp.launch.py']),
+        # launch 폴더 내 모든 launch 파일(.py, .xml) 포함
+        ('share/' + package_name + '/launch', [
+            'launch/vision_udp.launch.xml'
+        ]),
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='채훈 심',
     maintainer_email='tlacogns@gmail.com',
-    description='카메라 영상을 UDP로 AI 서버로 전송하고, ArUco 마커는 로컬에서 인식하는 ROS2 패키지',
+    description='카메라 영상을 UDP로 AI 서버에 전송하고, ArUco 마커를 로컬에서 인식하는 ROS2 패키지',
     license='MIT',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'camera_publisher = video_sender.camera_publisher:main',

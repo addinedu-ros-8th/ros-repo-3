@@ -1,14 +1,17 @@
+import os
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from visualization_msgs.msg import Marker, MarkerArray
+from geometry_msgs.msg import PoseStamped
 from cv_bridge import CvBridge
+
 import numpy as np
 import cv2
-from pinkylib import Camera
 import tf2_ros
 import tf_transformations
-from geometry_msgs.msg import PoseStamped
+
+from pinkylib import Camera
 
 
 def get_transform_matrix(rvec, tvec):
@@ -28,8 +31,12 @@ class ArucoLocalizer(Node):
 
         self.bridge = CvBridge()
 
+        # ✅ 절대 경로로 calibration 파일 지정
+        calib_path = os.path.expanduser("~/ros-repo-3/roscars/video_sender/camera_calibration.npz")
+
         self.cam = Camera()
-        self.cam.set_calibration("camera_calibration.npz")
+        self.cam.set_calibration(calib_path)
+
         try:
             self.cam.start(width=640, height=480)
         except Exception as e:
@@ -41,7 +48,7 @@ class ArucoLocalizer(Node):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
         self.T_base2cam = np.eye(4)
-        self.T_base2cam[2, 3] = 0.06
+        self.T_base2cam[2, 3] = 0.06  # 카메라가 로봇 기준 6cm 위에 있음
 
         self.timer = self.create_timer(0.1, self.process_frame)
 
@@ -78,7 +85,7 @@ class ArucoLocalizer(Node):
                         marker.pose.position.y = y
                         marker.pose.position.z = z
                         marker.pose.orientation.w = 1.0
-                        self.get_logger().info(f"id: {pose[0]} x: {x:.2f}, y: {y:.2f}, z: {z:.2f}")
+                        self.get_logger().info(f"[id: {pose[0]}] x: {x:.2f}, y: {y:.2f}, z: {z:.2f}")
 
                     elif isinstance(pose, (list, tuple)) and len(pose) == 2:
                         rvec, tvec = pose
@@ -88,10 +95,10 @@ class ArucoLocalizer(Node):
                         marker.pose.position.z = float(tvec[2])
                         marker.pose.orientation.w = 1.0
 
-                        # map 좌표계로 변환
                         T_cam2marker = get_transform_matrix(rvec, tvec)
                         try:
                             tf = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
+
                             T_map2base = tf_transformations.concatenate_matrices(
                                 tf_transformations.translation_matrix([
                                     tf.transform.translation.x,
@@ -138,6 +145,9 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        node.cam.close()
+        try:
+            node.cam.close()
+        except Exception:
+            pass
         node.destroy_node()
         rclpy.shutdown()

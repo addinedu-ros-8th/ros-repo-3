@@ -21,7 +21,7 @@ class MarkerRecorder(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.saved_ids = set()
 
-        output_dir = os.path.expanduser('~/ros-repo-3/roscars/aruco_mapper')
+        output_dir = os.path.expanduser('~/ros-repo-3/roscars/video_sender')
         os.makedirs(output_dir, exist_ok=True)
         self.output_file = os.path.join(output_dir, 'aruco_marker_positions.csv')
 

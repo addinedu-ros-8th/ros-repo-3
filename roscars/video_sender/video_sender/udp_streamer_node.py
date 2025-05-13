@@ -19,7 +19,7 @@ class UdpStreamer(Node):
 
         # AI 서버 정보 (변경 가능)
         self.server_ip = '192.168.0.168'
-        self.server_port = 5005
+        self.server_port = 4436
         self.get_logger().info(f"UDP 전송 노드 시작됨 → {self.server_ip}:{self.server_port}")
 
     def image_callback(self, msg):

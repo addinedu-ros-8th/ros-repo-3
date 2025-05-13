@@ -1,0 +1,24 @@
+<launch xmlns="http://ros.org/ns/launch/1.0">
+
+    <!-- ArUco 마커 로컬 인식 -->
+    <node
+        pkg="video_sender"
+        exec="aruco_localizer_node"
+        name="aruco_localizer"
+        output="screen" />
+
+    <!-- ArUco 마커 위치 저장기 -->
+    <node
+        pkg="video_sender"
+        exec="marker_recorder"
+        name="marker_recorder"
+        output="screen" />
+
+    <!-- AI 서버로 UDP 영상 송신 -->
+    <node
+        pkg="video_sender"
+        exec="udp_streamer_node"
+        name="udp_streamer"
+        output="screen" />
+
+</launch>
