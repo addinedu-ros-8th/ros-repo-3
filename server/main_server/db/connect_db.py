@@ -48,7 +48,20 @@ def get_roscars_log_session():
 from sqlalchemy import text, inspect
 from sqlalchemy.engine import Engine
 
-# 외래 키 제약을 제거하고 테이블을 삭제하는 함수
+# RosCars 테이블만 삭제 후 재생성 (unique 제약 수정용)
+def recreate_roscars_table():
+    print("RosCars 테이블 재생성 중...")
+    inspector = inspect(roscars_engine)
+    if "RosCars" in inspector.get_table_names():
+        with roscars_engine.connect() as conn:
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+            conn.execute(text("DROP TABLE IF EXISTS `RosCars`"))
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+            print("RosCars 테이블 삭제 완료")
+    RoscarsBase.metadata.tables['RosCars'].create(bind=roscars_engine, checkfirst=True)
+    print("RosCars 테이블 재생성 완료")
+
+# 전체 테이블 삭제
 def drop_all_tables(engine: Engine):
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
@@ -56,35 +69,23 @@ def drop_all_tables(engine: Engine):
     with engine.connect() as conn:
         trans = conn.begin()
         try:
-            # 외래 키 제약을 비활성화
             conn.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
-            
             for table in table_names:
                 conn.execute(text(f"DROP TABLE IF EXISTS `{table}`"))
-            
-            # 외래 키 제약을 활성화
             conn.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
-            
             trans.commit()
             print(f"{engine.url.database}의 모든 테이블 삭제 완료")
         except Exception as e:
             trans.rollback()
             print(f"테이블 삭제 중 오류 발생: {e}")
 
-# 테이블을 삭제 후 재생성하는 함수
 def recreate_all_tables():
     print("테이블 구조 불일치: 기존 테이블 삭제 후 재생성 시작...")
-
-    # Drop all tables
     drop_all_tables(roscars_engine)
     drop_all_tables(roscars_log_engine)
-
-    # Create all tables
     RoscarsBase.metadata.create_all(bind=roscars_engine)
     RoscarsLogBase.metadata.create_all(bind=roscars_log_engine)
-
     print("테이블 재생성 완료")
-
 
 def check_db_init():
     try:
@@ -112,4 +113,3 @@ def check_db_init():
     except Exception as e:
         print(f"DB 초기화 검사 실패: {e}")
         return False
-

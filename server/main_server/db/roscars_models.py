@@ -127,7 +127,7 @@ class RosCars(RoscarsBase):
     __tablename__ = 'RosCars'
 
     roscar_id = Column(Integer, primary_key=True)
-    roscar_name = Column(String(255))
+    roscar_name = Column(String(255), unique=True)
     battery_percentage = Column(Integer)
     operational_status = Column(Enum(OperationalStatus))
     roscar_ip_v4 = Column(String(15))
