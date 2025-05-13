@@ -1,8 +1,8 @@
+empy
 python-dotenv
 SQLAlchemy
 PyMySQL
 catkin_pkg
-empy
 numpy
 lark
 lark-parser
@@ -13,3 +13,5 @@ wheel
 pytest
 cryptography
 transforms3d
+jinja2
+typeguard

@@ -2,22 +2,32 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>shared_interfaces</name>
-  <version>0.1.0</version>  <!-- 버전 정보 추가 -->
-  <description>Shared interfaces for ROS2 communication</description> <!-- 설명 추가 -->
-  <maintainer email="hinoonyaso@gmail.com">sang</maintainer>
-  <license>MIT</license> <!-- 라이센스 정보 추가 -->
+  <version>0.1.0</version>
+  <description>Shared interfaces for ROS2 communication</description>
 
+  <maintainer email="hinoonyaso@gmail.com">sang</maintainer>
+  <license>MIT</license>
+
+  <!-- Build tools -->
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <!-- Build dependencies -->
+  <build_depend>rosidl_default_generators</build_depend>
+  <build_depend>builtin_interfaces</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <!-- Execution dependencies -->
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <!-- Test dependencies -->
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
-  <!-- Add rosidl_default_generators dependency -->
-  <depend>rosidl_default_generators</depend>
-  <depend>std_msgs</depend>
-  <depend>geometry_msgs</depend>
-
-  <!-- Add member_of_group tag for ROS2 interface packages -->
+  <!-- Interface package declaration -->
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>

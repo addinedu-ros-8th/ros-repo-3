@@ -196,8 +196,8 @@ __pycache__/
 venv/
 .env/
 
-# Yolo
-.pt
+# Yolo 모델
+*/*.pt
 
 
 server/main_server/server_log.txt

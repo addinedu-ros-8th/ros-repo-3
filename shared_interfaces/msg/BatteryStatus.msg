@@ -1,5 +1,4 @@
-int32 roscar_id
-string roscar_name
-float32 voltage
-float32 current
-int32 percentage
+string robot_name                # ✅ SSID (e.g., pinky_07db)
+float32 battery_percent
+bool is_charging
+builtin_interfaces/Time stamp
