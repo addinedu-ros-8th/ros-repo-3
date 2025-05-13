@@ -1,4 +1,4 @@
-<launch xmlns="http://ros.org/ns/launch/1.0">
+<launch>
 
     <!-- ArUco 마커 로컬 인식 -->
     <node
