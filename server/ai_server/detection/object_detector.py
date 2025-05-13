@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import socket, zlib, cv2, numpy as np
 
-model = YOLO("../../AI/person+roscar_best.pt")  # 학습된 모델 적용
+model = YOLO("person+roscar_best.pt")  # 학습된 모델 적용
 
 PORT = 9999
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

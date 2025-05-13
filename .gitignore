@@ -197,7 +197,7 @@ venv/
 .env/
 
 # Yolo 모델
-.pt
+*/*.pt
 
 
 server/main_server/server_log.txt
