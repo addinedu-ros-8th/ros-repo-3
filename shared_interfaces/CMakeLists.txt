@@ -11,10 +11,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(builtin_interfaces REQUIRED)  # ✅ SensorData에서 Time 타입 사용 시 필요
+find_package(builtin_interfaces REQUIRED)
 
 # Interface generation
 rosidl_generate_interfaces(${PROJECT_NAME}
+  # Messages
   "msg/AccessResult.msg"
   "msg/AIModuleStatus.msg"
   "msg/BatteryStatus.msg"
@@ -22,7 +23,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DashboardStatus.msg"
   "msg/EmergencyAlert.msg"
   "msg/EmergencyCommand.msg"
-  "msg/ImuStatus.msg"
   "msg/InventoryResult.msg"
   "msg/LidarScan.msg"
   "msg/LogEventAdmin.msg"
@@ -38,15 +38,18 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"
   "msg/RoscarStatusLog.msg"
+  "msg/SensorData.msg"
   "msg/SensorFusion.msg"
-  "msg/SensorData.msg"  # ✅ 새로 추가된 메시지
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
-  "msg/UltraStatus.msg"
+
+  # Services
   "srv/ManualOverride.srv"
   "srv/QueryTaskStatus.srv"
   "srv/RequestDiagnostics.srv"
   "srv/StartInventoryCheck.srv"
+
+  # Actions
   "action/ChargeProcess.action"
   "action/MaintenanceCharge.action"
   "action/MoveToGoal.action"
@@ -54,10 +57,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ScanInventory.action"
   "action/SecurityPatrol.action"
   "action/StartDelivery.action"
-  DEPENDENCIES std_msgs geometry_msgs builtin_interfaces  # ✅ builtin_interfaces 추가
+
+  DEPENDENCIES std_msgs geometry_msgs builtin_interfaces
 )
 
-# Test dependencies
+# Tests
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
@@ -65,7 +69,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# Export dependencies
+# Export
 ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
