@@ -12,7 +12,7 @@ class InitialPoseHandler(Node):
         super().__init__('initialpose_handler')
         self.subscription = self.create_subscription(
             PoseWithCovarianceStamped,
-            '/initialpose',
+            '/initialpose_custom',
             self.initialpose_callback,
             10)
         

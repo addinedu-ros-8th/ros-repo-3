@@ -67,7 +67,11 @@
             <arg name="lifecycle_nodes"    value="$(var lifecycle_nodes_nav)"/>
         </include>
 
-
+        <!-- ArUco 기반 initialpose 퍼블리셔 -->
+        <node pkg="aruco_mapper"
+            exec="initialpose_custom"       
+            name="aruco_initialpose_custom"
+            output="screen">
+        </node>
     </group>
-
 </launch>

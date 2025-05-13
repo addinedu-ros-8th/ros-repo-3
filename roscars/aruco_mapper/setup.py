@@ -11,7 +11,7 @@ setup(
         ('share/' + package_name + '/launch', ['launch/mapper.launch.py']),
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),  # ✅ 추가됨
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools','transforms3d'],
     zip_safe=True,
     maintainer='심채훈',
     maintainer_email='your@email.com',
@@ -23,6 +23,7 @@ setup(
             'marker_recorder = aruco_mapper.marker_recorder:main',
             'camera_publisher = aruco_mapper.camera_publisher:main',
             'aruco_localizer_node = aruco_mapper.aruco_localizer_node:main',
+            'initialpose_custom = aruco_mapper.initialpose_custom:main',
         ],
     },
 )

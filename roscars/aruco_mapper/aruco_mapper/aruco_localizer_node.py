@@ -7,8 +7,9 @@ import numpy as np
 import cv2
 from pinkylib import Camera
 import tf2_ros
-import tf_transformations
 from geometry_msgs.msg import PoseStamped
+from transforms3d.quaternions import quat2mat
+from transforms3d.affines import compose
 
 
 def get_transform_matrix(rvec, tvec):
@@ -41,7 +42,7 @@ class ArucoLocalizer(Node):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
         self.T_base2cam = np.eye(4)
-        self.T_base2cam[2, 3] = 0.06
+        self.T_base2cam[2, 3] = 0.06  # 카메라는 base_link 기준 6cm 위에 있음
 
         self.timer = self.create_timer(0.1, self.process_frame)
 
@@ -88,20 +89,26 @@ class ArucoLocalizer(Node):
                         marker.pose.position.z = float(tvec[2])
                         marker.pose.orientation.w = 1.0
 
-                        # map 좌표계로 변환
+                        # 카메라 좌표계 → 맵 좌표계로 변환
                         T_cam2marker = get_transform_matrix(rvec, tvec)
+
                         try:
                             tf = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
-                            T_map2base = tf_transformations.concatenate_matrices(
-                                tf_transformations.translation_matrix([
-                                    tf.transform.translation.x,
-                                    tf.transform.translation.y,
-                                    tf.transform.translation.z]),
-                                tf_transformations.quaternion_matrix([
-                                    tf.transform.rotation.x,
-                                    tf.transform.rotation.y,
-                                    tf.transform.rotation.z,
-                                    tf.transform.rotation.w]))
+
+                            translation = [
+                                tf.transform.translation.x,
+                                tf.transform.translation.y,
+                                tf.transform.translation.z
+                            ]
+                            quaternion = [
+                                tf.transform.rotation.w,
+                                tf.transform.rotation.x,
+                                tf.transform.rotation.y,
+                                tf.transform.rotation.z
+                            ]
+
+                            R = quat2mat(quaternion)
+                            T_map2base = compose(translation, R, [1, 1, 1])
 
                             T_map2marker = T_map2base @ self.T_base2cam @ T_cam2marker
                             x, y, z = T_map2marker[:3, 3]
