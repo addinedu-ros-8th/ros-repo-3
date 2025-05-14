@@ -15,12 +15,12 @@ class UdpStreamer(Node):
         # 파라미터 선언
         self.declare_parameter('server_ip', '192.168.0.168')
         self.declare_parameter('server_port', 4436)
-        self.declare_parameter('robot_id', 1)
+        self.declare_parameter('roscar_id', 1)
         self.declare_parameter('jpeg_quality', 60)  # 테스트하신 60
         p = self.get_parameter
         self.server_ip   = p('server_ip').get_parameter_value().string_value
         self.server_port = p('server_port').get_parameter_value().integer_value
-        self.robot_id    = p('robot_id').get_parameter_value().integer_value
+        self.roscar_id    = p('roscar_id').get_parameter_value().integer_value
         self.quality     = p('jpeg_quality').get_parameter_value().integer_value
 
         # UDP 소켓
@@ -31,7 +31,7 @@ class UdpStreamer(Node):
         self.latest_msg = None
 
         self.get_logger().info(
-            f"UDP 송신 시작 → {self.server_ip}:{self.server_port}, id={self.robot_id}, q={self.quality}"
+            f"UDP 송신 시작 → {self.server_ip}:{self.server_port}, id={self.roscar_id}, q={self.quality}"
         )
 
     def cb(self, msg: Image):
@@ -53,7 +53,7 @@ class UdpStreamer(Node):
             comp = zlib.compress(buf.tobytes())
             comp_len = len(comp)
             # header: 1B id + 4B length
-            hdr = struct.pack('!BI', self.robot_id, comp_len)
+            hdr = struct.pack('!BI', self.roscar_id, comp_len)
             packet = hdr + comp
 
             if len(packet) > MAX_UDP_SIZE:

@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from viewer.theme import apply_theme
-from shared_interfaces.msg import RobotInfo
+from shared_interfaces.msg import RoscarInfo
 
 class MonitorPanel(QWidget):
     def __init__(self):
@@ -17,12 +17,12 @@ class MonitorPanel(QWidget):
         self.node = Node('monitor_panel')  # Node 생성
         
         # ROS2 퍼블리셔 생성
-        self.roscar_info_publisher = self.node.create_publisher(RobotInfo, '/roscar/access', 10)
+        self.roscar_info_publisher = self.node.create_publisher(RoscarInfo, '/roscar/access', 10)
 
     def _init_ui(self):
         main_layout = QVBoxLayout()
 
-        # 1. 상단: Map + Robot 등록/삭제
+        # 1. 상단: Map + Roscar 등록/삭제
         top_layout = QHBoxLayout()
 
         # Map 영역
@@ -33,23 +33,23 @@ class MonitorPanel(QWidget):
         self.map_label.setStyleSheet("background-color: #e7e3d4; border: 2px solid #a89f7d;")
         top_layout.addWidget(self.map_label)
 
-        # Robot 관리 영역
-        roscar_manage_group = QGroupBox("Robot Management")
+        # Roscar 관리 영역
+        roscar_manage_group = QGroupBox("Roscar Management")
         roscar_manage_layout = QVBoxLayout()
 
         self.roscar_list = QListWidget()
         
         # 로봇 ID와 IP 입력 필드 추가
         self.roscar_id_input = QLineEdit(self)
-        self.roscar_id_input.setPlaceholderText("Enter Robot ID")
+        self.roscar_id_input.setPlaceholderText("Enter Roscar ID")
         roscar_manage_layout.addWidget(self.roscar_id_input)
 
         self.roscar_ip_input = QLineEdit(self)
-        self.roscar_ip_input.setPlaceholderText("Enter Robot IP Address")
+        self.roscar_ip_input.setPlaceholderText("Enter Roscar IP Address")
         roscar_manage_layout.addWidget(self.roscar_ip_input)
 
-        self.add_roscar_btn = QPushButton("Add Robot")
-        self.remove_roscar_btn = QPushButton("Remove Robot")
+        self.add_roscar_btn = QPushButton("Add Roscar")
+        self.remove_roscar_btn = QPushButton("Remove Roscar")
 
         # 버튼 클릭 시 add_roscar 함수 호출
         self.add_roscar_btn.clicked.connect(self.add_roscar)
@@ -62,12 +62,12 @@ class MonitorPanel(QWidget):
         top_layout.addWidget(roscar_manage_group)
         main_layout.addLayout(top_layout)
 
-        # 2. 중간: Robot Status 테이블
-        roscar_status_group = QGroupBox("Robot Status Overview")
+        # 2. 중간: Roscar Status 테이블
+        roscar_status_group = QGroupBox("Roscar Status Overview")
         roscar_status_layout = QVBoxLayout()
 
         self.roscar_table = QTableWidget(0, 3)
-        self.roscar_table.setHorizontalHeaderLabels(["Robot ID", "Battery", "Status"])
+        self.roscar_table.setHorizontalHeaderLabels(["Roscar ID", "Battery", "Status"])
         self.roscar_table.horizontalHeader().setStretchLastSection(True)
         self.roscar_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
@@ -79,11 +79,11 @@ class MonitorPanel(QWidget):
         self.tab_widget = QTabWidget()
 
         self.stock_log_table = self._create_log_table(["Item", "Quantity", "Last Updated"])
-        self.roscar_event_log_table = self._create_log_table(["Timestamp", "Robot", "Event"])
+        self.roscar_event_log_table = self._create_log_table(["Timestamp", "Roscar", "Event"])
         self.task_log_table = self._create_log_table(["Timestamp", "Task ID", "Status"])
 
         self.tab_widget.addTab(self.stock_log_table, "Stock Log")
-        self.tab_widget.addTab(self.roscar_event_log_table, "Robot Event Log")
+        self.tab_widget.addTab(self.roscar_event_log_table, "Roscar Event Log")
         self.tab_widget.addTab(self.task_log_table, "Task Log")
 
         main_layout.addWidget(self.tab_widget)
@@ -112,7 +112,7 @@ class MonitorPanel(QWidget):
             return
 
         # ROS2 메시지 전송
-        msg = RobotInfo()
+        msg = RoscarInfo()
         msg.roscar_name = roscar_id
         msg.roscar_ip = roscar_ip
         self.roscar_info_publisher.publish(msg)
@@ -120,7 +120,7 @@ class MonitorPanel(QWidget):
         # 추가된 로봇 리스트에 표시
         self.update_roscar_list(roscar_id)
 
-        self.show_message("Success", f"Robot {roscar_id} added successfully!")
+        self.show_message("Success", f"Roscar {roscar_id} added successfully!")
 
     def show_message(self, title, message):
         msg = QMessageBox()

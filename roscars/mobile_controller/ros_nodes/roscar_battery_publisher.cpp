@@ -49,7 +49,7 @@ private:
         float battery_percent = battery_.get_battery();
 
         shared_interfaces::msg::BatteryStatus msg;
-        msg.robot_name = ssid;  // ✅ SSID 직접 포함
+        msg.roscar_name = ssid;  // ✅ SSID 직접 포함
         msg.battery_percent = battery_percent;
         msg.is_charging = false;  // 필요시 실제 센서 연결
         msg.stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();

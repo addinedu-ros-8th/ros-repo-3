@@ -16,7 +16,7 @@ def main():
             packet, addr = sock.recvfrom(MAX_UDP_SIZE)
             if len(packet) < 5:
                 continue
-            robot_id, comp_len = struct.unpack('!BI', packet[:5])
+            roscar_id, comp_len = struct.unpack('!BI', packet[:5])
             comp = packet[5:]
             if len(comp) != comp_len:
                 continue
@@ -27,7 +27,7 @@ def main():
             if img is None:
                 continue
 
-            win = f"Robot_{robot_id}"
+            win = f"Roscar_{roscar_id}"
             cv2.imshow(win, img)
             if cv2.waitKey(1) == 27:
                 break

@@ -18,7 +18,7 @@
     <node pkg="video_sender" exec="udp_streamer_node" name="udp_streamer" output="screen">
         <param name="server_ip"   value="192.168.0.168"/>
         <param name="server_port" value="4436"/>
-        <param name="robot_id"    value="1"/>
+        <param name="roscar_id"    value="1"/>
         <param name="send_rate"   value="5.0"/>
     </node>
 

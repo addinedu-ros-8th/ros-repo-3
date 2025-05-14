@@ -1,6 +1,6 @@
 # SensorData.msg
 
-string robot_id              # 로봇 ID
+string roscar_id              # 로봇 ID
 string lidar_raw            # LiDAR 데이터 (JSON 형식)
 string imu_data             # IMU 데이터 (JSON 형식)
 string ultrasonic_data      # 초음파 데이터 (JSON 형식)
