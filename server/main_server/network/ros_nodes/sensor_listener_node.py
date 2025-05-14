@@ -50,7 +50,7 @@ class SensorListener(Node):
         dt = datetime.fromtimestamp(t)
 
         self.get_logger().info(
-            f'[BATTERY] name={msg.robot_name}, '
+            f'[BATTERY] name={msg.roscar_name}, '
             f'battery={msg.battery_percent:.1f}%, '
             f'is_charging={"YES" if msg.is_charging else "NO"}, '
             f'time={dt.strftime("%Y-%m-%d %H:%M:%S")}'
@@ -58,7 +58,7 @@ class SensorListener(Node):
 
     def sensor_data_callback(self, msg: SensorData):
         dt = datetime.fromtimestamp(msg.stamp.sec + msg.stamp.nanosec * 1e-9)
-        self.get_logger().info(f'[SensorData] 수신 - robot_id={msg.robot_id}, time={dt.strftime("%Y-%m-%d %H:%M:%S")}')
+        self.get_logger().info(f'[SensorData] 수신 - roscar_id={msg.roscar_id}, time={dt.strftime("%Y-%m-%d %H:%M:%S")}')
 
         try:
             parsed = parse_sensor_data(msg)
@@ -69,7 +69,7 @@ class SensorListener(Node):
             self.get_logger().warn(f'SensorData JSON 파싱 실패: {e}')
             return
 
-        save_sensor_data_to_db(msg.robot_id, dt, parsed, self.get_logger())
+        save_sensor_data_to_db(msg.roscar_id, dt, parsed, self.get_logger())
 
     def register_callback(self, msg):
         self.get_logger().info(
