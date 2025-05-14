@@ -1,0 +1,133 @@
+import enum
+from sqlalchemy import (
+    Column, Integer, String, Boolean, Float, Enum, TIMESTAMP, JSON, func
+)
+from sqlalchemy.ext.declarative import declarative_base
+
+# Base class for all models
+RoscarsLogBase = declarative_base()
+
+# Enum definitions
+class DefaultEventType(enum.Enum):
+    WAIT = 'WAIT'
+    PROGRESS_START = 'PROGRESS_START'
+    COMPLET = 'COMPLET'
+    CANCEL = 'CANCEL'
+    FAILE = 'FAILE'
+
+class RosCarEventType(enum.Enum):
+    TASK_START = 'TASK_START'
+    TASK_DOEN = 'TASK_DOEN'
+    OBJECT_DETECTED = 'OBJECT_DETECTED'
+    PATH_MODIFIED = 'PATH_MODIFIED'
+    EMERGENCY_STOP = 'EMERGENCY_STOP'
+    COLLISION = 'COLLISION'
+    CHARGING_START = 'CHARGING_START'
+    CHARGING_DONE = 'CHARGING_DONE'
+
+class ControlSource(enum.Enum):
+    OBSTACLE_AVOIDANCE = 'OBSTACLE_AVOIDANCE'
+    EMERGENCY_HANDLER = 'EMERGENCY_HANDLER'
+    PATH_PLANNER = 'PATH_PLANNER'
+
+# Tables
+class RackSensorLog(RoscarsLogBase):
+    __tablename__ = 'RackSensorLog'
+
+    sensor_log_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer)
+    rack_id = Column(Integer)
+    rack_status = Column(String(255))
+    rack_position_x = Column(Float)
+    rack_position_y = Column(Float)
+    rack_position_z = Column(Float)
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class RoscarSensorFusionRawLog(RoscarsLogBase):
+    __tablename__ = 'SensorFusionRawLog'
+
+    sensor_log_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer)
+    lidar_raw = Column(JSON)
+    imu_data = Column(JSON)
+    ultrasonic_data = Column(JSON)
+    camera_frame_id = Column(String(255))
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class RoscarTrajectoryLog(RoscarsLogBase):
+    __tablename__ = 'RoscarTrajectoryLog'
+
+    trajectory_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer)
+    task_id = Column(Integer)
+    position_x = Column(Float)
+    position_y = Column(Float)
+    velocity = Column(Float)
+    heading_angle = Column(Float)
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class RosCarEventLog(RoscarsLogBase):
+    __tablename__ = 'RosCarEventLog'
+
+    event_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer)
+    task_id = Column(Integer)
+    event_type = Column(Enum(RosCarEventType, name="roscar_event_type_enum"))
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class TaskEventLog(RoscarsLogBase):
+    __tablename__ = 'TaskEventLog'
+
+    event_id = Column(Integer, primary_key=True)
+    task_id = Column(Integer)
+    previous_event = Column(Enum(DefaultEventType, name="previous_event_type_enum"))
+    current_event = Column(Enum(DefaultEventType, name="current_event_type_enum"))
+    changed_at = Column(TIMESTAMP, server_default=func.now())
+
+class DeliveryEventLog(RoscarsLogBase):
+    __tablename__ = 'DeliveryEventLog'
+
+    event_id = Column(Integer, primary_key=True)
+    delivery_id = Column(Integer)
+    previous_event = Column(Enum(DefaultEventType, name="previous_event_type_enum"))
+    new_event = Column(Enum(DefaultEventType, name="new_event_type_enum"))
+    user_id = Column(Integer)
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class ControlCommandLog(RoscarsLogBase):
+    __tablename__ = 'ControlCommandLog'
+
+    command_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer)
+    linear_velocity = Column(Float)
+    angular_velocity = Column(Float)
+    control_source = Column(Enum(ControlSource, name="control_source_enum"))
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class PrecisionStopLog(RoscarsLogBase):
+    __tablename__ = 'PrecisionStopLog'
+
+    log_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer)
+    task_id = Column(Integer)
+    is_success = Column(Boolean)
+    deviation_cm = Column(Float)
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class InventoryEventLog(RoscarsLogBase):
+    __tablename__ = 'InventoryEventLog'
+
+    event_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    item_id = Column(Integer)
+    roscar_id = Column(Integer)
+    quantity = Column(Integer)
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
+class FileSystemLog(RoscarsLogBase):
+    __tablename__ = 'FileSystemLog'
+
+    file_log_id = Column(Integer, primary_key=True)
+    image_path = Column(String(255))  # 길이 지정
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+
