@@ -37,13 +37,11 @@ class OperationalStatus(enum.Enum):
     ERROR = 'ERROR'
     EMERGENCY_STOP = 'EMERGENCY_STOP'
 
-class DrivingStatus(enum.Enum):
+class DrivingPhase(enum.Enum):
     PICKUP = 'PICKUP'
     DELIVERY = 'DELIVERY'
     RETURN = 'RETURN'
     PRECISION_STOP = 'PRECISION_STOP'
-    GO_TO_STANDBY_ZONE = 'GO_TO_STANDBY_ZONE'
-    GO_TO_CHARGING_ZONE = 'GO_TO_CHARGING_ZONE'
     DISCONNECT = 'DISCONNECT'
 
 class DeliveryStatus(enum.Enum):
@@ -57,6 +55,60 @@ class TaskStatus(enum.Enum):
     DONE = 'DONE'
 
 # Tables
+class RosCars(RoscarsBase):
+    __tablename__ = 'RosCars'
+
+    roscar_id = Column(Integer, primary_key=True)
+    roscar_name = Column(String(255), unique=True)
+    battery_percentage = Column(Integer)
+    operational_status = Column(Enum(OperationalStatus, name='operational_status_enum'))
+    roscar_ip_v4 = Column(String(15))
+
+    deliveries = relationship("Delivery", back_populates="roscar")
+    driving_phases = relationship("RosCarDrivingPhase", back_populates="roscar")
+
+class RosCarDrivingPhase(RoscarsBase):
+    __tablename__ = 'RosCarDrivingPhase'
+
+    driving_phase_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer, ForeignKey('RosCars.roscar_id'))
+    status_type = Column(Enum(DrivingPhase, name='driving_phase_enum'))
+    is_enabled = Column(Boolean)
+
+    roscar = relationship("RosCars", back_populates="driving_phases")
+
+class Delivery(RoscarsBase):
+    __tablename__ = 'Delivery'
+
+    delivery_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer, ForeignKey('RosCars.roscar_id'))
+    user_id = Column(Integer, ForeignKey('User.user_id'))
+    driving_phase_id = Column(Integer, ForeignKey('RosCarDrivingPhase.driving_phase_id'))
+    delivery_status = Column(Enum(DeliveryStatus, name='delivery_status_enum'))
+    pickup_time = Column(TIMESTAMP)
+    dropoff_time = Column(TIMESTAMP)
+
+    user = relationship("User", back_populates="deliveries")
+    roscar = relationship("RosCars", back_populates="deliveries")
+    tasks = relationship("Task", back_populates="delivery")
+    driving_phase = relationship("RosCarDrivingPhase")
+
+
+class Task(RoscarsBase):
+    __tablename__ = 'Task'
+
+    task_id = Column(Integer, primary_key=True)
+    delivery_id = Column(Integer, ForeignKey('Delivery.delivery_id'))
+    shoes_model_id = Column(Integer, ForeignKey('ShoesModel.shoes_model_id'))
+    status = Column(Enum(TaskStatus, name='task_status_enum'))
+    start_time = Column(TIMESTAMP)
+    end_time = Column(TIMESTAMP)
+    location_id = Column(Integer, ForeignKey('RackLocation.location_id'))
+
+    delivery = relationship("Delivery", back_populates="tasks")
+    location = relationship("RackLocation")
+    shoes_model = relationship("ShoesModel", back_populates="tasks")
+
 class User(RoscarsBase):
     __tablename__ = 'User'
 
@@ -78,14 +130,13 @@ class User(RoscarsBase):
         """비밀번호 유효성 검사 (예: 최소 8자, 최대 64자)"""
         return 8 <= len(password) <= 64
 
-
 class ShoesModel(RoscarsBase):
     __tablename__ = 'ShoesModel'
 
     shoes_model_id = Column(Integer, primary_key=True)
     name = Column(String(255))
     size = Column(Integer)
-    color_name = Column(Enum(ColorName, name='color_name_enum'))
+    color = Column(Enum(ColorName, name='color_enum'))
 
     inventories = relationship("ShoesInventory", back_populates="shoes_model")
     tasks = relationship("Task", back_populates="shoes_model")
@@ -126,63 +177,7 @@ class QRCode(RoscarsBase):
 
     qrcode_id = Column(Integer, primary_key=True)
     inventory_id = Column(Integer, ForeignKey('ShoesInventory.inventory_id'))
-    qrcode_data = Column(String(255))
+    qr_code_value = Column(String(255))
 
     inventory = relationship("ShoesInventory", back_populates="qrcodes")
-
-class RosCars(RoscarsBase):
-    __tablename__ = 'RosCars'
-
-    roscar_id = Column(Integer, primary_key=True)
-    roscar_name = Column(String(255), unique=True)
-    battery_percentage = Column(Integer)
-    operational_status = Column(Enum(OperationalStatus, name='operational_status_enum'))
-    roscar_ip_v4 = Column(String(15))
-
-    deliveries = relationship("Delivery", back_populates="roscar")
-    driving_statuses = relationship("RosCarDrivingStatus", back_populates="roscar")
-
-
-class RosCarDrivingStatus(RoscarsBase):
-    __tablename__ = 'RosCarDrivingStatus'
-
-    driving_status_id = Column(Integer, primary_key=True)
-    roscar_id = Column(Integer, ForeignKey('RosCars.roscar_id'))
-    status_type = Column(Enum(DrivingStatus, name='driving_status_enum'))
-    is_enabled = Column(Boolean)
-
-    roscar = relationship("RosCars", back_populates="driving_statuses")
-
-class Delivery(RoscarsBase):
-    __tablename__ = 'Delivery'
-
-    delivery_id = Column(Integer, primary_key=True)
-    roscar_id = Column(Integer, ForeignKey('RosCars.roscar_id'))
-    user_id = Column(Integer, ForeignKey('User.user_id'))
-    driving_status_id = Column(Integer, ForeignKey('RosCarDrivingStatus.driving_status_id'))
-    delivery_status = Column(Enum(DeliveryStatus, name='delivery_status_enum'))
-    delivery_start_time = Column(TIMESTAMP)
-    delivery_end_time = Column(TIMESTAMP)
-
-    user = relationship("User", back_populates="deliveries")
-    roscar = relationship("RosCars", back_populates="deliveries")
-    tasks = relationship("Task", back_populates="delivery")
-    driving_status = relationship("RosCarDrivingStatus")
-
-
-class Task(RoscarsBase):
-    __tablename__ = 'Task'
-
-    task_id = Column(Integer, primary_key=True)
-    delivery_id = Column(Integer, ForeignKey('Delivery.delivery_id'))
-    shoes_model_id = Column(Integer, ForeignKey('ShoesModel.shoes_model_id'))
-    status = Column(Enum(TaskStatus, name='task_status_enum'))
-    start_time = Column(TIMESTAMP)
-    end_time = Column(TIMESTAMP)
-    location_id = Column(Integer, ForeignKey('RackLocation.location_id'))
-
-    delivery = relationship("Delivery", back_populates="tasks")
-    location = relationship("RackLocation")
-    shoes_model = relationship("ShoesModel", back_populates="tasks")
-
 

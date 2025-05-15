@@ -27,9 +27,9 @@ class SeedDataLoader:
         print("[Seed] 신발 모델 및 위치/재고 생성 중...")
 
         shoes_list = [
-            ShoesModel(name="Puma Palermo Trainers", size=240, color_name=ColorName.HYPERLINK_BLUE_FLAME_FLICKER_GUM),
-            ShoesModel(name="Nike Air Rift", size=240, color_name=ColorName.BLACK),
-            ShoesModel(name="Adidas Gazelle", size=260, color_name=ColorName.HOTPINK),
+            ShoesModel(name="Puma Palermo Trainers", size=240, color=ColorName.HYPERLINK_BLUE_FLAME_FLICKER_GUM),
+            ShoesModel(name="Nike Air Rift", size=240, color=ColorName.BLACK),
+            ShoesModel(name="Adidas Gazelle", size=260, color=ColorName.HOTPINK),
         ]
         self.session.add_all(shoes_list)
 
@@ -55,8 +55,8 @@ class SeedDataLoader:
     def load_qrcodes(self, inventory_list):
         print("[Seed] QR 코드 생성 중...")
         qrcodes = [
-            QRCode(qrcode_data="QR20250430X001", inventory_id=inventory_list[0].inventory_id),
-            QRCode(qrcode_data="QR20250430X002", inventory_id=inventory_list[1].inventory_id),
+            QRCode(qr_code_value="QR20250430X001", inventory_id=inventory_list[0].inventory_id),
+            QRCode(qr_code_value="QR20250430X002", inventory_id=inventory_list[1].inventory_id),
         ]
         self.session.add_all(qrcodes)
         print("[Seed] QR 코드 생성 완료")

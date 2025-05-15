@@ -45,8 +45,6 @@ class RoscarLogQuery:
          .join(ShoesModel, Task.shoes_model_id == ShoesModel.shoes_model_id)\
          .join(RackLocation, Task.location_id == RackLocation.location_id).all()
 
-
-
     # 배송 요청 이벤트 + 요청자 이름 + 로봇 이름
     def get_delivery_log(self):
         return self.session.query(
@@ -154,18 +152,18 @@ class RoscarQuery:
     def get_user_by_name(self, user_name: str):
         return self.session.query(User).filter_by(user_name=user_name).first()
 
-    def get_shoes_model_by_qrcode(self, qrcode_data: str):
+    def get_shoes_model_by_qrcode(self, qr_code_value: str):
         from databases.models.roscars_models import QRCode, ShoesInventory
         return self.session.query(
             ShoesModel.name,
             ShoesModel.size,
-            ShoesModel.color_name,
+            ShoesModel.color,
             ShoesInventory.quantity,
             RackLocation.name.label("location"),
         ).join(ShoesInventory, ShoesModel.shoes_model_id == ShoesInventory.shoes_model_id)\
          .join(QRCode, QRCode.inventory_id == ShoesInventory.inventory_id)\
          .join(RackLocation, ShoesInventory.location_id == RackLocation.location_id)\
-         .filter(QRCode.qrcode_data == qrcode_data).first()
+         .filter(QRCode.qr_code_value == qr_code_value).first()
 
     def get_task_event_log_by_task_id(self, task_id: int):
         return self.session.query(TaskEventLog)\

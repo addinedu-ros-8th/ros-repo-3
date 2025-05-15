@@ -1,3 +1,3 @@
 uint8 roscar_id
-string qrcode_data
+string qr_code_value
 builtin_interfaces/Time stamp
