@@ -69,11 +69,13 @@ class DestinationGroup(enum.Enum):
 class RosCars(RoscarsBase):
     __tablename__ = 'RosCars'
 
-    roscar_id = Column(Integer, primary_key=True)
+    roscar_id = Column(Integer, primary_key=True)  # SSID
     roscar_name = Column(String(255), unique=True)
     battery_percentage = Column(Integer)
     operational_status = Column(Enum(OperationalStatus, name='operational_status_enum'))
     roscar_ip_v4 = Column(String(15))
+    cart_id = Column(String(255), unique=True)
+    cart_ip_v4 = Column(String(15))
 
     deliveries = relationship("Delivery", back_populates="roscar")
     driving_phases = relationship("RosCarDrivingPhase", back_populates="roscar")
@@ -104,7 +106,6 @@ class Delivery(RoscarsBase):
     roscar = relationship("RosCars", back_populates="deliveries")
     tasks = relationship("Task", back_populates="delivery")
     driving_phase = relationship("RosCarDrivingPhase")
-
 
 class Task(RoscarsBase):
     __tablename__ = 'Task'

@@ -2,12 +2,15 @@ from databases.query import RoscarQuery
 from databases.utils import MessageUtils
 from databases.database_manager import DatabaseManager
 from databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
+from databases.models.roscars_log_models import RosCarEventType, DefaultEventType
+from databases.logger import RoscarsLogWriter
 
 class MainService:
     def __init__(self):
         db = DatabaseManager()
         self.session = db.get_session("roscars")
         self.query = RoscarQuery(self.session)
+        self.logger = RoscarsLogWriter(self.session)
 
     # [AU] 로그인 인증 요청
     def handle_login_request(self, req_data, client_socket):
@@ -116,7 +119,8 @@ class MainService:
                         status="TO_DO"
                     )
                     self.session.add(task)
-                    self.session.flush()
+                    self.session.flush()  # task_id 확보
+
                     if not first_task_id:
                         first_task_id = task.task_id
 
@@ -125,6 +129,14 @@ class MainService:
                 response = { "cmd": "IR", "status": 0x01 }
             else:
                 self.session.commit()
+
+                self.logger.log_delivery_event(  # ✅ commit 이후로 이동
+                    delivery_id=delivery.delivery_id,
+                    user_id=user_id,
+                    previous=DefaultEventType.WAIT,
+                    new=DefaultEventType.PROGRESS_START
+                )
+
                 response = {
                     "cmd": "IR",
                     "status": 0x00,
@@ -132,8 +144,27 @@ class MainService:
                     "first_task_id": first_task_id
                 }
 
+
+            self.logger.log_delivery_event(
+                delivery_id=delivery.delivery_id,
+                user_id=user_id,
+                previous=DefaultEventType.WAIT,
+                new=DefaultEventType.PROGRESS_START
+                )
+
+
         except Exception as e:
             self.session.rollback()
+            try:
+                if 'delivery' in locals():
+                    self.logger.log_delivery_event(
+                        delivery_id=delivery.delivery_id,
+                        user_id=user_id,
+                        previous=DefaultEventType.WAIT,
+                        new=DefaultEventType.FAILE
+                    )
+            except:
+                pass  # 로깅 실패 무시
             response = { "cmd": "IR", "status": 0x01 }
 
         client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
@@ -176,14 +207,32 @@ class MainService:
             delivery.delivery_status = "CANCELLED"
             self.session.commit()
 
-            # 4. ROS2 메시지 전송
+            # TODO: 4. ROS2 메시지 전송
             # self.ros2_publisher.send_cancel_command(delivery_id=delivery_id)
 
             response = { "cmd": "CK", "status": 0x00, "delivery_id": delivery_id }
 
+            self.logger.log_delivery_event(
+            delivery_id=delivery.delivery_id,
+            user_id=user_id,
+            previous=DefaultEventType.PROGRESS_START,
+            new=DefaultEventType.CANCEL
+            )
+
+
         except Exception as e:
             self.session.rollback()
+            try:
+                self.logger.log_delivery_event(
+                    delivery_id=delivery_id,
+                    user_id=user_id,
+                    previous=DefaultEventType.PROGRESS_START,
+                    new=DefaultEventType.FAILE
+                )
+            except:
+                pass
             response = { "cmd": "CK", "status": 0x01, "delivery_id": delivery_id }
+
 
         client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
 
@@ -252,11 +301,24 @@ class MainService:
             # self.ros2_publisher.send_pause(roscar_id)
             # self.ros2_publisher.send_warning(roscar_id)
 
-            print(f"[AI Result] roscar_id={roscar_id}, object={detected_object}")
+            self.logger.log_roscar_event(
+            roscar_id=roscar_id,
+            task_id=None,
+            event_type=RosCarEventType.OBJECT_DETECTED
+            )
+
 
             response = { "cmd": "IN", "status": 0x00 }
 
         except Exception as e:
+            try:
+                self.logger.log_roscar_event(
+                    roscar_id=roscar_id if 'roscar_id' in locals() else -1,
+                    task_id=None,
+                    event_type=RosCarEventType.EMERGENCY_STOP  # 또는 FAIL용 커스텀 타입이 있다면 그것으로
+                )
+            except:
+                pass
             response = { "cmd": "IN", "status": 0x01 }
 
         client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
