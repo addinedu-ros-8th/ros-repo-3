@@ -69,6 +69,15 @@ ament_target_dependencies(sensor_data_publisher
   rclcpp
   shared_interfaces
 )
+
+# ✅ roscar_presure_reader 노드 추가
+add_executable(roscar_presure_reader
+  ros_nodes/roscar_presure_reader.cpp)
+ament_target_dependencies(roscar_presure_reader
+  rclcpp
+  std_msgs
+)
+
 target_compile_definitions(sensor_data_publisher PRIVATE SDK_PLATFORM_LINUX)
 target_link_libraries(sensor_data_publisher
   ${LIBJSONCPP_LIBRARIES}
@@ -80,6 +89,7 @@ install(TARGETS
   roscar_register_publisher
   roscar_battery_publisher
   sensor_data_publisher
+  roscar_presure_reader
   DESTINATION lib/${PROJECT_NAME}
 )
 

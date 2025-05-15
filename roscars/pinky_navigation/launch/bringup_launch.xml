@@ -1,9 +1,9 @@
-<?xml version='1.0'?>
+<?xml version="1.0"?>
 <launch>
     <set_env name="RCUTILS_LOGGING_BUFFERED_STREAM" value="1"/>
 
     <arg name="namespace" default=""/>
-    <arg name="map" default="$(find-pkg-share pinky_navigation)/map/pinklab.yaml"/>
+    <arg name="map" default="roscars/pinky_navigation/map/roscars_map.yaml"/>
     <arg name="use_sim_time" default="False"/>
     <arg name="params_file" default="$(find-pkg-share pinky_navigation)/params/nav2_params.yaml"/>
     <arg name="params_cartographer" default="nav2_cartographer_params.lua"/>
@@ -66,12 +66,5 @@
             <arg name="container_name"     value="$(var container_name)"/>
             <arg name="lifecycle_nodes"    value="$(var lifecycle_nodes_nav)"/>
         </include>
-
-        <!-- ArUco 기반 initialpose 퍼블리셔 -->
-        <node pkg="aruco_mapper"
-            exec="initialpose_custom"       
-            name="aruco_initialpose_custom"
-            output="screen">
-        </node>
     </group>
 </launch>
