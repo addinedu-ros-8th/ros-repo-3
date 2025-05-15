@@ -138,27 +138,126 @@ class MainService:
 
         client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
 
-
-    # [CT] 작업 생성
-    def handle_create_task_request(self, req_data, client_socket):
-        pass
-
-    # [CK] 작업 취소
+    # [CD] 배송 취소
     def handle_cancel_task(self, req_data, client_socket):
-        """현재 작업 취소 요청 처리"""
-        pass
+        try:
+            user_id = req_data.get("user_id")
+            delivery_id = req_data.get("delivery_id")
 
-    # [TR] 작업 결과 확인
+            if not user_id or not delivery_id:
+                response = { "cmd": "CD", "status": 0x01 }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            # 1. Delivery 및 연결된 Task 조회
+            delivery = self.session.query(Delivery).filter_by(delivery_id=delivery_id).first()
+
+            if not delivery:
+                response = { "cmd": "CD", "status": 0x01 }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            tasks = delivery.tasks
+            if not tasks:
+                response = { "cmd": "CD", "status": 0x01 }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            # 2. 첫 번째 Task 기준 상태 확인
+            first_task = sorted(tasks, key=lambda t: t.task_id)[0]
+
+            if first_task.status == "DONE":
+                # 취소 불가
+                response = { "cmd": "CD", "status": 0x01, "delivery_id": delivery_id }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            # 3. 상태 변경
+            delivery.delivery_status = "CANCELLED"
+            self.session.commit()
+
+            # 4. ROS2 메시지 전송
+            # self.ros2_publisher.send_cancel_command(delivery_id=delivery_id)
+
+            response = { "cmd": "CK", "status": 0x00, "delivery_id": delivery_id }
+
+        except Exception as e:
+            self.session.rollback()
+            response = { "cmd": "CK", "status": 0x01, "delivery_id": delivery_id }
+
+        client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+
+
+    # [TR] 작업 결과 확인 
     def handle_task_result_check(self, req_data, client_socket):
-        """작업 완료 여부 확인 요청"""
-        pass
+        try:
+            user_id = req_data.get("user_id")
 
-    # [LS] 로그 조회 요청
-    def handle_log_request(self, req_data, client_socket):
-        """로봇 이벤트 로그 등 조회 요청"""
-        pass
+            if not user_id:
+                response = { "cmd": "TR", "status": 0x01 }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            # 1. 해당 사용자의 Delivery 목록 조회
+            deliveries = self.session.query(Delivery).filter_by(user_id=user_id).all()
+            if not deliveries:
+                response = { "cmd": "TR", "status": 0x00, "done_count": 0, "in_progress_count": 0, "in_progress_names": [] }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            done_count = 0
+            in_progress_names = set()
+
+            for delivery in deliveries:
+                for task in delivery.tasks:
+                    if task.status == "DONE":
+                        done_count += 1
+                    elif task.status == "IN_PROGRESS":
+                        in_progress_names.add(task.shoes_model.name)
+
+            response = {
+                "cmd": "TR",
+                "status": 0x00,
+                "done_count": done_count,
+                "in_progress_count": len(in_progress_names),
+                "in_progress_names": list(in_progress_names)
+            }
+
+        except Exception as e:
+            response = { "cmd": "TR", "status": 0x01 }
+
+        client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
 
     # [IN] AI 인식 결과 수신
     def handle_ai_result(self, req_data, client_socket):
-        """AI 서버에서 전송된 인식 결과 수신"""
-        pass
+        try:
+            roscar_id = req_data.get("roscar_id")
+            result_code = req_data.get("result_code")
+
+            if roscar_id is None or result_code is None:
+                response = { "cmd": "IN", "status": 0x01 }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            # 인식 결과 매핑
+            OBJECT_TYPE_MAP = {
+                0x00: "Roscar",
+                0x01: "Person",
+            }
+            detected_object = OBJECT_TYPE_MAP.get(result_code, "Unknown")
+
+            # 인식 결과 해석
+            # ROS2 비상 정지 명령 전송 예시
+            # self.ros2_publisher.send_emergency_stop(roscar_id)
+            # self.ros2_publisher.send_pause(roscar_id)
+            # self.ros2_publisher.send_warning(roscar_id)
+
+            print(f"[AI Result] roscar_id={roscar_id}, object={detected_object}")
+
+            response = { "cmd": "IN", "status": 0x00 }
+
+        except Exception as e:
+            response = { "cmd": "IN", "status": 0x01 }
+
+        client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+
