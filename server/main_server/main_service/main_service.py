@@ -1,7 +1,7 @@
 from databases.query import RoscarQuery
 from databases.utils import MessageUtils
 from databases.database_manager import DatabaseManager
-from databases.models.roscars_models import ShoesModel, RackLocation, Delivery, Task
+from databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
 
 class MainService:
     def __init__(self):
@@ -65,41 +65,49 @@ class MainService:
     def handle_inventory_request(self, req_data, client_socket):
         try:
             user_id = req_data.get("user_id")
-            items = req_data.get("items")  # List of dicts: [{shoes_model_id, location_id, quantity}, ...]
+            destination_str = req_data.get("destination")  # ex) "G1"
+            items = req_data.get("items")
 
-            if not user_id or not items or not isinstance(items, list):
+            if not user_id or not items or not isinstance(items, list) or not destination_str:
                 response = { "cmd": "IR", "status": 0x01 }
                 client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
                 return
 
-            # 1. Delivery 생성
+            # 목적지 Enum 변환
+            try:
+                destination_enum = DestinationGroup[destination_str]
+            except KeyError:
+                response = { "cmd": "IR", "status": 0x01 }
+                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                return
+
+            # 1. Delivery 생성 (destination 포함)
             delivery = Delivery(
                 user_id=user_id,
                 roscar_id=None,
                 delivery_status="TO_DO",
-                driving_phase_id=None
+                driving_phase_id=None,
+                destination=destination_enum
             )
             self.session.add(delivery)
             self.session.flush()  # delivery_id 확보
 
             first_task_id = None
 
-            # 2. 각 장바구니 항목 처리
+            # 2. 장바구니 항목별 Task 생성
             for item in items:
                 shoes_model_id = item.get("shoes_model_id")
                 location_id = item.get("location_id")
                 quantity = item.get("quantity")
 
                 if not shoes_model_id or not location_id or not quantity or quantity <= 0:
-                    continue  # 유효하지 않으면 건너뜀
+                    continue
 
-                # 유효성 검사
                 shoes_model = self.session.query(ShoesModel).filter_by(shoes_model_id=shoes_model_id).first()
                 location = self.session.query(RackLocation).filter_by(location_id=location_id).first()
                 if not shoes_model or not location:
-                    continue  # 유효하지 않으면 해당 항목 무시
+                    continue
 
-                # 수량만큼 Task 생성
                 for _ in range(quantity):
                     task = Task(
                         delivery_id=delivery.delivery_id,
@@ -112,7 +120,6 @@ class MainService:
                     if not first_task_id:
                         first_task_id = task.task_id
 
-            # Task 1개 이상 생성되지 않았다면 롤백
             if not first_task_id:
                 self.session.rollback()
                 response = { "cmd": "IR", "status": 0x01 }

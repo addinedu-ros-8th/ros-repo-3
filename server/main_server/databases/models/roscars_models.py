@@ -54,6 +54,17 @@ class TaskStatus(enum.Enum):
     IN_PROGRESS = 'IN_PROGRESS'
     DONE = 'DONE'
 
+class DestinationGroup(enum.Enum):
+    G1 = 'G1'
+    G2 = 'G2'
+    G3 = 'G3'
+    G4 = 'G4'
+    G5 = 'G5'
+    G6 = 'G6'
+    G7 = 'G7'
+    G8 = 'G8'
+
+
 # Tables
 class RosCars(RoscarsBase):
     __tablename__ = 'RosCars'
@@ -85,6 +96,7 @@ class Delivery(RoscarsBase):
     user_id = Column(Integer, ForeignKey('User.user_id'))
     driving_phase_id = Column(Integer, ForeignKey('RosCarDrivingPhase.driving_phase_id'))
     delivery_status = Column(Enum(DeliveryStatus, name='delivery_status_enum'))
+    destination = Column(Enum(DestinationGroup, name='destination_enum'))
     pickup_time = Column(TIMESTAMP)
     dropoff_time = Column(TIMESTAMP)
 
@@ -152,7 +164,6 @@ class RackLocation(RoscarsBase):
     map_x = Column(Float)
     map_y = Column(Float)
     aruco_id = Column(Integer)
-    destination = Column(String(255))
     timestamp = Column(TIMESTAMP, server_default=func.now())
 
     inventories = relationship("ShoesInventory", back_populates="location")
