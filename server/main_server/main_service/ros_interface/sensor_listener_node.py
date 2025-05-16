@@ -1,10 +1,8 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from std_msgs.msg import Float32
 from shared_interfaces.msg import BatteryStatus, RoscarRegister, SensorData
 from datetime import datetime
-import json
 
 from db.connect_db import get_roscars_session
 from db.roscars_models import RosCars        

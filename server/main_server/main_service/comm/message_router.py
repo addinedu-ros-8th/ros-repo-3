@@ -1,14 +1,13 @@
 import struct
-from server.main_server.main_service.core.main_service import MainService
 
 class MessageRouter:
-    def __init__(self):
-        self.main_service = MainService()
+    def __init__(self, main_service):
+        self.main_service = main_service
 
     def route_message(self, message: bytes, client_socket):
         try:
             if len(message) < 2:
-                print("[⚠️ 에러] 너무 짧은 메시지")
+                print("[에러] 너무 짧은 메시지")
                 return
 
             cmd = message[:2].decode('ascii', errors='replace')
