@@ -4,3 +4,4 @@ server:
 
 roscar_settings:
   emergency_battery_threshold: 10  # (%) 배터리 임계치
+

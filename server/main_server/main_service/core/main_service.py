@@ -1,12 +1,10 @@
-# main_service/main_service.py
-
 from server.main_server.databases.query import RoscarQuery
 from server.main_server.databases.utils import MessageUtils
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
 from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
 from server.main_server.databases.logger import RoscarsLogWriter
-from server.main_server.main_service.network.shutdown import shutdown_flag
+from server.main_server.main_service.core.shutdown import shutdown_flag
 
 class MainService:
     def __init__(self):

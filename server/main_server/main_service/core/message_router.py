@@ -1,6 +1,6 @@
 import json
 from server.main_server.databases.utils import MessageUtils
-from server.main_server.main_service.main_service import MainService
+from server.main_server.main_service.core.main_service import MainService
 
 class MessageRouter:
     def __init__(self):
@@ -23,23 +23,15 @@ class MessageRouter:
             elif cmd == "IR":
                 self.main_service.handle_inventory_request(data, client_socket)
 
-            # [4-1. 작업 생성 요청] CT
-            elif cmd == "CT":
-                self.main_service.handle_create_task_request(data, client_socket)
-
-            # [4-2. 작업 취소 요청] CK
-            elif cmd == "CK":
+            # [4. 작업 취소 요청] CD
+            elif cmd == "CD":
                 self.main_service.handle_cancel_task(data, client_socket)
 
-            # [6. 작업 완료 여부 확인] TR
+            # [5. 작업 완료 여부 확인] TR
             elif cmd == "TR":
                 self.main_service.handle_task_result_check(data, client_socket)
 
-            # [5. 로봇 로그 조회 요청] LS
-            elif cmd == "LS":
-                self.main_service.handle_log_request(data, client_socket)
-
-            # [7. AI 인식 결과 수신] IN
+            # [6. AI 인식 결과 수신] IN
             elif cmd == "IN":
                 self.main_service.handle_ai_result(data, client_socket)
 

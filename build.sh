@@ -7,7 +7,10 @@ echo "[INFO] 시스템 패키지 최신화 중..."
 sudo apt update && sudo apt upgrade -y
 
 # [GUI] pyzbar 의존성 설치
-sudo apt install libzbar0 libxcb-cursor0 -y
+sudo apt install -y libzbar0 libxcb-cursor0
+
+# ROS2
+sudo apt install -y ros-jazzy-domain-bridge
 
 # 가상환경 설정
 VENV_DIR=".roscars_venv"
@@ -83,4 +86,4 @@ echo "[INFO] 환경 준비 완료. launch 파일을 실행할 수 있습니다."
 
 ### GUI 실행
 # Test용 GUI
-python3 -m viewer.mode_select  
+# python3 -m viewer.mode_select  
