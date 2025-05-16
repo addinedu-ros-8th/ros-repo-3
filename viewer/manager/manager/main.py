@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox
 from viewer.theme import apply_theme
-from .dashboard_panel import MonitorPanel  # MonitorPanel만 포함
+from viewer.manager.manager.dashboard_panel import MonitorPanel  # MonitorPanel만 포함
 
 class MainWindow(QMainWindow):
     def __init__(self):

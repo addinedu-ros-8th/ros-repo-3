@@ -1,6 +1,4 @@
 import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'viewer')))  # 경로 추가
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt6.QtCore import Qt

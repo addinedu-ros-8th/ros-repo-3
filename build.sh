@@ -6,6 +6,9 @@ set -e
 echo "[INFO] 시스템 패키지 최신화 중..."
 sudo apt update && sudo apt upgrade -y
 
+# [GUI] pyzbar 의존성 설치
+sudo apt install libzbar0 libxcb-cursor0 -y
+
 # 가상환경 설정
 VENV_DIR=".roscars_venv"
 
@@ -70,11 +73,14 @@ echo "[INFO] 환경 준비 완료. launch 파일을 실행할 수 있습니다."
 
 ### main_service test
 # python3 -m server.main_server.main_service.main              # 일반 실행 (port 9000)
-python3 -m server.main_server.main_service.main --test       # 3초 후 자동 종료
-echo "[INFO] main_service/main.py 실행 테스트 완료"
+# python3 -m server.main_server.main_service.main --test       # 3초 후 자동 종료
+# echo "[INFO] main_service/main.py 실행 테스트 완료"
 
-# AI 연동용 실행 (port 5001)
+### AI 연동용 실행 (port 5001)
 # python3 -m server.main_server.main_service.main --ai-test    # AI 연동용 실행 (port 5001)
 # python3 -m server.ai_server.ai_modules.main
-echo "[INFO] main.py 실행 테스트 완료"
+# echo "[INFO] main.py 실행 테스트 완료"
 
+### GUI 실행
+# Test용 GUI
+python3 -m viewer.mode_select  
