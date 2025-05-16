@@ -71,7 +71,7 @@ colcon build \
     "-DCMAKE_CXX_FLAGS=-Wno-error=unused-parameter -Wno-error=pedantic -Wno-error=sign-compare" \
   --continue-on-error \
   || echo "[WARN] colcon 빌드 중 일부 에러가 발생했지만, 계속 진행합니다."
-echo "[INFO] colcon 빌드 완료 (에러 무시)"
+echo "[INFO] colcon 빌드 완료"
 
 # ROS2 워크스페이스 적용
 source install/setup.bash
