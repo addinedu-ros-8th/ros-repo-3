@@ -35,9 +35,9 @@ class SeedDataLoader:
 
         locations = [
             RackLocation(name="R3-S1-A1", floor_level=3, zone_number=2, map_x=1.0, map_y=1.0, aruco_id=101,
-                         updated_at=datetime.now(), destination="PACKING_ZONE"),
+                         updated_at=datetime.now()),
             RackLocation(name="R3-S2-B4", floor_level=3, zone_number=2, map_x=1.5, map_y=1.2, aruco_id=102,
-                         updated_at=datetime.now(), destination="PACKING_ZONE"),
+                         updated_at=datetime.now()),
         ]
         self.session.add_all(locations)
 
@@ -54,6 +54,7 @@ class SeedDataLoader:
 
     def load_qrcodes(self, inventory_list):
         print("[Seed] QR 코드 생성 중...")
+
         qrcodes = [
             QRCode(qr_code_value="QR20250430X001", inventory_id=inventory_list[0].inventory_id),
             QRCode(qr_code_value="QR20250430X002", inventory_id=inventory_list[1].inventory_id),
