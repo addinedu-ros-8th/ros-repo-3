@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'viewer'
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt6.QtCore import Qt
-from viewer.manager_pc.manager_pc.main import MainWindow as ManagerMainWindow
+from viewer.manager.manager.main import MainWindow as ManagerMainWindow
 from viewer.staff.main import StaffGUI
 from viewer.theme import apply_theme  # theme.py 임포트
 

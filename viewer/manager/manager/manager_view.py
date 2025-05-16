@@ -1,5 +1,5 @@
 def main():
-    print('Hi from manager_pc.')
+    print('Hi from manager.')
 
 
 if __name__ == '__main__':
