@@ -1,44 +1,71 @@
-import json
-from server.main_server.databases.utils import MessageUtils
+import struct
 from server.main_server.main_service.core.main_service import MainService
 
 class MessageRouter:
     def __init__(self):
         self.main_service = MainService()
 
-    def route_message(self, message, client_socket):
+    def route_message(self, message: bytes, client_socket):
         try:
-            data = json.loads(message)
-            cmd = data.get("Cmd")
+            if len(message) < 2:
+                print("[⚠️ 에러] 너무 짧은 메시지")
+                return
 
-            # [1. 로그인 인증 요청] AU
+            cmd = message[:2].decode('ascii', errors='replace')
+            print(f"[CMD] {cmd}")
+
             if cmd == "AU":
-                self.main_service.handle_login_request(data, client_socket)
+                user_name = message[2:34].decode('utf-8').rstrip('\x00')
+                password  = message[34:66].decode('utf-8').rstrip('\x00')
+                payload = {"user_name": user_name, "password": password}
+                # 여기선 payload만 넘기고, MainService 쪽에서 type_로 "AU"를 사용하도록
+                self.main_service.handle_login_request(payload, client_socket)
 
-            # [2. 상품 정보 조회 요청] IS
             elif cmd == "IS":
-                self.main_service.handle_qrcode_search(data, client_socket)
+                qr = message[2:18].decode('utf-8').rstrip('\x00')
+                payload = {"qr_code": qr}
+                self.main_service.handle_qrcode_search(payload, client_socket)
 
-            # [3. 재고 요청 처리] IR
             elif cmd == "IR":
-                self.main_service.handle_inventory_request(data, client_socket)
+                user_id    = struct.unpack(">I",  message[2:6])[0]
+                item_count = struct.unpack(">H",  message[6:8])[0]
+                destination= message[8:10].decode('utf-8')
+                items = []
+                offset = 10
+                for _ in range(item_count):
+                    sid, lid, qty = struct.unpack(">III", message[offset:offset+12])
+                    items.append({
+                        "shoes_model_id": sid,
+                        "location_id":    lid,
+                        "quantity":       qty
+                    })
+                    offset += 12
+                payload = {
+                    "user_id":    user_id,
+                    "destination": destination,
+                    "items":      items
+                }
+                self.main_service.handle_inventory_request(payload, client_socket)
 
-            # [4. 작업 취소 요청] CD
             elif cmd == "CD":
-                self.main_service.handle_cancel_task(data, client_socket)
+                user_id, delivery_id = struct.unpack(">II", message[2:10])
+                payload = {"user_id": user_id, "delivery_id": delivery_id}
+                self.main_service.handle_cancel_task(payload, client_socket)
 
-            # [5. 작업 완료 여부 확인] TR
             elif cmd == "TR":
-                self.main_service.handle_task_result_check(data, client_socket)
+                user_id = struct.unpack(">I", message[2:6])[0]
+                payload = {"user_id": user_id}
+                self.main_service.handle_task_result_check(payload, client_socket)
 
-            # [6. AI 인식 결과 수신] IN
             elif cmd == "IN":
-                self.main_service.handle_ai_result(data, client_socket)
+                ai_data = message[2:]
+                payload = {"ai_data": ai_data}
+                self.main_service.handle_ai_result(payload, client_socket)
 
             else:
-                response = MessageUtils.error("Unknown command", "DL")
-                client_socket.sendall(response.encode("utf-8"))
+                print(f"[❌ 알 수 없는 명령] {cmd}")
+                client_socket.sendall(b"??")
 
-        except Exception:
-            response = MessageUtils.error("Server error", "DL")
-            client_socket.sendall(response.encode("utf-8"))
+        except Exception as e:
+            print(f"[❌ route_message 에러] {e}")
+            client_socket.sendall(b"!!")
