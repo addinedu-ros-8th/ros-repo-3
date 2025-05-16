@@ -2,12 +2,18 @@ from sqlalchemy import inspect, text, Engine
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.models.roscars_models import RoscarsBase
 from server.main_server.databases.models.roscars_log_models import RoscarsLogBase
+from server.main_server.databases.seed_data_loader import SeedDataLoader
 
 class SchemaManager:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
         self.roscars_engine = self.db.get_engine("roscars")
         self.roscars_log_engine = self.db.get_engine("roscars_log")
+    
+    def load_seed_data(self):
+        session = self.db.get_session("roscars")
+        loader = SeedDataLoader(session)
+        loader.load_all()
 
     def drop_all_tables(self, engine: Engine):
         inspector = inspect(engine)

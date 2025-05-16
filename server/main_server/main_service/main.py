@@ -31,7 +31,10 @@ def auto_shutdown_after(seconds):
 def main(main_test_mode=False, ai_test_mode=False):
     db = DatabaseManager()
     schema = SchemaManager(db)
-    schema.check_db_init()
+    
+    if schema.check_db_init():
+        schema.load_seed_data() 
+
     print("[MAIN] DB 연결 및 구조 확인 완료")
 
     main_service = MainService()

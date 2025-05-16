@@ -1,6 +1,6 @@
 import bcrypt
 from datetime import datetime
-from databases.models.roscars_models import (
+from server.main_server.databases.models.roscars_models import (
     User, UserRole,
     ShoesModel, ColorName,
     RackLocation, ShoesInventory,
@@ -35,17 +35,17 @@ class SeedDataLoader:
 
         locations = [
             RackLocation(name="R3-S1-A1", floor_level=3, zone_number=2, map_x=1.0, map_y=1.0, aruco_id=101,
-                         updated_at=datetime.now()),
+                         timestamp=datetime.now()),
             RackLocation(name="R3-S2-B4", floor_level=3, zone_number=2, map_x=1.5, map_y=1.2, aruco_id=102,
-                         updated_at=datetime.now()),
+                         timestamp=datetime.now()),
         ]
         self.session.add_all(locations)
 
         inventory_list = [
             ShoesInventory(location_id=locations[0].location_id, shoes_model_id=shoes_list[0].shoes_model_id,
-                           quantity=5, last_updated=datetime.now()),
+                           quantity=5, timestamp=datetime.now()),
             ShoesInventory(location_id=locations[1].location_id, shoes_model_id=shoes_list[1].shoes_model_id,
-                           quantity=3, last_updated=datetime.now()),
+                           quantity=3, timestamp=datetime.now()),
         ]
         self.session.add_all(inventory_list)
 

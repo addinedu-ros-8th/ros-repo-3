@@ -89,4 +89,4 @@ echo "[INFO] 환경 준비 완료. launch 파일을 실행할 수 있습니다."
 
 ### GUI 실행
 # Test용 GUI
-python3 -m viewer.mode_select  
+# python3 -m viewer.mode_select  
