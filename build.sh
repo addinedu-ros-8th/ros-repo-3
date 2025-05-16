@@ -11,7 +11,6 @@ sudo apt install libzbar0 libxcb-cursor0 -y
 
 # ROS2
 sudo apt install -y ros-jazzy-domain-bridge
-W
 # 가상환경 설정
 VENV_DIR=".roscars_venv"
 
