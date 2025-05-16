@@ -10,7 +10,7 @@ from server.main_server.databases.logger import RoscarsLogWriter
 from server.main_server.databases.query import RoscarQuery
 from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
 from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
-from server.main_server.databases.utils import MessageUtils, SensorUtils
+from server.main_server.databases.utils import SensorUtils
 
 class RuntimeController:
     def __init__(self):
@@ -29,8 +29,7 @@ class RuntimeController:
 
 
 class MainService:
-    def __init__(self):
-        db = DatabaseManager()
+    def __init__(self, db: DatabaseManager):
         self.session = db.get_session("roscars")
         self.query = RoscarQuery(self.session)
         self.logger = RoscarsLogWriter(self.session)
@@ -364,7 +363,7 @@ def main(main_test_mode=False, ai_test_mode=False):
     print("[MAIN] DB 연결 및 구조 확인 완료")
 
     # 서비스 및 라우터 준비
-    main_service = MainService()
+    main_service = MainService(db)
     router = MessageRouter(main_service)
 
     if ai_test_mode:

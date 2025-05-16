@@ -35,3 +35,4 @@ class DatabaseManager:
 
     def close_engine(self, name: str):
         self.engines[name].dispose()
+
