@@ -1,9 +1,9 @@
-from databases.query import RoscarQuery
-from databases.utils import MessageUtils
-from databases.database_manager import DatabaseManager
-from databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
-from databases.models.roscars_log_models import RosCarEventType, DefaultEventType
-from databases.logger import RoscarsLogWriter
+from server.main_server.databases.query import RoscarQuery
+from server.main_server.databases.utils import MessageUtils
+from server.main_server.databases.database_manager import DatabaseManager
+from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
+from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
+from server.main_server.databases.logger import RoscarsLogWriter
 
 class MainService:
     def __init__(self):

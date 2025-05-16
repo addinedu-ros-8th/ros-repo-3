@@ -1,16 +1,18 @@
 import json
+from rclpy.node import Node
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
-from databases.database_manager import DatabaseManager
-from databases.models.roscars_models import RosCars
-from databases.models.roscars_log_models import SensorFusionRawLog
+from server.main_server.databases.database_manager import DatabaseManager
+from server.main_server.databases.models.roscars_models import RosCars
+from server.main_server.databases.models.roscars_log_models import RoscarSensorFusionRawLog
 
 db = DatabaseManager()
 MAX_SENSOR_LOG_COUNT = 100
 
 
-class SensorUtils:
+class SensorUtils(Node):
     def __init__(self, logger, db_manager: DatabaseManager = db):
+        super().__init__('sensor_utils')
         self.logger = logger
         self.db = db_manager
 
@@ -36,19 +38,19 @@ class SensorUtils:
                 self.logger.warning(f"RosCars 테이블에 '{roscar_name}' 없음 → 저장 건너뜀")
                 return
 
-            count = log_session.query(func.count(SensorFusionRawLog.sensor_log_id))\
-                .filter(SensorFusionRawLog.roscar_id == roscar_id)\
+            count = log_session.query(func.count(RoscarSensorFusionRawLog.sensor_log_id))\
+                .filter(RoscarSensorFusionRawLog.roscar_id == roscar_id)\
                 .scalar()
 
             if count >= MAX_SENSOR_LOG_COUNT:
-                oldest = log_session.query(SensorFusionRawLog)\
-                    .filter(SensorFusionRawLog.roscar_id == roscar_id)\
-                    .order_by(SensorFusionRawLog.timestamp.asc())\
+                oldest = log_session.query(RoscarSensorFusionRawLog)\
+                    .filter(RoscarSensorFusionRawLog.roscar_id == roscar_id)\
+                    .order_by(RoscarSensorFusionRawLog.timestamp.asc())\
                     .first()
                 if oldest:
                     log_session.delete(oldest)
 
-            log = SensorFusionRawLog(
+            log = RoscarSensorFusionRawLog(
                 roscar_id=roscar_id,
                 timestamp=timestamp,
                 lidar_raw=parsed["lidar"],

@@ -44,6 +44,11 @@ class TCPHandler:
         finally:
             self.shutdown_server()
 
+    def shutdown_server(self):
+        self._should_run = False
+        if self._server_socket:
+            self._server_socket.close()
+
     def handle_request(self, client_socket):
         try:
             while True:

@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
-from databases.models.roscars_models import RosCars, User, ShoesModel, Task, Delivery, RackLocation
-from databases.models.roscars_log_models import (
+from server.main_server.databases.models.roscars_models import RosCars, User, ShoesModel, Task, Delivery, RackLocation
+from server.main_server.databases.models.roscars_log_models import (
     RosCarEventLog,
     TaskEventLog,
     DeliveryEventLog,
     PrecisionStopLog,
+    RosCarDrivingEventLog,
     RoscarTrajectoryLog,
     RoscarSensorFusionRawLog,
-    InventoryEventLog,
     ControlCommandLog,
     FileSystemLog,
     RackSensorLog,
@@ -84,6 +84,14 @@ class RoscarLogQuery:
             RoscarTrajectoryLog.heading_angle,
         ).join(RosCars, RoscarTrajectoryLog.roscar_id == RosCars.roscar_id).all()
 
+    def get_roscar_driving_event_log(self):
+        return self.session.query(
+            RosCarDrivingEventLog.event_id,
+            RosCarDrivingEventLog.roscar_id,
+            RosCars.roscar_name,
+            RosCarDrivingEventLog.driving_event,
+            RosCarDrivingEventLog.timestamp,
+        ).join(RosCars, RosCarDrivingEventLog.roscar_id == RosCars.roscar_id).all()
 
     # 학습용 센서 로그 + 로봇 이름
     def get_sensor_for_training(self):
@@ -97,17 +105,6 @@ class RoscarLogQuery:
             RoscarSensorFusionRawLog.camera_frame_id,
         ).join(RosCars, RoscarSensorFusionRawLog.roscar_id == RosCars.roscar_id).all()
 
-
-    def get_inventory_log(self):
-        return self.session.query(
-            InventoryEventLog.event_id,
-            InventoryEventLog.user_id,
-            InventoryEventLog.item_id,
-            InventoryEventLog.roscar_id,
-            InventoryEventLog.quantity,
-            InventoryEventLog.timestamp,
-        ).all()
-
     def get_control_command_log(self):
         return self.session.query(
             ControlCommandLog.command_id,
@@ -120,8 +117,8 @@ class RoscarLogQuery:
 
     def get_filesystem_log(self):
         return self.session.query(
-            FileSystemLog.file_log_id,
-            FileSystemLog.image_path,
+            FileSystemLog.log_id,
+            FileSystemLog.file_path,
             FileSystemLog.timestamp,
         ).all()
 

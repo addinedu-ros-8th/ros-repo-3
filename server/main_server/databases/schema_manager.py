@@ -1,7 +1,7 @@
 from sqlalchemy import inspect, text, Engine
-from databases.database_manager import DatabaseManager
-from databases.models.roscars_models import RoscarsBase
-from databases.models.roscars_log_models import RoscarsLogBase
+from server.main_server.databases.database_manager import DatabaseManager
+from server.main_server.databases.models.roscars_models import RoscarsBase
+from server.main_server.databases.models.roscars_log_models import RoscarsLogBase
 
 class SchemaManager:
     def __init__(self, db_manager: DatabaseManager):
