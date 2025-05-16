@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <!-- ArUco 마커 인식만 수행하고 종료하도록 실행 -->
-    <node pkg="aruco_mapper"
-          exec="initialpose_custom"
-          name="aruco_initialpose_capture"
-          output="screen"/>
-</launch>

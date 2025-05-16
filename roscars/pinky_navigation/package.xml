@@ -1,35 +1,19 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
-             schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>pinky_navigation</name>
   <version>0.0.0</version>
-  <description>
-    Nav2 bringup with ArUco-based pose reinitialization integration
-  </description>
+  <description>TODO: Package description</description>
   <maintainer email="kyung133851@pinkab.art">mkh</maintainer>
-  <license>Apache-2.0</license>
+  <license>TODO: License declaration</license>
 
-  <!-- 빌드 툴 -->
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <!-- <buildtool_depend>ament_cmake_python</buildtool_depend> -->
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <!-- 빌드 및 런타임 의존성 -->
-  <depend>rclpy</depend>
-  <depend>tf2_ros</depend>
-  <depend>geometry_msgs</depend>
-  <depend>nav2_bringup</depend>
-  <depend>nav2_msgs</depend>
-  <depend>fiducial_vlam_msgs</depend>
-  <depend>fiducial_vlam</depend>
   <depend>cartographer_ros</depend>
   <depend>navigation2</depend>
-  <depend>opencv4</depend>
-  <depend>cv_bridge</depend>
-  <depend>message_filters</depend>
+  <depend>nav2_bringup</depend>
 
-
-  <!-- 테스트 의존성 -->
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

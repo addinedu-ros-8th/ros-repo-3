@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'manager_pc'
+package_name = 'manager'
 
 setup(
     name=package_name,
@@ -25,11 +25,11 @@ setup(
     # tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'manager_view = manager_pc.manager_view:main',
-            'dashboard = manager_pc.dashboard:main',
-            'dialogs = manager_pc.dialogs:main',
-            'main = manager_pc.main:main',
-            'ros_bridge = manager_pc.ros_bridge:main',
+            'manager_view = manager.manager_view:main',
+            'dashboard = manager.dashboard:main',
+            'dialogs = manager.dialogs:main',
+            'main = manager.main:main',
+            'ros_bridge = manager.ros_bridge:main',
         ],
     },
 )
