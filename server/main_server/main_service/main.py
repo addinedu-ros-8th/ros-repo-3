@@ -1,16 +1,19 @@
+# main_service/main.py
+
 import signal
 import threading
 import rclpy
-from rclpy.executors import ExternalShutdownException
 
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager  
 from server.main_server.databases.logger import RoscarsLogWriter
 from server.main_server.databases.utils import SensorUtils
-from server.main_server.main_service.main_service import MainService 
-from server.main_server.network.tcp_handler import TCPHandler
+from server.main_server.main_service.main_service import MainService
+from server.main_server.main_service.network.tcp_handler import TCPHandler
+from server.main_server.main_service.network.shutdown import shutdown_flag
+from server.main_server.main_service.network.message_router import MessageRouter
 
-
+router = MessageRouter()
 shutdown_flag = threading.Event()
 
 def signal_handler(sig, frame):
@@ -27,24 +30,28 @@ def auto_shutdown_after(seconds):
     timer = threading.Timer(seconds, _shutdown)
     timer.start()
 
-
-def main(test_mode=False):
+def main(main_test_mode=False, ai_test_mode=False):
     db = DatabaseManager()
     schema = SchemaManager(db)
     schema.check_db_init()
     print("[MAIN] DB 연결 및 구조 확인 완료")
 
     main_service = MainService()
-    tcp_server = TCPHandler("0.0.0.0", 9000, main_service)
+
+    if ai_test_mode:
+        main_service.enable_shutdown_after_ai_result = True
+
+    port = 5001 if ai_test_mode else 9000
+    tcp_server = TCPHandler("0.0.0.0", port, router)
     tcp_thread = threading.Thread(target=tcp_server.start_server, daemon=True)
     tcp_thread.start()
-    print("[MAIN] TCP 서버 시작")
+    print(f"[MAIN] TCP 서버 시작 (port={port})")
 
     rclpy.init()
     logger = RoscarsLogWriter(db.get_session("roscars_log"))
     ros_node = SensorUtils(logger, db)
 
-    if test_mode:
+    if main_test_mode:
         auto_shutdown_after(3)
 
     try:
@@ -66,4 +73,7 @@ def main(test_mode=False):
 
 if __name__ == '__main__':
     import sys
-    main(test_mode="--test" in sys.argv)
+    main(
+        main_test_mode="--test" in sys.argv,
+        ai_test_mode="--ai-test" in sys.argv
+    )

@@ -1,9 +1,12 @@
+# main_service/main_service.py
+
 from server.main_server.databases.query import RoscarQuery
 from server.main_server.databases.utils import MessageUtils
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
 from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
 from server.main_server.databases.logger import RoscarsLogWriter
+from server.main_server.main_service.network.shutdown import shutdown_flag
 
 class MainService:
     def __init__(self):
@@ -11,6 +14,7 @@ class MainService:
         self.session = db.get_session("roscars")
         self.query = RoscarQuery(self.session)
         self.logger = RoscarsLogWriter(self.session)
+        self.enable_shutdown_after_ai_result = False
 
     # [AU] 로그인 인증 요청
     def handle_login_request(self, req_data, client_socket):
@@ -279,47 +283,49 @@ class MainService:
 
     # [IN] AI 인식 결과 수신
     def handle_ai_result(self, req_data, client_socket):
+        response = { "cmd": "IN", "status": 0x01 }
+
         try:
             roscar_id = req_data.get("roscar_id")
             result_code = req_data.get("result_code")
 
-            if roscar_id is None or result_code is None:
-                response = { "cmd": "IN", "status": 0x01 }
-                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
-                return
+            if roscar_id is None or result_code not in [0x00, 0x01]:
+                print(f"[IN] 잘못된 요청: roscar_id={roscar_id}, result_code={result_code}")
+            else:
+                detected_object = {
+                    0x00: "Roscar",
+                    0x01: "Person",
+                }.get(result_code, "Unknown")
 
-            # 인식 결과 매핑
-            OBJECT_TYPE_MAP = {
-                0x00: "Roscar",
-                0x01: "Person",
-            }
-            detected_object = OBJECT_TYPE_MAP.get(result_code, "Unknown")
+                print(f"[IN] 객체 인식 결과 수신 → ID={roscar_id}, code={result_code} ({detected_object})")
 
-            # 인식 결과 해석
-            # ROS2 비상 정지 명령 전송 예시
-            # self.ros2_publisher.send_emergency_stop(roscar_id)
-            # self.ros2_publisher.send_pause(roscar_id)
-            # self.ros2_publisher.send_warning(roscar_id)
+                # 로그 기록
+                self.logger.log_roscar_event(
+                    roscar_id=roscar_id,
+                    task_id=None,
+                    event_type=RosCarEventType.OBJECT_DETECTED
+                )
 
-            self.logger.log_roscar_event(
-            roscar_id=roscar_id,
-            task_id=None,
-            event_type=RosCarEventType.OBJECT_DETECTED
-            )
+                # ROS2 전송 예시 (주석 해제 시 사용)
+                # self.ros2_publisher.send_emergency_stop(roscar_id)
 
+                response["status"] = 0x00
 
-            response = { "cmd": "IN", "status": 0x00 }
+                if self.enable_shutdown_after_ai_result:
+                    print("[AI-TEST] IN 수신 확인 → 자동 종료 트리거")
+                    shutdown_flag.set()
+
 
         except Exception as e:
+            print(f"[IN] 예외 발생: {e}")
             try:
                 self.logger.log_roscar_event(
                     roscar_id=roscar_id if 'roscar_id' in locals() else -1,
                     task_id=None,
-                    event_type=RosCarEventType.EMERGENCY_STOP  # 또는 FAIL용 커스텀 타입이 있다면 그것으로
+                    event_type=RosCarEventType.OBJECT_DETECTED
                 )
             except:
                 pass
-            response = { "cmd": "IN", "status": 0x01 }
 
-        client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
-
+        finally:
+            client_socket.sendall(MessageUtils.success(response, "IN").encode("utf-8"))

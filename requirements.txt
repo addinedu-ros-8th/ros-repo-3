@@ -20,3 +20,5 @@ rpi-lgpio
 spidev
 PyQt6
 PyQt6-sip
+opencv-python
+ultralytics

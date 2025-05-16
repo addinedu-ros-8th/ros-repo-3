@@ -1,6 +1,6 @@
 import json
-from databases.utils import MessageUtils
-from main_service.main_service import MainService
+from server.main_server.databases.utils import MessageUtils
+from server.main_server.main_service.main_service import MainService
 
 class MessageRouter:
     def __init__(self):
