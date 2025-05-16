@@ -204,6 +204,30 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /map
+
+    - Name: Aruco Markers
+      Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Topic:
+        Value: /aruco_markers
+        Depth: 5
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+        Durability Policy: Volatile
+
+    - Name: Aruco Marker Poses
+      Class: rviz_default_plugins/Pose
+      Enabled: true
+      Topic:
+        Value: /aruco_marker_pose
+        Depth: 5
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+        Durability Policy: Volatile
+      Arrow Length: 0.2
+      Shaft Diameter: 0.05
+      Head Diameter: 0.1 
+
       Update Topic:
         Depth: 5
         Durability Policy: Volatile

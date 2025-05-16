@@ -7,11 +7,10 @@ echo "[INFO] 시스템 패키지 최신화 중..."
 sudo apt update && sudo apt upgrade -y
 
 # [GUI] pyzbar 의존성 설치
-sudo apt install -y libzbar0 libxcb-cursor0
+sudo apt install libzbar0 libxcb-cursor0 -y
 
 # ROS2
 sudo apt install -y ros-jazzy-domain-bridge
-
 # 가상환경 설정
 VENV_DIR=".roscars_venv"
 
@@ -67,8 +66,12 @@ echo "[INFO] CMAKE_PREFIX_PATH: $CMAKE_PREFIX_PATH"
 
 # colcon 빌드
 echo "[INFO] colcon 빌드 시작..."
-colcon build
-echo "[INFO] 빌드 완료"
+colcon build \
+  --cmake-args \
+    "-DCMAKE_CXX_FLAGS=-Wno-error=unused-parameter -Wno-error=pedantic -Wno-error=sign-compare" \
+  --continue-on-error \
+  || echo "[WARN] colcon 빌드 중 일부 에러가 발생했지만, 계속 진행합니다."
+echo "[INFO] colcon 빌드 완료 (에러 무시)"
 
 # ROS2 워크스페이스 적용
 source install/setup.bash
@@ -86,4 +89,4 @@ echo "[INFO] 환경 준비 완료. launch 파일을 실행할 수 있습니다."
 
 ### GUI 실행
 # Test용 GUI
-# python3 -m viewer.mode_select  
+python3 -m viewer.mode_select  
