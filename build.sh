@@ -75,5 +75,6 @@ echo "[INFO] main_service/main.py 실행 테스트 완료"
 
 # AI 연동용 실행 (port 5001)
 # python3 -m server.main_server.main_service.main --ai-test    # AI 연동용 실행 (port 5001)
+# python3 -m server.ai_server.ai_modules.main
 echo "[INFO] main.py 실행 테스트 완료"
 
