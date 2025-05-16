@@ -3,8 +3,8 @@ from ultralytics import YOLO
 from server.ai_server.file_system_manager import FileSystemManager
 
 CLASS_CODE = {
-    "person": 0x00,
-    "roscar": 0x01
+    "roscar": 0x00,
+    "person": 0x01
 }
 
 class ObjectDetector:
