@@ -11,7 +11,7 @@ VENV_DIR=".roscars_venv"
 
 if [ ! -d "$VENV_DIR" ]; then
     echo "[INFO] 가상환경 생성: $VENV_DIR"
-    python3 -m venv "$VENV_DIR"
+    python3.12 -m venv "$VENV_DIR"
 fi
 
 echo "[INFO] 가상환경 활성화"
@@ -19,9 +19,7 @@ source "$VENV_DIR/bin/activate"
 
 # Python 패키지 설치
 echo "[INFO] Python 의존성 설치 중..."
-pip install --upgrade pip setuptools wheel --break-system-packages
-pip install -r requirements.txt --break-system-packages
-pip install empy --break-system-packages
+pip install -r requirements.txt
 
 # ROS2 설정 적용
 echo "[INFO] ROS2 환경 설정 적용 중..."

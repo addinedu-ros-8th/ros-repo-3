@@ -15,7 +15,6 @@ setup(
                       'PyQt6',
                       'PyQt6-sip',
                       'PyQt6-Qt6',
-                      'PyQt6-Qt6-sip',
                       'shared_interfaces'],
     zip_safe=True,
     maintainer='sang',

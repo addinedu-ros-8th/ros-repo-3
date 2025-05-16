@@ -3,7 +3,7 @@ python-dotenv
 SQLAlchemy
 PyMySQL
 catkin_pkg
-numpy
+numpy<2.0.0
 lark
 lark-parser
 Cython
@@ -16,3 +16,7 @@ transforms3d
 jinja2
 typeguard
 bcrypt
+rpi-lgpio
+spidev
+PyQt6
+PyQt6-sip
