@@ -10,7 +10,7 @@ from server.main_server.databases.logger import RoscarsLogWriter
 from server.main_server.databases.query import RoscarQuery
 from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
 from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
-from server.main_server.databases.utils import SensorUtils
+from server.main_server.databases.utils import SensorUtils, MessageUtils
 
 class RuntimeController:
     def __init__(self):
@@ -30,7 +30,7 @@ class RuntimeController:
 
 class MainService:
     def __init__(self, db: DatabaseManager):
-        self.session = db.get_session("roscars")
+        self.session = db.get_session("roscars_log")
         self.query = RoscarQuery(self.session)
         self.logger = RoscarsLogWriter(self.session)
         self.enable_shutdown_after_ai_result = False

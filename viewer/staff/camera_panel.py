@@ -1,13 +1,12 @@
-# viewer/staff/camera_panel.py
-
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QImage, QPixmap
 import cv2
 import time
 
-# 추가: QR 코드 인식 모듈 가져오기
+# QR 코드 디코더
 from viewer.staff.qr_reader import decode_qr
+
 
 class CameraPanel(QWidget):
     def __init__(self, parent=None):
@@ -33,7 +32,7 @@ class CameraPanel(QWidget):
         while not self.capture.isOpened() and attempts < 5:
             print("카메라 초기화 중...")
             time.sleep(1)
-            self.capture.open(0)  # 카메라 열기
+            self.capture.open(0)
             attempts += 1
         if self.capture.isOpened():
             print("카메라 초기화 완료!")
@@ -63,22 +62,29 @@ class CameraPanel(QWidget):
                 self.camera_label.width(), self.camera_label.height(), Qt.AspectRatioMode.KeepAspectRatio
             ))
 
-            # QR 코드 인식 추가
+            # QR 코드 인식 처리
             qr_data = decode_qr(frame)
             if qr_data and qr_data != self.last_detected_qr:
-                print(f"Detected QR: {qr_data}")  # 디버깅용 출력
+                print(f"Detected QR: {qr_data}")
                 self.last_detected_qr = qr_data
 
-                # 상품 정보를 생성 (나중에 DB 연동 추가 예정)
-                product_data = {
-                    "qr_data": qr_data,
-                    "model": "임시모델",
-                    "color": "블랙",
-                    "size": "260",
-                    "rack": "A1",
-                    "quantity": 5
-                }
-                self.parent_gui.go_to_product_info(product_data)
+                try:
+                    # QR 문자열 포맷: "{name} | {size} | {color} | {location_name} | {quantity}"
+                    name, size, color, rack, quantity = [item.strip() for item in qr_data.split("|")]
+
+                    product_data = {
+                        "qr_data": qr_data,
+                        "model": name,
+                        "size": size,
+                        "color": color,
+                        "rack": rack,
+                        "quantity": int(quantity)
+                    }
+
+                    self.parent_gui.go_to_product_info(product_data)
+
+                except ValueError:
+                    print("❌ QR 코드 파싱 실패: 형식이 예상과 다릅니다.")
 
     def closeEvent(self, event):
         """창 닫을 때 카메라 해제"""

@@ -80,9 +80,9 @@ class SensorUtils(Node):
 
 class MessageUtils:
     @staticmethod
-    def success(data: dict, type_: str):
+    def success(data: dict):
         return json.dumps({
-            "type": type_,
+            "type": data.get("cmd", "Response"),
             "success": True,
             "data": data
         })
