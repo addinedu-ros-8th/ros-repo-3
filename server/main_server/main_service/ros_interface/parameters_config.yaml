@@ -1,7 +1,0 @@
-server:
-  host: "0.0.0.0"   # 모든 인터페이스에서 수신
-  port: 5000        # 서버 포트 번호
-
-roscar_settings:
-  emergency_battery_threshold: 10  # (%) 배터리 임계치
-

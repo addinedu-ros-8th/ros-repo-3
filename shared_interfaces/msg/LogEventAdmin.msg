@@ -1,4 +1,0 @@
-uint32 event_id
-uint8 event_type
-string event_data
-builtin_interfaces/Time stamp

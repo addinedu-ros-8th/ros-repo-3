@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ManagerLoginWindow</class>
+ <widget class="QMainWindow" name="ManagerLoginWindow">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>400</width><height>300</height></rect>
+  </property>
+  <property name="windowTitle">
+   <string>Manager GUI</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">background-color: #F9F7F1;</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="title_label">
+      <property name="text">
+       <string>Manager GUI</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+        font-family: 'Arial';
+        font-size: 20pt;
+        font-weight: bold;
+        color: #333;
+       </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="id_input">
+      <property name="placeholderText">
+       <string>ID</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+        QLineEdit {
+          font-size: 12pt;
+          padding: 6px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+       </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="pw_input">
+      <property name="placeholderText">
+       <string>Password</string>
+      </property>
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+        QLineEdit {
+          font-size: 12pt;
+          padding: 6px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+       </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="login_btn">
+      <property name="text">
+       <string>Login</string>
+      </property>
+      <property name="minimumHeight">
+       <number>40</number>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+        QPushButton {
+          background-color: #687141;
+          color: white;
+          font-weight: bold;
+          font-size: 14pt;
+          border-radius: 5px;
+        }
+        QPushButton:hover {
+          background-color: #818c4a;
+        }
+       </string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

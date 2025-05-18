@@ -1,11 +1,17 @@
 import signal
 import threading
-import rclpy
 import struct
+import time
+
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
 from datetime import datetime
 
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.message_router import MessageRouter
+from server.main_server.main_service.ros_interface.service.log_query_service import LogQueryService
+from server.main_server.main_service.ros_interface.publisher.log_event_publisher import LogEventPublisher
+
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
@@ -356,6 +362,36 @@ class MainService:
             print(f"[handle_task_result_check] 전송 바디(예외 실패): {body.hex(' ').upper()}")
             client_socket.sendall(body)
 
+    # [TR_NOTIFY] 작업 상태 변경 알림
+    def send_task_status_notification(self, client_socket, task_id: int, delivery_id: int, status: str, shoes_model_name: str):
+        try:
+            print(f"[TR_NOTIFY] 상태 알림 → task_id={task_id}, status={status}, model={shoes_model_name}")
+
+            cmd = b"TR"
+            delivery_bytes = struct.pack(">I", delivery_id)
+            task_bytes     = struct.pack(">I", task_id)
+
+            status_map = {
+                "TO_DO": 0x00,
+                "IN_PROGRESS": 0x01,
+                "DONE": 0x02,
+                "CANCELLED": 0x03
+            }
+            status_code = status_map.get(status.upper(), 0xFF)
+            status_bytes = struct.pack("B", status_code)
+
+            name_bytes = shoes_model_name.encode('utf-8')[:32].ljust(32, b'\x00')
+            timestamp_ms = int(time.time() * 1000)
+            timestamp_bytes = struct.pack(">Q", timestamp_ms)
+
+            payload = cmd + delivery_bytes + task_bytes + status_bytes + name_bytes + timestamp_bytes
+            client_socket.sendall(payload)
+
+            print(f"[TR_NOTIFY] 전송 완료")
+
+        except Exception as e:
+            print(f"[❌ TR_NOTIFY 전송 실패]: {e}")
+
     # [IN] AI 인식 결과 수신
     def handle_ai_result(self, req_data, client_socket):
         response = { "cmd": "IN", "status": 0x01 }
@@ -440,21 +476,33 @@ def main(main_test_mode=False, ai_test_mode=False):
     # ROS2 초기화 및 노드 실행
     rclpy.init()
     logger = RoscarsLogWriter(db.get_session("roscars_log"))
-    ros_node = SensorUtils(logger, db)  # 이후 ROS Node 통합 시 교체 예정
+
+    # 노드 인스턴스 생성
+    sensor_node = SensorUtils(logger, db)
+    log_query_node = LogQueryService()
+    log_event_publisher = LogEventPublisher()
+
+    # 멀티스레드 실행기 생성 및 노드 등록
+    executor = MultiThreadedExecutor()
+    executor.add_node(sensor_node)
+    executor.add_node(log_query_node)
+    executor.add_node(log_event_publisher)
 
     if main_test_mode:
         runtime.enable_auto_shutdown(3)
 
     try:
         while not runtime.shutdown_flag.is_set() and rclpy.ok():
-            rclpy.spin_once(ros_node, timeout_sec=0.1)
+            executor.spin_once(timeout_sec=0.1)
 
     except rclpy.executors.ExternalShutdownException:
         print("[MAIN] ROS2가 종료되어 spin 종료됨")
 
     finally:
         print("[MAIN] 종료 처리 중...")
-        ros_node.destroy_node()
+        sensor_node.destroy_node()
+        log_query_node.destroy_node()
+        log_event_publisher.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
         tcp_server.shutdown_server()

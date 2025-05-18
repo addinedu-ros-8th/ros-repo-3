@@ -5,7 +5,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.models.roscars_models import RosCars
-from server.main_server.databases.models.roscars_log_models import RoscarSensorFusionRawLog, RosCarEventType
+from server.main_server.databases.models.roscars_log_models import (
+    RoscarSensorFusionRawLog,
+    RosCarEventType
+)
 from server.main_server.databases.logger import RoscarsLogWriter
 
 MAX_SENSOR_LOG_COUNT = 100
@@ -24,12 +27,13 @@ class SensorUtils(Node):
             "ultra": json.loads(msg.ultrasonic_data),
         }
 
-    def save_sensor_data_to_db(self, roscar_name, timestamp, parsed):
+    def save_sensor_data_to_db(self, roscar_name: str, timestamp, parsed: dict):
         """센서 데이터 저장 및 오래된 로그 정리"""
         try:
             with self.db.session_scope("roscars") as roscars_session, \
                  self.db.session_scope("roscars_log") as log_session:
 
+                # 운영 DB에서 roscar_id 조회
                 roscar_id = roscars_session.query(RosCars.roscar_id)\
                     .filter(RosCars.roscar_name == roscar_name)\
                     .scalar()
@@ -42,6 +46,7 @@ class SensorUtils(Node):
                     )
                     return
 
+                # 로그 수 제한 초과 시 삭제
                 count = log_session.query(func.count(RoscarSensorFusionRawLog.sensor_log_id))\
                     .filter(RoscarSensorFusionRawLog.roscar_id == roscar_id)\
                     .scalar()
@@ -54,6 +59,7 @@ class SensorUtils(Node):
                     if oldest:
                         log_session.delete(oldest)
 
+                # 새 로그 저장
                 log = RoscarSensorFusionRawLog(
                     roscar_id=roscar_id,
                     timestamp=timestamp,
@@ -70,7 +76,7 @@ class SensorUtils(Node):
                     event_type=RosCarEventType.SENSOR_DATA_SAVED
                 )
 
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self.db_logger.log_roscar_event(
                 roscar_id=roscar_id if 'roscar_id' in locals() else -1,
                 task_id=None,
