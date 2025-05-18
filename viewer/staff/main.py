@@ -1,92 +1,106 @@
+# viewer/staff/main.py
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QStackedWidget
-from PyQt6.QtCore import QTimer  # ⬅️ 추가
-from viewer.theme import apply_theme
-
-from .camera_panel import CameraPanel
-from .product_info_panel import ProductInfoPanel
-from .cart_panel import CartPanel
-from .request_wait_panel import RequestWaitPanel
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QStackedWidget
+from viewer.staff.base_panel import BasePanel
 from viewer.staff.cache_manager import CacheManager
 from viewer.staff.tcp_sender import TCPClientThread
+from viewer.staff.message_router import MessageRouter
+from viewer.staff.staff_login import LoginWindow
 
-
-class StaffGUI(QMainWindow):
-    def __init__(self):
+class MainWindow(QMainWindow):
+    def __init__(self, tcp_client, user_id, user_role):
         super().__init__()
-        self.setWindowTitle("Staff GUI")
-        self.setFixedSize(480, 800)
-        #self.setGeometry(100, 100, 480, 800)
-        apply_theme(self)
-
-        self.central_widget = QWidget()
-        self.main_layout = QVBoxLayout(self.central_widget)
+        # 캐시 매니저 초기화
         self.cache_manager = CacheManager()
 
-        # TCP 클라이언트 시작
-        self.tcp_client = TCPClientThread(host="127.0.0.1", port=9000)
-        self.tcp_client.received.connect(self.on_server_response)
-        self.tcp_client.start()
+        self.tcp_client = tcp_client
+        self.user_id = user_id
+        self.user_role = user_role
 
-        # 스택 UI 구성
-        self.stack = QStackedWidget()
-        self.main_layout.addWidget(self.stack)
-        self.setCentralWidget(self.central_widget)
+        self.setWindowTitle("Staff GUI")
+        self.setFixedSize(480, 800)
 
-        self.camera_panel = CameraPanel(parent=self)
-        self.product_info_panel = ProductInfoPanel(parent=self)
-        self.cart_panel = CartPanel(parent=self)
-        self.request_wait_panel = RequestWaitPanel(parent=self)
+        container = BasePanel()
+        self.stack = QStackedWidget(container)
+        layout = QVBoxLayout(container)
+        layout.addWidget(self.stack)
+        container.setLayout(layout)
+        self.setCentralWidget(container)
 
-        self.stack.addWidget(self.camera_panel)
-        self.stack.addWidget(self.product_info_panel)
-        self.stack.addWidget(self.cart_panel)
-        self.stack.addWidget(self.request_wait_panel)
+        self.router = MessageRouter(parent_gui=self)
+        self.tcp_client.received.connect(self.router.handle_response)
 
+        self._panels = {}
         self.go_to_camera()
 
-        # ⬇️ 프로그램 시작 후 일정 시간 뒤 배송 취소 요청 자동 전송
-        QTimer.singleShot(1000, self.send_test_cancel_delivery)
-
     def go_to_camera(self):
-        self.camera_panel.reset_qr_detection()
-        self.stack.setCurrentIndex(0)
+        if 'camera' not in self._panels:
+            from viewer.staff.camera_panel import CameraPanel
+            panel = CameraPanel(tcp_thread=self.tcp_client, parent=self, main_window=self)
+            self._panels['camera'] = panel
+            self.stack.addWidget(panel)
+        panel = self._panels['camera']
+        panel.reset_qr_detection()
+        self.stack.setCurrentWidget(panel)
 
     def go_to_product_info(self, product_data=None):
+        if 'product' not in self._panels:
+            from viewer.staff.product_info_panel import ProductInfoPanel
+            panel = ProductInfoPanel(parent=self, main_window=self)
+            self._panels['product'] = panel
+            self.stack.addWidget(panel)
+        panel = self._panels['product']
         if product_data:
-            self.product_info_panel.update_product_info(product_data)
-        self.stack.setCurrentIndex(1)
+            panel.update_product_info(product_data)
+        self.stack.setCurrentWidget(panel)
 
     def go_to_cart(self):
-        self.cart_panel.load_cart_items()
-        self.stack.setCurrentIndex(2)
+        if 'cart' not in self._panels:
+            from viewer.staff.cart_panel import CartPanel
+            panel = CartPanel(parent=self)
+            self._panels['cart'] = panel
+            self.stack.addWidget(panel)
+        panel = self._panels['cart']
+        panel.load_cart_items()
+        self.stack.setCurrentWidget(panel)
 
     def go_to_request_wait(self, status_text="요청중..."):
-        self.request_wait_panel.update_status(status_text)
-        self.stack.setCurrentIndex(3)
+        if 'request' not in self._panels:
+            from viewer.staff.request_wait_panel import RequestWaitPanel
+            panel = RequestWaitPanel(parent=self)
+            self._panels['request'] = panel
+            self.stack.addWidget(panel)
+        panel = self._panels['request']
+        panel.update_status(status_text)
+        self.stack.setCurrentWidget(panel)
 
-    # ✅ 서버로 메시지 전송하는 일반 메서드
-    def send_message_to_server(self, msg: str):
-        self.tcp_client.send(msg)
-
-    # ✅ 응답 처리
-    def on_server_response(self, msg: bytes):
-        print(f"[서버 응답] {msg}")
-
-    # ✅ 테스트용 배송 취소 요청
-    def send_test_cancel_delivery(self):
-        user_id = 7
-        delivery_id = 1234
-        print(f"[전송] 배송 취소 요청: user_id={user_id}, delivery_id={delivery_id}")
-        self.tcp_client.send_cancel_delivery_request(user_id, delivery_id)
+    def go_to_task_status(self):
+        if 'task' not in self._panels:
+            from viewer.staff.task_status_cancel import TaskStatusPanel
+            panel = TaskStatusPanel(tcp_thread=self.tcp_client,
+                                    main_window=self,
+                                    user_id=self.user_id,
+                                    parent=self)
+            self._panels['task'] = panel
+            self.stack.addWidget(panel)
+        panel = self._panels['task']
+        panel.load_task_status()
+        self.stack.setCurrentWidget(panel)
 
     def closeEvent(self, event):
         self.tcp_client.stop()
-        event.accept()
+        super().closeEvent(event)
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = StaffGUI()
-    window.show()
+    tcp = TCPClientThread(host="127.0.0.1", port=9000)
+    tcp.start()
+
+    login = LoginWindow(tcp_thread=tcp)
+    login.show()
+    def on_login(user_id, user_role):
+        login.close()
+        win = MainWindow(tcp, user_id, user_role)
+        win.show()
+    login.loginSuccess.connect(on_login)
     sys.exit(app.exec())

@@ -1,36 +1,57 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
-from viewer.UI.staff_login_ui import Ui_MainWindow
-from viewer.staff.main import StaffGUI
-from db.connect_db import get_user_info  # 사용자 인증 함수
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QMessageBox
+from PyQt6.QtCore import Qt, pyqtSignal
 from viewer.theme import apply_theme
+from viewer.staff.message_router import MessageRouter
 
+class LoginWindow(QMainWindow):
+    loginSuccess = pyqtSignal(int, str)
 
-class StaffLogin(QMainWindow):
-    def __init__(self):
+    def __init__(self, tcp_thread):
         super().__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.setWindowTitle("Staff Login")
+        self.tcp_client = tcp_thread
+
+        self.setWindowTitle("Login")
+        self.setFixedSize(400, 300)
         apply_theme(self)
 
-        self.ui.login_btn.clicked.connect(self.try_login)
+        self.router = MessageRouter(parent_gui=self)
+        self.tcp_client.received.connect(self.router.handle_response)
 
-    def try_login(self):
-        user_id = self.ui.id_input.text()
-        password = self.ui.pw_input.text()
+        central = QWidget(self)
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
 
-        user = get_user_info(user_id, password)
-        if user and user["role"] == "staff":
-            self.staff_window = StaffGUI()
-            self.staff_window.show()
-            self.close()
-        else:
-            QMessageBox.warning(self, "Login Failed", "Invalid ID/PW or Role")
+        title = QLabel("Staff Login", self)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
 
+        self.id_input = QLineEdit(self)
+        self.id_input.setPlaceholderText("ID")
+        layout.addWidget(self.id_input)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = StaffLogin()
-    window.show()
-    sys.exit(app.exec())
+        self.pw_input = QLineEdit(self)
+        self.pw_input.setPlaceholderText("Password")
+        self.pw_input.setEchoMode(QLineEdit.EchoMode.Password)
+        layout.addWidget(self.pw_input)
+
+        btn_layout = QHBoxLayout()
+        login_btn = QPushButton("Login", self)
+        login_btn.clicked.connect(self.on_login)
+        btn_layout.addStretch()
+        btn_layout.addWidget(login_btn)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout)
+
+    def on_login(self):
+        user = self.id_input.text().strip()
+        pw = self.pw_input.text()
+        if not user or not pw:
+            QMessageBox.warning(self, "입력 오류", "ID와 Password를 모두 입력해주세요.")
+            return
+        self.tcp_client.send_login_request(user, pw)
+
+    def on_login_success(self, user_id, user_role_code):
+        role = "STAFF" if user_role_code==1 else "MANAGER"
+        QMessageBox.information(self, "로그인 성공", f"환영합니다! ID: {user_id}, 역할: {role}")
+        self.loginSuccess.emit(user_id, role)
+        self.close()

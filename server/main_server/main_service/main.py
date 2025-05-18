@@ -2,6 +2,7 @@ import signal
 import threading
 import rclpy
 import struct
+from datetime import datetime
 
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.message_router import MessageRouter
@@ -9,7 +10,7 @@ from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
 from server.main_server.databases.query import MainServiceQuery
-from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
+from server.main_server.databases.models.roscars_log_models import *
 from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
 from server.main_server.databases.utils import SensorUtils, MessageUtils
 
@@ -48,24 +49,32 @@ class MainService:
             user_name = req_data.get("user_name")
             password = req_data.get("password")
 
+            print(f"[handle_login_request] user_name={user_name}, password={password}")
             user = self.query.get_user_by_name(user_name)
-            if user and user.check_password(password):
-                response = {
-                    "cmd": "DL",
-                    "status": 0x00,
-                    "user_id": user.user_id,
-                    "user_role": user.user_role,
-                }
-            else:
-                response = {
-                    "cmd": "DL",
-                    "status": 0x01
-                }
+            print(user)
 
-            client_socket.sendall(MessageUtils.success(response, "DL").encode("utf-8"))
+            if user and user.check_password(password):
+                # 응답 포맷: "AU"(2) + status(1) + user_id(4) + user_role(1)
+                cmd = b"AU"
+                status = bytes([0x00])
+                user_id = struct.pack(">I", user.user_id)
+                user_role = bytes([0x00 if user.user_role == "STAFF" else 0x01])
+
+                response = cmd + status + user_id + user_role
+                client_socket.sendall(response)
+                print(f"[✅ 로그인 성공] user_id={user.user_id}, role={user.user_role}")
+            else:
+                # 실패 응답: "AU" + 0x01
+                response = b"AU" + bytes([0x01])
+                client_socket.sendall(response)
+                print("[❌ 로그인 실패] 사용자 정보 불일치")
 
         except Exception as e:
-            client_socket.sendall(MessageUtils.error("Login failed", "DL").encode("utf-8"))
+            print(f"[‼️ 예외 발생] {e}")
+            try:
+                client_socket.sendall(b"AU" + bytes([0x01]))
+            except:
+                pass
 
     # [IS] 상품 정보 조회 요청 (QR코드 기반)
     def handle_qrcode_search(self, req_data, client_socket):
@@ -84,6 +93,7 @@ class MainService:
                 location = result.location.encode('utf-8')[:16].ljust(16, b'\x00')
 
                 payload = cmd + status + name + size + color + quantity + location
+                print(payload)
             else:
                 payload = b"IS" + struct.pack("B", 0x01)
 
@@ -93,123 +103,141 @@ class MainService:
             print("[❌] 상품 조회 실패:", e)
             client_socket.sendall(b"IS" + struct.pack("B", 0x01))
 
+    def get_model_id_by_name(self, model_name: str) -> int | None:
+        """
+        Given a ShoesModel.name, return its shoes_model_id or None if not found.
+        """
+        return self.query.get_model_id_by_name(model_name)
+
+    def get_location_id_by_name(self, rack_name: str) -> int | None:
+        """
+        Given a RackLocation.name, return its location_id or None if not found.
+        """
+        return self.query.get_location_id_by_name(rack_name)
+    
     # [IR] 상품 요청
     def handle_inventory_request(self, req_data, client_socket):
         try:
             print("[IR] 상품 요청 시작")
             print(f"[IR] 수신 데이터: {req_data}")
 
-            user_id = req_data.get("user_id")
-            destination_str = req_data.get("destination")  # ex) "G1"
-            items = req_data.get("items")
+            user_id     = req_data.get("user_id")
+            destination = req_data.get("destination")  # ex) "G1"
+            items       = req_data.get("items")
 
-            if not user_id or not items or not isinstance(items, list) or not destination_str:
-                print(f"[IR] 필수값 누락 → user_id: {user_id}, items: {items}, destination: {destination_str}")
-                response = {"cmd": "IR", "status": 0x01}
-                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+            # 필수값 검증
+            if not user_id or not items or not isinstance(items, list) or not destination:
+                print("[IR] 필수값 누락")
+                # 실패: cmd(2B) + status(1B)
+                body = b"IR" + struct.pack("B", 0x01)
+                print(f"[IR] 실패 응답 → {body!r}")
+                client_socket.sendall(body)
                 return
 
             # 목적지 Enum 변환
             try:
-                destination_enum = DestinationGroup[destination_str]
+                dest_enum = DestinationGroup[destination]
             except KeyError:
-                print(f"[IR] 유효하지 않은 목적지 문자열: {destination_str}")
-                response = {"cmd": "IR", "status": 0x01}
-                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                print("[IR] 잘못된 목적지")
+                body = b"IR" + struct.pack("B", 0x01)
+                print(f"[IR] 실패 응답 → {body!r}")
+                client_socket.sendall(body)
                 return
 
-            print(f"[IR] 배송 목적지: {destination_enum}")
-
-            # 1. Delivery 생성
+            # Delivery 생성
             delivery = Delivery(
                 user_id=user_id,
                 roscar_id=None,
                 delivery_status="TO_DO",
                 driving_phase_id=None,
-                destination=destination_enum
+                destination=dest_enum
             )
             self.roscars_session.add(delivery)
             self.roscars_session.flush()
-            print(f"[IR] Delivery 생성 완료 → ID: {delivery.delivery_id}")
 
+            # ✅ Delivery 로그 추가
+            delivery_log = DeliveryEventLog(
+                delivery_id=delivery.delivery_id,
+                user_id=user_id,
+                previous_event="WAIT",
+                new_event="PROGRESS_START",
+                timestamp=datetime.now()
+            )
+            self.logger_session.add(delivery_log)
+
+            # Task 생성
             first_task_id = None
-            task_count = 0
+            for it in items:
+                sid = it.get("shoes_model_id")
+                lid = it.get("location_id")
+                qty = it.get("quantity", 0)
 
-            # 2. Task 생성
-            for item in items:
-                shoes_model_id = item.get("shoes_model_id")
-                location_id = item.get("location_id")
-                quantity = item.get("quantity")
-                print(f"[IR] 처리 중: 모델ID={shoes_model_id}, 위치ID={location_id}, 수량={quantity}")
-
-                if not shoes_model_id or not location_id or not quantity or quantity <= 0:
-                    print("[IR] 유효하지 않은 항목 → 생략")
+                if not sid or not lid or qty <= 0:
                     continue
 
-                shoes_model = self.roscars_session.query(ShoesModel).filter_by(shoes_model_id=shoes_model_id).first()
-                location = self.roscars_session.query(RackLocation).filter_by(location_id=location_id).first()
-                if not shoes_model or not location:
-                    print(f"[IR] 존재하지 않는 모델 또는 위치 → 모델: {shoes_model}, 위치: {location}")
+                # 유효성 체크
+                if not self.roscars_session.get(ShoesModel, sid) \
+                or not self.roscars_session.get(RackLocation, lid):
                     continue
 
-                for _ in range(quantity):
-                    task = Task(
+                for _ in range(qty):
+                    t = Task(
                         delivery_id=delivery.delivery_id,
-                        shoes_model_id=shoes_model_id,
-                        location_id=location_id,
-                        status="TO_DO"
+                        shoes_model_id=sid,
+                        location_id=lid,
+                        #status="TO_DO"
+                        status="IN_PROGRESS",
                     )
-                    self.roscars_session.add(task)
+                    self.roscars_session.add(t)
                     self.roscars_session.flush()
-                    task_count += 1
 
-                    if not first_task_id:
-                        first_task_id = task.task_id
+                    # ✅ Task 로그 추가
+                    task_log = TaskEventLog(
+                        task_id=t.task_id,
+                        previous_event="WAIT",
+                        current_event="PROGRESS_START",
+                        changed_at=datetime.now()
+                    )
+                    self.logger_session.add(task_log)
 
-            print(f"[IR] Task 생성 완료: 총 {task_count}개")
+                    if first_task_id is None:
+                        first_task_id = t.task_id
 
+            self.logger_session.commit()
+
+            # 성공/실패에 따라 body 생성
             if not first_task_id:
-                print("[IR] Task 없음 → 롤백")
-                self.roscars_session.rollback()
-                response = {"cmd": "IR", "status": 0x01}
+                # 실패
+                body = b"IR" + struct.pack("B", 0x01)
             else:
-                self.roscars_session.commit()
-                print("[IR] 커밋 완료")
-
-                response = {
-                    "cmd": "IR",
-                    "status": 0x00,
-                    "delivery_id": delivery.delivery_id,
-                    "first_task_id": first_task_id
-                }
-
-                self.logger.log_delivery_event(
-                    delivery_id=delivery.delivery_id,
-                    user_id=user_id,
-                    previous=DefaultEventType.WAIT,
-                    new=DefaultEventType.PROGRESS_START
+                # 성공
+                body = (
+                    b"IR" +
+                    struct.pack("B", 0x00) +
+                    struct.pack(">I", delivery.delivery_id) +
+                    struct.pack(">I", first_task_id)
                 )
 
-            print(f"[IR] 응답 전송: {response}")
+            # unpack 버전 로깅
+            if len(body) >= 11:
+                cmd_bytes, status, did, tid = struct.unpack(">2sBII", body)
+                cmd = cmd_bytes.decode('ascii')
+                print(f"[IR] 응답 → cmd={cmd}, status={status}, delivery_id={did}, first_task_id={tid}")
+            else:
+                cmd_bytes, status = struct.unpack(">2sB", body)
+                cmd = cmd_bytes.decode('ascii')
+                print(f"[IR] 실패 응답 → cmd={cmd}, status={status}")
+
+            client_socket.sendall(body)
 
         except Exception as e:
-            print(f"[❌ IR 처리 예외 발생]: {e}")
-            self.roscars_session.rollback()
-            try:
-                if 'delivery' in locals():
-                    self.logger.log_delivery_event(
-                        delivery_id=delivery.delivery_id,
-                        user_id=user_id,
-                        previous=DefaultEventType.WAIT,
-                        new=DefaultEventType.FAILE
-                    )
-            except Exception as log_err:
-                print(f"[IR] 로깅 중 예외 발생: {log_err}")
+            print(f"[❌ IR 예외]: {e}")
+            # 예외 시에도 최소 cmd+status
+            fallback = b"IR" + struct.pack("B", 0x01)
+            print(f"[IR] 예외 실패 응답 → {fallback!r}")
+            client_socket.sendall(fallback)
 
-            response = {"cmd": "IR", "status": 0x01}
-
-        client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
-
+    
     # [CD] 배송 취소
     def handle_cancel_task(self, req_data, client_socket):
         try:
@@ -280,43 +308,53 @@ class MainService:
 
     # [TR] 작업 결과 확인 
     def handle_task_result_check(self, req_data, client_socket):
+        print("[handle_task_result_check] 함수 시작, req_data=", req_data)
         try:
             user_id = req_data.get("user_id")
+            print(f"[handle_task_result_check] 추출된 user_id: {user_id}")
 
+            # user_id 누락 시 실패 응답 처리
             if not user_id:
-                response = { "cmd": "TR", "status": 0x01 }
-                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                print("[handle_task_result_check] 사용자 ID 누락, 실패 응답 처리")
+                body = b"TR" + struct.pack(">B", 0x01)
+                print(f"[handle_task_result_check] 전송 바디(실패): {body.hex(' ').upper()}")
+                client_socket.sendall(body)
                 return
 
-            # 1. 해당 사용자의 Delivery 목록 조회
+            # Delivery 조회
             deliveries = self.roscars_session.query(Delivery).filter_by(user_id=user_id).all()
+            print(f"[handle_task_result_check] 조회된 Delivery 개수: {len(deliveries)}")
+
+            # 조회 결과 없으면 기본 응답(0,0)
             if not deliveries:
-                response = { "cmd": "TR", "status": 0x00, "done_count": 0, "in_progress_count": 0, "in_progress_names": [] }
-                client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+                print("[handle_task_result_check] deliveries 없음, 기본 응답(0,0)")
+                body = b"TR" + struct.pack(">BII", 0x00, 0, 0)
+                print(f"[handle_task_result_check] 전송 바디(0개): {body.hex(' ').upper()}")
+                client_socket.sendall(body)
                 return
 
+            # 완료/진행 중 카운트 계산
             done_count = 0
             in_progress_names = set()
-
             for delivery in deliveries:
                 for task in delivery.tasks:
                     if task.status == "DONE":
                         done_count += 1
                     elif task.status == "IN_PROGRESS":
                         in_progress_names.add(task.shoes_model.name)
+            in_progress_count = len(in_progress_names)
+            print(f"[handle_task_result_check] done_count={done_count}, in_progress_count={in_progress_count}")
 
-            response = {
-                "cmd": "TR",
-                "status": 0x00,
-                "done_count": done_count,
-                "in_progress_count": len(in_progress_names),
-                "in_progress_names": list(in_progress_names)
-            }
+            # 성공 응답 생성 및 전송
+            body = b"TR" + struct.pack(">BII", 0x00, done_count, in_progress_count)
+            print(f"[handle_task_result_check] 전송 바디(성공): {body.hex(' ').upper()}")
+            client_socket.sendall(body)
 
         except Exception as e:
-            response = { "cmd": "TR", "status": 0x01 }
-
-        client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+            print(f"[handle_task_result_check] 예외 발생: {e}")
+            body = b"TR" + struct.pack(">B", 0x01)
+            print(f"[handle_task_result_check] 전송 바디(예외 실패): {body.hex(' ').upper()}")
+            client_socket.sendall(body)
 
     # [IN] AI 인식 결과 수신
     def handle_ai_result(self, req_data, client_socket):

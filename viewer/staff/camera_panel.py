@@ -1,72 +1,94 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QMessageBox
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QImage, QPixmap
-import cv2
-import time
-
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton
+import cv2, time
+from viewer.staff.base_panel import BasePanel
 from viewer.staff.qr_reader import decode_qr
-from viewer.staff.tcp_sender import TCPClientThread
-from viewer.staff.message_router import MessageRouter
 
-
-class CameraPanel(QWidget):
-    def __init__(self, parent=None):
+class CameraPanel(BasePanel):
+    def __init__(self, tcp_thread, main_window, parent=None):
         super().__init__(parent)
-        self.parent_gui = parent
+        self.tcp_thread = tcp_thread
+        self.main_window = main_window
         self.capture = cv2.VideoCapture(0)
         self.last_detected_qr = None
 
-        self.tcp_thread = TCPClientThread()
-        self.message_router = MessageRouter(None, parent_gui=self.parent_gui)
+        self._init_ui()
+        self._wait_for_camera()
 
-        self.tcp_thread.received.connect(self.message_router.handle_response)
-        self.tcp_thread.start()
-
-        self.init_ui()
-        self.wait_for_camera()
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_frame)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._update_frame)
         self.timer.start(30)
 
-    def wait_for_camera(self):
-        attempts = 0
-        while not self.capture.isOpened() and attempts < 5:
-            print("카메라 초기화 중...")
+    def _wait_for_camera(self):
+        for _ in range(5):
+            if self.capture.isOpened():
+                break
             time.sleep(1)
-            self.capture.open(0)
-            attempts += 1
         print("카메라 초기화 완료!" if self.capture.isOpened() else "카메라 초기화 실패")
 
-    def init_ui(self):
-        layout = QVBoxLayout()
-        self.camera_label = QLabel("카메라 로딩 중...")
+    def _init_ui(self):
+        layout = QVBoxLayout(self)
+
+        # 카메라 프레임 표시용 라벨
+        self.camera_label = QLabel("카메라 로딩 중...", self)
         self.camera_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.camera_label)
-        self.setLayout(layout)
 
-    def update_frame(self):
+        # 하단 버튼 영역
+        btn_layout = QHBoxLayout()
+        cart_btn = QPushButton("장바구니", self)
+        cart_btn.clicked.connect(self._go_to_product_info_panel)
+
+        task_btn = QPushButton("작업현황", self)
+        task_btn.clicked.connect(self._go_to_task_status_panel)
+
+        btn_layout.addWidget(cart_btn)
+        btn_layout.addWidget(task_btn)
+        layout.addLayout(btn_layout)
+
+    def _update_frame(self):
         ret, frame = self.capture.read()
-        if ret:
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
-            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
-            self.camera_label.setPixmap(QPixmap.fromImage(qt_image).scaled(
-                self.camera_label.width(), self.camera_label.height(), Qt.AspectRatioMode.KeepAspectRatio
-            ))
+        if not ret:
+            return
 
-            qr_data = decode_qr(frame)
-            if qr_data and qr_data != self.last_detected_qr:
-                print(f"Detected QR: {qr_data}")
-                self.last_detected_qr = qr_data
-                self.tcp_thread.send_item_info_request(qr_data)
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb.shape
+        bpl = ch * w
+        img = QImage(rgb.data, w, h, bpl, QImage.Format.Format_RGB888)
+        pix = QPixmap.fromImage(img).scaled(
+            self.camera_label.width(),
+            self.camera_label.height(),
+            Qt.AspectRatioMode.KeepAspectRatio
+        )
+        self.camera_label.setPixmap(pix)
 
-    def closeEvent(self, event):
-        if self.capture.isOpened():
-            self.capture.release()
-        self.tcp_thread.stop()
-        event.accept()
+        qr = decode_qr(frame)
+        if qr and qr != self.last_detected_qr:
+            self.last_detected_qr = qr
+            self.tcp_thread.send_item_info_request(qr)
 
     def reset_qr_detection(self):
         self.last_detected_qr = None
+
+    def hideEvent(self, event):
+        """화면이 다른 패널로 넘어갈 때 카메라를 꺼준다."""
+        if self.capture.isOpened():
+            self.capture.release()
+            print("카메라 종료됨")
+        event.accept()
+
+    def showEvent(self, event):
+        """다시 화면에 보일 때 카메라를 재시작한다."""
+        if not self.capture.isOpened():
+            self.capture = cv2.VideoCapture(0)
+            self._wait_for_camera()
+        if not self.timer.isActive():
+            self.timer.start(30)
+        event.accept()
+
+    def _go_to_product_info_panel(self):
+        self.main_window.go_to_product_info()
+
+    def _go_to_task_status_panel(self):
+        self.main_window.go_to_task_status()

@@ -6,64 +6,143 @@ class MessageRouter:
 
     def route_message(self, message: bytes, client_socket):
         try:
+            print("=" * 60)
+            print(f"[📥 수신 바이트 HEX] {message.hex(' ').upper()}")
+            print(f"[📥 수신 길이] {len(message)} bytes")
+
             if len(message) < 2:
-                print("[에러] 너무 짧은 메시지")
+                print("[❌ 에러] 너무 짧은 메시지 (2바이트 미만)")
+                client_socket.sendall(b"??")
                 return
 
-            cmd = message[:2].decode('ascii', errors='replace')
-            print(f"[CMD] {cmd}")
+            cmd = message[:2].decode('utf-8', errors='ignore').strip()
+            print(f"[🔍 CMD] {cmd}")
 
             if cmd == "AU":
+                print("[👤 로그인 요청 처리 시작]")
+                if len(message) < 66:
+                    print(f"[❌ AU] 메시지 길이 부족 (받은 {len(message)} / 필요 66)")
+                    client_socket.sendall(b"AU\x01")
+                    return
+
                 user_name = message[2:34].decode('utf-8').rstrip('\x00')
                 password  = message[34:66].decode('utf-8').rstrip('\x00')
+                print(f"[🆔 사용자 ID] {user_name}")
+                print(f"[🔑 비밀번호] {password}")
                 payload = {"user_name": user_name, "password": password}
                 self.main_service.handle_login_request(payload, client_socket)
 
             elif cmd == "IS":
+                print("[🔎 QR코드 상품 조회 요청 처리 시작]")
                 qr = message[2:].decode('utf-8').rstrip('\x00')
+                print(f"[📦 QR코드] {qr}")
                 payload = {"qr_code": qr}
                 self.main_service.handle_qrcode_search(payload, client_socket)
 
             elif cmd == "IR":
-                user_id    = struct.unpack(">I",  message[2:6])[0]
-                item_count = struct.unpack(">H",  message[6:8])[0]
-                destination= message[8:10].decode('utf-8')
+                print("[📦 인벤토리 요청 처리 시작]")
+                if len(message) < 10:
+                    print(f"[❌ IR] 헤더 부족 (받은 {len(message)} / 최소 10)")
+                    client_socket.sendall(b"IR\x01")
+                    return
+
+                user_id = struct.unpack_from(">I", message, 2)[0]
+                item_count = struct.unpack_from(">H", message, 6)[0]
+                destination = message[8:10].decode('utf-8').rstrip('\x00')
+                print(f"[👤 사용자 ID] {user_id}")
+                print(f"[🧾 요청 아이템 수] {item_count}")
+                print(f"[📍 목적지] {destination}")
+
+                expected_len = 10 + item_count * (64 + 32 + 4 + 16 + 4)
+                if len(message) < expected_len:
+                    print(f"[❌ IR] 메시지 길이 부족 (받은 {len(message)} / 필요 {expected_len})")
+                    client_socket.sendall(b"IR\x01")
+                    return
+
                 items = []
                 offset = 10
-                for _ in range(item_count):
-                    sid, lid, qty = struct.unpack(">III", message[offset:offset+12])
+                for i in range(item_count):
+                    model = message[offset:offset+64].decode('utf-8').rstrip('\x00'); offset += 64
+                    color = message[offset:offset+32].decode('utf-8').rstrip('\x00'); offset += 32
+                    size = struct.unpack_from(">I", message, offset)[0]; offset += 4
+                    rack = message[offset:offset+16].decode('utf-8').rstrip('\x00'); offset += 16
+                    quantity = struct.unpack_from(">I", message, offset)[0]; offset += 4
+
+                    print(f"[🧩 아이템 {i+1}] model={model}, color={color}, size={size}, rack={rack}, quantity={quantity}")
                     items.append({
-                        "shoes_model_id": sid,
-                        "location_id":    lid,
-                        "quantity":       qty
+                        "model": model,
+                        "color": color,
+                        "size": size,
+                        "rack": rack,
+                        "quantity": quantity
                     })
-                    offset += 12
+
+                mapped = []
+                for it in items:
+                    mid = self.main_service.get_model_id_by_name(it["model"])
+                    lid = self.main_service.get_location_id_by_name(it["rack"])
+
+                    print(f"[🔗 매핑] model_id={mid}, location_id={lid}")
+                    if mid is None or lid is None:
+                        print(f"[❌ 매핑 실패] model={it['model']}, rack={it['rack']}")
+                        continue
+
+                    mapped.append({
+                        "shoes_model_id": mid,
+                        "location_id":    lid,
+                        "quantity":       it["quantity"]
+                    })
+
+                if not mapped:
+                    print("[❌ IR] 유효한 아이템이 없음 (매핑 실패)")
+                    client_socket.sendall(b"IR\x01")
+                    return
+
                 payload = {
-                    "user_id":    user_id,
+                    "user_id": user_id,
                     "destination": destination,
-                    "items":      items
+                    "items": mapped
                 }
                 self.main_service.handle_inventory_request(payload, client_socket)
 
             elif cmd == "CD":
+                print("[🚫 배송 취소 요청 처리 시작]")
+                if len(message) < 10:
+                    print(f"[❌ CD] 길이 부족 (받은 {len(message)} / 필요 10)")
+                    client_socket.sendall(b"CD\x01")
+                    return
+
                 user_id, delivery_id = struct.unpack(">II", message[2:10])
+                print(f"[👤 사용자 ID] {user_id}, [📦 배송 ID] {delivery_id}")
                 payload = {"user_id": user_id, "delivery_id": delivery_id}
                 self.main_service.handle_cancel_task(payload, client_socket)
 
             elif cmd == "TR":
+                print("[📊 작업 결과 확인 요청 처리 시작]")
+                if len(message) < 6:
+                    print(f"[❌ TR] 길이 부족 (받은 {len(message)} / 필요 6)")
+                    client_socket.sendall(b"TR\x01")
+                    return
+
                 user_id = struct.unpack(">I", message[2:6])[0]
+                print(f"[👤 사용자 ID] {user_id}")
                 payload = {"user_id": user_id}
                 self.main_service.handle_task_result_check(payload, client_socket)
 
             elif cmd == "IN":
+                print("[🤖 AI 결과 수신 처리 시작]")
                 ai_data = message[2:]
+                print(f"[📄 AI 데이터 길이] {len(ai_data)} bytes")
                 payload = {"ai_data": ai_data}
                 self.main_service.handle_ai_result(payload, client_socket)
 
             else:
-                print(f"[❌ 알 수 없는 명령] {cmd}")
+                print(f"[❌ 알 수 없는 명령어] '{cmd}'")
                 client_socket.sendall(b"??")
 
         except Exception as e:
-            print(f"[❌ route_message 에러] {e}")
-            client_socket.sendall(b"!!")
+            print(f"[❌ route_message 예외] {e}")
+            try:
+                client_socket.sendall(b"!!")
+            except Exception as inner_e:
+                print(f"[‼️ 예외 중 응답 실패] {inner_e}")

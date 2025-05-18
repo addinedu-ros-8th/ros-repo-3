@@ -48,6 +48,17 @@ class MainServiceQuery:
          .join(QRCode, QRCode.inventory_id == ShoesInventory.inventory_id)\
          .join(RackLocation, ShoesInventory.location_id == RackLocation.location_id)\
          .filter(QRCode.qr_code_value == qr_code_value).first()
+    
+    def get_model_id_by_name(self, name: str) -> int | None:
+        """ShoesModel.name → shoes_model_id"""
+        m = self.roscars_session.query(ShoesModel)\
+            .filter_by(name=name).first()
+        return m.shoes_model_id if m else None
+    def get_location_id_by_name(self, rack_name: str) -> int | None:
+        """RackLocation.name → location_id"""
+        loc = self.roscars_session.query(RackLocation)\
+            .filter_by(name=rack_name).first()
+        return loc.location_id if loc else None
 
     def get_task_event_log_by_task_id(self, task_id: int):
         logs = self.roscars_log_session.query(TaskEventLog)\
