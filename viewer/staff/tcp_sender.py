@@ -1,5 +1,3 @@
-# viewer/staff/tcp_sender.py
-
 from PyQt6.QtCore import QThread, pyqtSignal
 import socket
 import struct
@@ -66,10 +64,10 @@ class TCPClientThread(QThread):
         self.send(cmd + u + p)
 
     def send_item_info_request(self, qr_code: str):
-        # [IS] 상품 정보 조회 요청
+        # [IS] 상품 정보 조회 요청 (전체 길이 전송)
         cmd = b"IS"
-        q = qr_code.encode('utf-8')[:16].ljust(16, b'\x00')
-        self.send(cmd + q)
+        data = qr_code.encode('utf-8')  # 전체 문자열
+        self.send(cmd + data)
 
     def send_inventory_request(self, user_id: int, destination: str, items: list[dict]):
         # [IR] 장바구니 기반 상품 요청
@@ -81,11 +79,15 @@ class TCPClientThread(QThread):
         )
         body = b""
         for it in items:
-            # shoes_model_id, location_id, quantity 순서
-            body += struct.pack('>III',
-                                it['shoes_model_id'],
-                                it['location_id'],
-                                it['quantity'])
+            # 문자열은 가변길이 전송보다 고정길이 패딩이 편함
+            model = it['model'].encode('utf-8')[:64].ljust(64, b'\x00')
+            color = it['color'].encode('utf-8')[:32].ljust(32, b'\x00')
+            size = int(it['size'])
+            rack = it['rack'].encode('utf-8')[:16].ljust(16, b'\x00')
+            quantity = int(it['quantity'])
+
+            body += model + color + struct.pack('>I', size) + rack + struct.pack('>I', quantity)
+
         self.send(cmd + header + body)
 
     def send_cancel_delivery_request(self, user_id: int, delivery_id: int):

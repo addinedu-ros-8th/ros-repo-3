@@ -150,7 +150,7 @@ class RoscarQuery:
         return self.session.query(User).filter_by(user_name=user_name).first()
 
     def get_shoes_model_by_qrcode(self, qr_code_value: str):
-        from databases.models.roscars_models import QRCode, ShoesInventory
+        from server.main_server.databases.models.roscars_models import QRCode, ShoesInventory
         return self.session.query(
             ShoesModel.name,
             ShoesModel.size,

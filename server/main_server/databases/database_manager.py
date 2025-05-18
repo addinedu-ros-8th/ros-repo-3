@@ -5,7 +5,7 @@ import os
 
 class DatabaseManager:
     def __init__(self):
-        load_dotenv()
+        load_dotenv(override=True) 
         self.engines = {}
         self.sessions = {}
         self._init_connections()

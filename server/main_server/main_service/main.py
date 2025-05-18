@@ -1,6 +1,7 @@
 import signal
 import threading
 import rclpy
+import struct
 
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.message_router import MessageRouter
@@ -30,7 +31,7 @@ class RuntimeController:
 
 class MainService:
     def __init__(self, db: DatabaseManager):
-        self.session = db.get_session("roscars_log")
+        self.session = db.get_session("roscars")
         self.query = RoscarQuery(self.session)
         self.logger = RoscarsLogWriter(self.session)
         self.enable_shutdown_after_ai_result = False
@@ -63,39 +64,42 @@ class MainService:
     # [IS] 상품 정보 조회 요청 (QR코드 기반)
     def handle_qrcode_search(self, req_data, client_socket):
         try:
-            qr_code_value = req_data.get("qr_code_value")
+            qr_code_value = req_data.get("qr_code")
+            print(f"[IS] QR코드 조회 요청: {qr_code_value}")
             result = self.query.get_shoes_model_by_qrcode(qr_code_value)
 
             if result:
-                response = {
-                    "cmd": "IS",
-                    "status": 0x00,
-                    "name": result.name,
-                    "size": result.size,
-                    "color": result.color.value,
-                    "quantity": result.quantity,
-                    "location": result.location
-                }
-            else:
-                response = {
-                    "cmd": "IS",
-                    "status": 0x01
-                }
+                cmd = b"IS"
+                status = struct.pack("B", 0x00)
+                name = result.name.encode('utf-8')[:32].ljust(32, b'\x00')
+                size = struct.pack("<I", result.size)
+                color = result.color.value.encode('utf-8')[:16].ljust(16, b'\x00')
+                quantity = struct.pack("<I", result.quantity)
+                location = result.location.encode('utf-8')[:16].ljust(16, b'\x00')
 
-            client_socket.sendall(MessageUtils.success(response, "IS").encode("utf-8"))
+                payload = cmd + status + name + size + color + quantity + location
+            else:
+                payload = b"IS" + struct.pack("B", 0x01)
+
+            client_socket.sendall(payload)
 
         except Exception as e:
-            client_socket.sendall(MessageUtils.error("QR 코드 조회 실패", "IS").encode("utf-8"))
+            print("[❌] 상품 조회 실패:", e)
+            client_socket.sendall(b"IS" + struct.pack("B", 0x01))
 
     # [IR] 상품 요청
     def handle_inventory_request(self, req_data, client_socket):
         try:
+            print("[IR] 상품 요청 시작")
+            print(f"[IR] 수신 데이터: {req_data}")
+
             user_id = req_data.get("user_id")
             destination_str = req_data.get("destination")  # ex) "G1"
             items = req_data.get("items")
 
             if not user_id or not items or not isinstance(items, list) or not destination_str:
-                response = { "cmd": "IR", "status": 0x01 }
+                print(f"[IR] 필수값 누락 → user_id: {user_id}, items: {items}, destination: {destination_str}")
+                response = {"cmd": "IR", "status": 0x01}
                 client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
                 return
 
@@ -103,11 +107,14 @@ class MainService:
             try:
                 destination_enum = DestinationGroup[destination_str]
             except KeyError:
-                response = { "cmd": "IR", "status": 0x01 }
+                print(f"[IR] 유효하지 않은 목적지 문자열: {destination_str}")
+                response = {"cmd": "IR", "status": 0x01}
                 client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
                 return
 
-            # 1. Delivery 생성 (destination 포함)
+            print(f"[IR] 배송 목적지: {destination_enum}")
+
+            # 1. Delivery 생성
             delivery = Delivery(
                 user_id=user_id,
                 roscar_id=None,
@@ -116,22 +123,27 @@ class MainService:
                 destination=destination_enum
             )
             self.session.add(delivery)
-            self.session.flush()  # delivery_id 확보
+            self.session.flush()
+            print(f"[IR] Delivery 생성 완료 → ID: {delivery.delivery_id}")
 
             first_task_id = None
+            task_count = 0
 
-            # 2. 장바구니 항목별 Task 생성
+            # 2. Task 생성
             for item in items:
                 shoes_model_id = item.get("shoes_model_id")
                 location_id = item.get("location_id")
                 quantity = item.get("quantity")
+                print(f"[IR] 처리 중: 모델ID={shoes_model_id}, 위치ID={location_id}, 수량={quantity}")
 
                 if not shoes_model_id or not location_id or not quantity or quantity <= 0:
+                    print("[IR] 유효하지 않은 항목 → 생략")
                     continue
 
                 shoes_model = self.session.query(ShoesModel).filter_by(shoes_model_id=shoes_model_id).first()
                 location = self.session.query(RackLocation).filter_by(location_id=location_id).first()
                 if not shoes_model or not location:
+                    print(f"[IR] 존재하지 않는 모델 또는 위치 → 모델: {shoes_model}, 위치: {location}")
                     continue
 
                 for _ in range(quantity):
@@ -142,18 +154,23 @@ class MainService:
                         status="TO_DO"
                     )
                     self.session.add(task)
-                    self.session.flush()  # task_id 확보
+                    self.session.flush()
+                    task_count += 1
 
                     if not first_task_id:
                         first_task_id = task.task_id
 
+            print(f"[IR] Task 생성 완료: 총 {task_count}개")
+
             if not first_task_id:
+                print("[IR] Task 없음 → 롤백")
                 self.session.rollback()
-                response = { "cmd": "IR", "status": 0x01 }
+                response = {"cmd": "IR", "status": 0x01}
             else:
                 self.session.commit()
+                print("[IR] 커밋 완료")
 
-                self.logger.log_delivery_event(  # ✅ commit 이후로 이동
+                self.logger.log_delivery_event(
                     delivery_id=delivery.delivery_id,
                     user_id=user_id,
                     previous=DefaultEventType.WAIT,
@@ -167,16 +184,17 @@ class MainService:
                     "first_task_id": first_task_id
                 }
 
+            print(f"[IR] 응답 전송: {response}")
 
             self.logger.log_delivery_event(
                 delivery_id=delivery.delivery_id,
                 user_id=user_id,
                 previous=DefaultEventType.WAIT,
                 new=DefaultEventType.PROGRESS_START
-                )
-
+            )
 
         except Exception as e:
+            print(f"[❌ IR 처리 예외 발생]: {e}")
             self.session.rollback()
             try:
                 if 'delivery' in locals():
@@ -186,9 +204,10 @@ class MainService:
                         previous=DefaultEventType.WAIT,
                         new=DefaultEventType.FAILE
                     )
-            except:
-                pass  # 로깅 실패 무시
-            response = { "cmd": "IR", "status": 0x01 }
+            except Exception as log_err:
+                print(f"[IR] 로깅 중 예외 발생: {log_err}")
+
+            response = {"cmd": "IR", "status": 0x01}
 
         client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
 

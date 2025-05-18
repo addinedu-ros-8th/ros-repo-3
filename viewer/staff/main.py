@@ -15,7 +15,8 @@ class StaffGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Staff GUI")
-        self.setGeometry(100, 100, 480, 800)
+        self.setFixedSize(480, 800)
+        #self.setGeometry(100, 100, 480, 800)
         apply_theme(self)
 
         self.central_widget = QWidget()
