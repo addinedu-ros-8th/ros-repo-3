@@ -172,6 +172,9 @@ class MainServiceQuery:
         deliveries = self.roscars_session.query(Delivery)\
             .filter(Delivery.delivery_id.in_(delivery_ids)).all()
 
+        delivery_map = {d.delivery_id: d for d in deliveries}
+        
+
         # 관계 맵 구성
         user_map = {
             d.delivery_id: d.user for d in deliveries if d.user is not None
@@ -188,6 +191,7 @@ class MainServiceQuery:
             "event_type": log.new_event.name,
             "user_name": user_map.get(log.delivery_id).user_name if log.delivery_id in user_map else None,
             "roscar_name": roscar_map.get(log.delivery_id).roscar_name if log.delivery_id in roscar_map else None,
+            "delivery_status": delivery_map.get(log.delivery_id).delivery_status if log.delivery_id in delivery_map else None,
         } for log in logs]
 
 
