@@ -1,10 +1,10 @@
 import rclpy
 from rclpy.node import Node
 from PyQt6.QtWidgets import *
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap
 from viewer.theme import apply_theme
-from shared_interfaces.msg import RoscarInfo
+from shared_interfaces.msg import RoscarInfo, RoscarRegister
 
 class MonitorPanel(QWidget):
     def __init__(self):
@@ -15,9 +15,22 @@ class MonitorPanel(QWidget):
         # ROS2 초기화 및 Node 생성
         rclpy.init(args=None)  # ROS2 초기화
         self.node = Node('monitor_panel')  # Node 생성
-        
-        # ROS2 퍼블리셔 생성
+
+        # ROS2 퍼블리셔 생성 (Roscar 추가용)
         self.roscar_info_publisher = self.node.create_publisher(RoscarInfo, '/roscar/access', 10)
+
+        # [추가] ROS2 구독자 생성 (/roscar/register 구독)
+        self.roscar_register_subscriber = self.node.create_subscription(
+            RoscarRegister,
+            '/roscar/register',
+            self.roscar_register_callback,
+            10
+        )
+
+        # [추가] QTimer를 활용해 rclpy.spin_once 주기 호출
+        self.ros_timer = QTimer()
+        self.ros_timer.timeout.connect(lambda: rclpy.spin_once(self.node, timeout_sec=0.01))
+        self.ros_timer.start(50)
 
     def _init_ui(self):
         main_layout = QVBoxLayout()
@@ -38,7 +51,7 @@ class MonitorPanel(QWidget):
         roscar_manage_layout = QVBoxLayout()
 
         self.roscar_list = QListWidget()
-        
+
         # 로봇 ID와 IP 입력 필드 추가
         self.roscar_id_input = QLineEdit(self)
         self.roscar_id_input.setPlaceholderText("Enter Roscar ID")
@@ -134,3 +147,26 @@ class MonitorPanel(QWidget):
         self.node.destroy_node()
         rclpy.shutdown()
         event.accept()
+
+    # [추가] RoscarRegister 메시지를 수신하면 테이블에 반영하는 콜백
+    def roscar_register_callback(self, msg):
+        roscar_id = msg.roscar_name
+        battery = f"{msg.battery_percentage}%"
+        status = msg.operational_status
+        self.update_roscar_table(roscar_id, battery, status)
+
+    # [추가] Roscar Status Overview 테이블 갱신 함수
+    def update_roscar_table(self, roscar_id, battery, status):
+        table = self.roscar_table
+        for row in range(table.rowCount()):
+            item = table.item(row, 0)
+            if item and item.text() == roscar_id:
+                table.setItem(row, 1, QTableWidgetItem(battery))
+                table.setItem(row, 2, QTableWidgetItem(status))
+                return
+
+        row_position = table.rowCount()
+        table.insertRow(row_position)
+        table.setItem(row_position, 0, QTableWidgetItem(roscar_id))
+        table.setItem(row_position, 1, QTableWidgetItem(battery))
+        table.setItem(row_position, 2, QTableWidgetItem(status))
