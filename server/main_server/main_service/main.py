@@ -2,6 +2,7 @@ import signal
 import threading
 import rclpy
 import struct
+import time
 
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.message_router import MessageRouter
@@ -317,6 +318,36 @@ class MainService:
             response = { "cmd": "TR", "status": 0x01 }
 
         client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
+
+    # [TR_NOTIFY] 작업 상태 변경 알림
+    def send_task_status_notification(self, client_socket, task_id: int, delivery_id: int, status: str, shoes_model_name: str):
+        try:
+            print(f"[TR_NOTIFY] 상태 알림 → task_id={task_id}, status={status}, model={shoes_model_name}")
+
+            cmd = b"TR"
+            delivery_bytes = struct.pack(">I", delivery_id)
+            task_bytes     = struct.pack(">I", task_id)
+
+            status_map = {
+                "TO_DO": 0x00,
+                "IN_PROGRESS": 0x01,
+                "DONE": 0x02,
+                "CANCELLED": 0x03
+            }
+            status_code = status_map.get(status.upper(), 0xFF)
+            status_bytes = struct.pack("B", status_code)
+
+            name_bytes = shoes_model_name.encode('utf-8')[:32].ljust(32, b'\x00')
+            timestamp_ms = int(time.time() * 1000)
+            timestamp_bytes = struct.pack(">Q", timestamp_ms)
+
+            payload = cmd + delivery_bytes + task_bytes + status_bytes + name_bytes + timestamp_bytes
+            client_socket.sendall(payload)
+
+            print(f"[TR_NOTIFY] 전송 완료")
+
+        except Exception as e:
+            print(f"[❌ TR_NOTIFY 전송 실패]: {e}")
 
     # [IN] AI 인식 결과 수신
     def handle_ai_result(self, req_data, client_socket):
