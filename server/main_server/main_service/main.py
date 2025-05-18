@@ -4,7 +4,7 @@ import struct
 import time
 
 import rclpy
-from rclpy.executors import MultiNodeExecutor
+from rclpy.executors import MultiThreadedExecutor
 
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.message_router import MessageRouter
@@ -438,25 +438,33 @@ def main(main_test_mode=False, ai_test_mode=False):
     # ROS2 초기화 및 노드 실행
     rclpy.init()
     logger = RoscarsLogWriter(db.get_session("roscars_log"))
-    ros_node = MultiNodeExecutor([
-        SensorUtils(logger, db),
-        LogQueryService(),
-        LogEventPublisher()
-    ])
+
+    # 노드 인스턴스 생성
+    sensor_node = SensorUtils(logger, db)
+    log_query_node = LogQueryService()
+    log_event_publisher = LogEventPublisher()
+
+    # 멀티스레드 실행기 생성 및 노드 등록
+    executor = MultiThreadedExecutor()
+    executor.add_node(sensor_node)
+    executor.add_node(log_query_node)
+    executor.add_node(log_event_publisher)
 
     if main_test_mode:
         runtime.enable_auto_shutdown(3)
 
     try:
         while not runtime.shutdown_flag.is_set() and rclpy.ok():
-            rclpy.spin_once(ros_node, timeout_sec=0.1)
+            executor.spin_once(timeout_sec=0.1)
 
     except rclpy.executors.ExternalShutdownException:
         print("[MAIN] ROS2가 종료되어 spin 종료됨")
 
     finally:
         print("[MAIN] 종료 처리 중...")
-        ros_node.destroy_node()
+        sensor_node.destroy_node()
+        log_query_node.destroy_node()
+        log_event_publisher.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
         tcp_server.shutdown_server()
