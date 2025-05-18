@@ -4,18 +4,21 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from shared_interfaces.msg import BatteryStatus, RoscarRegister, SensorData
 from datetime import datetime
 
-from server.main_server.databases.models.roscars_models import RosCars
-from server.main_server.databases.database_manager import get_session
-
 from sqlalchemy.dialects.mysql import insert as mysql_insert 
 
-from server.main_server.databases.insert_sensor_data import save_sensor_data_to_db  # 모듈화된 DB 저장 함수
-from server.main_server.databases.parse_sensor_payload import parse_sensor_data     # 모듈화된 JSON 파싱 함수
+from server.main_server.databases.utils import SensorUtils
+from server.main_server.databases.database_manager import DatabaseManager
+from server.main_server.databases.logger import RoscarsLogWriter
+from server.main_server.databases.models.roscars_models import RosCars
 
 class SensorListener(Node):
-    def __init__(self):
+    def __init__(self, db_manager: DatabaseManager, db_logger: RoscarsLogWriter):
         super().__init__('sensor_listener')
         self.get_logger().info("SensorListener 노드 초기화됨")
+
+        self.db_manager = db_manager
+        self.db_logger = db_logger
+        self.sensor_utils = SensorUtils(db_logger=db_logger, db_manager=db_manager)
 
         qos = QoSProfile(
             depth=10,
@@ -60,7 +63,7 @@ class SensorListener(Node):
         self.get_logger().info(f'[SensorData] 수신 - roscar_id={msg.roscar_id}, time={dt.strftime("%Y-%m-%d %H:%M:%S")}')
 
         try:
-            parsed = parse_sensor_data(msg)
+            parsed = self.sensor_utils.parse_sensor_data(msg)
             self.get_logger().info(f'  ▸ LiDAR ranges: {len(parsed["lidar"].get("ranges", []))}개')
             self.get_logger().info(f'  ▸ IMU accel={parsed["imu"].get("accel")}, gyro={parsed["imu"].get("gyro")}, mag={parsed["imu"].get("mag")}')
             self.get_logger().info(f'  ▸ 초음파 거리: {parsed["ultra"].get("front", -1):.2f} cm')
@@ -68,7 +71,7 @@ class SensorListener(Node):
             self.get_logger().warn(f'SensorData JSON 파싱 실패: {e}')
             return
 
-        save_sensor_data_to_db(msg.roscar_id, dt, parsed, self.get_logger())
+        self.sensor_utils.save_sensor_data_to_db(msg.roscar_id, dt, parsed)
 
     def register_callback(self, msg):
         self.get_logger().info(
@@ -80,31 +83,30 @@ class SensorListener(Node):
             f'to_domain_id={msg.to_domain_id}'
         )
 
-        # RosCars 테이블 UPSERT
-        session = get_session("roscars")
         try:
-            stmt = mysql_insert(RosCars).values(
-                roscar_name=msg.roscar_name,
-                battery_percentage=msg.battery_percentage,
-                roscar_ip_v4=msg.roscar_ip_v4
-            )
-            stmt = stmt.on_duplicate_key_update(
-                battery_percentage=stmt.inserted.battery_percentage,
-                roscar_ip_v4=stmt.inserted.roscar_ip_v4
-            )
-            session.execute(stmt)
-            session.commit()
-            self.get_logger().info(f"RosCars DB에 '{msg.roscar_name}' 정보 업데이트 완료")
+            with self.db_manager.session_scope("roscars") as session:
+                stmt = mysql_insert(RosCars).values(
+                    roscar_name=msg.roscar_name,
+                    battery_percentage=msg.battery_percentage,
+                    roscar_ip_v4=msg.roscar_ip_v4
+                )
+                stmt = stmt.on_duplicate_key_update(
+                    battery_percentage=stmt.inserted.battery_percentage,
+                    roscar_ip_v4=stmt.inserted.roscar_ip_v4
+                )
+                session.execute(stmt)
+                self.get_logger().info(f"RosCars DB에 '{msg.roscar_name}' 정보 업데이트 완료")
         except Exception as e:
-            session.rollback()
             self.get_logger().error(f"RosCars UPSERT 실패: {e}")
-        finally:
-            session.close()
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = SensorListener()
+
+    db_manager = DatabaseManager()
+    db_logger = RoscarsLogWriter(db_manager)
+
+    node = SensorListener(db_manager, db_logger)
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

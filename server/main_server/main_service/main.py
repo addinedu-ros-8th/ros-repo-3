@@ -1,12 +1,14 @@
 import signal
 import threading
-import rclpy
 import struct
 import time
 
+import rclpy
+from rclpy.executors import MultiNodeExecutor
 
-from server.main_server.main_service.main_service.comm.tcp_handler import TCPHandler
-from server.main_server.main_service.main_service.comm.message_router import MessageRouter
+from server.main_server.main_service.comm.tcp_handler import TCPHandler
+from server.main_server.main_service.comm.message_router import MessageRouter
+from server.main_server.main_service.ros_interface.service.log_query_service import LogQueryService
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
