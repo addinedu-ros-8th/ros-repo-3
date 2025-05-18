@@ -9,6 +9,8 @@ from rclpy.executors import MultiNodeExecutor
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.message_router import MessageRouter
 from server.main_server.main_service.ros_interface.service.log_query_service import LogQueryService
+from server.main_server.main_service.ros_interface.publisher.log_event_publisher import LogEventPublisher
+
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
@@ -438,9 +440,9 @@ def main(main_test_mode=False, ai_test_mode=False):
     logger = RoscarsLogWriter(db.get_session("roscars_log"))
     ros_node = MultiNodeExecutor([
         SensorUtils(logger, db),
-        LogQueryService(db),
+        LogQueryService(),
+        LogEventPublisher()
     ])
-
 
     if main_test_mode:
         runtime.enable_auto_shutdown(3)

@@ -1,63 +1,54 @@
-# server/main_server/main_service/ros_interface/service/log_query_service.py
-
 import rclpy
 from rclpy.node import Node
+import json
+
 from shared_interfaces.srv import LogQuery
-from shared_interfaces.msg import LogEvent
-from builtin_interfaces.msg import Time
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.query import MainServiceQuery
 
 class LogQueryService(Node):
-    def __init__(self, roscars_session, roscars_log_session):
+    def __init__(self):
         super().__init__('log_query_service')
         self.srv = self.create_service(LogQuery, '/log/request/query', self.handle_query)
-        self.db = MainServiceQuery(roscars_session, roscars_log_session)
 
-
-    def handle_query(self, request, response):
-        start = self._to_datetime(request.start_time)
-        end = self._to_datetime(request.end_time)
-        logs = self.db.query_logs(
-            log_type=request.log_type,
-            start_time=start,
-            end_time=end,
-            keyword=request.keyword,
-            event_codes=list(request.event_filter)
+        db = DatabaseManager()
+        self.query = MainServiceQuery(
+            db.get_session("roscars"),
+            db.get_session("roscars_log")
         )
 
-        response.count = len(logs)
-        response.logs = [self._to_log_event(msg) for msg in logs]
+        self.query_map = {
+            "delivery": self.query.get_all_delivery_logs,
+            "task": self.query.get_task_event_history,
+            "roscar": self.query.get_roscar_event_detail,
+            "precision_stop": self.query.get_precision_stop_result,
+            "trajectory": self.query.get_roscar_trajectory,
+            "driving_event": self.query.get_roscar_driving_event_log,
+            "sensor_fusion": self.query.get_sensor_for_training,
+            "control_command": self.query.get_control_command_log,
+            "filesystem": self.query.get_filesystem_log,
+            "rack_sensor": self.query.get_rack_sensor_log
+        }
+
+    def handle_query(self, request, response):
+        query_type = request.query_type.strip().lower()
+        self.get_logger().info(f"[LogQuery] 요청 수신: {query_type}")
+
+        if query_type not in self.query_map:
+            response.json_result = json.dumps({ "error": f"Unknown query_type: {query_type}" })
+            return response
+
+        try:
+            result = self.query_map[query_type]()
+            response.json_result = json.dumps(result, default=str)
+        except Exception as e:
+            self.get_logger().error(f"[LogQuery] 쿼리 처리 중 오류: {e}")
+            response.json_result = json.dumps({ "error": str(e) })
+
         return response
-
-    def _to_datetime(self, ros_time: Time):
-        from datetime import datetime
-        return datetime.fromtimestamp(ros_time.sec + ros_time.nanosec / 1e9)
-
-    def _to_log_event(self, db_row):
-        msg = LogEvent()
-        msg.event_id = db_row.event_id
-        msg.event_type = db_row.event_type.value if hasattr(db_row.event_type, 'value') else int(db_row.event_type)
-        msg.event_data = db_row.message
-
-        ts = Time()
-        unix = db_row.timestamp.timestamp()
-        ts.sec = int(unix)
-        ts.nanosec = int((unix - int(unix)) * 1e9)
-        msg.stamp = ts
-        return msg
 
 def main(args=None):
     rclpy.init(args=args)
-    db = DatabaseManager()
-    node = LogQueryService(
-        db.get_session("roscars"),
-        db.get_session("roscars_log")
-    )
+    node = LogQueryService()
     rclpy.spin(node)
     rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    print("Log Query Service")
-    main()

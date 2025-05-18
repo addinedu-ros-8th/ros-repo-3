@@ -56,9 +56,14 @@ class MessageRouter:
                 self.main_service.handle_task_result_check(payload, client_socket)
 
             elif cmd == "IN":
-                ai_data = message[2:]
-                payload = {"ai_data": ai_data}
+                roscar_id = message[2]
+                result_code = message[3]
+                payload = {
+                    "roscar_id": roscar_id,
+                    "result_code": result_code
+                }
                 self.main_service.handle_ai_result(payload, client_socket)
+
 
             else:
                 print(f"[❌ 알 수 없는 명령] {cmd}")

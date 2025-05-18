@@ -18,7 +18,8 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'log_query_service = ros_interface.service.log_query_service:main'
+            'log_query_service = service.log_query_service:main',
+            'log_event_publisher = publisher.log_event_publisher:main',
         ],
     },
 )
