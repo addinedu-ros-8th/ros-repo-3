@@ -16,16 +16,12 @@ find_package(builtin_interfaces REQUIRED)
 # Interface generation
 rosidl_generate_interfaces(${PROJECT_NAME}
   # Messages
-  "msg/AccessResult.msg"
-  "msg/AIModuleStatus.msg"
   "msg/BatteryStatus.msg"
   "msg/ChargeCommand.msg"
   "msg/DashboardStatus.msg"
   "msg/EmergencyAlert.msg"
   "msg/EmergencyCommand.msg"
   "msg/InventoryResult.msg"
-  "msg/LidarScan.msg"
-  "msg/LogEventAdmin.msg"
   "msg/LogEvent.msg"
   "msg/NavigationGoal.msg"
   "msg/ObstacleAvoidanceCmd.msg"
@@ -33,7 +29,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ObstacleResponse.msg"
   "msg/PrecisionStopCmd.msg"
   "msg/PrecisionStopResult.msg"
-  "msg/QRCodeScan.msg"
   "msg/RoscarInfo.msg"
   "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"
@@ -48,6 +43,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/QueryTaskStatus.srv"
   "srv/RequestDiagnostics.srv"
   "srv/StartInventoryCheck.srv"
+  "srv/LogQuery.srv"
 
   # Actions
   "action/ChargeProcess.action"

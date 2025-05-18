@@ -4,12 +4,13 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from shared_interfaces.msg import BatteryStatus, RoscarRegister, SensorData
 from datetime import datetime
 
-from db.connect_db import get_roscars_session
-from db.roscars_models import RosCars        
+from server.main_server.databases.models.roscars_models import RosCars
+from server.main_server.databases.database_manager import get_session
+
 from sqlalchemy.dialects.mysql import insert as mysql_insert 
 
-from db.insert_sensor_data import save_sensor_data_to_db  # 모듈화된 DB 저장 함수
-from db.parse_sensor_payload import parse_sensor_data     # 모듈화된 JSON 파싱 함수
+from server.main_server.databases.insert_sensor_data import save_sensor_data_to_db  # 모듈화된 DB 저장 함수
+from server.main_server.databases.parse_sensor_payload import parse_sensor_data     # 모듈화된 JSON 파싱 함수
 
 class SensorListener(Node):
     def __init__(self):
@@ -80,7 +81,7 @@ class SensorListener(Node):
         )
 
         # RosCars 테이블 UPSERT
-        session = get_roscars_session()
+        session = get_session("roscars")
         try:
             stmt = mysql_insert(RosCars).values(
                 roscar_name=msg.roscar_name,
@@ -107,7 +108,3 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    main()

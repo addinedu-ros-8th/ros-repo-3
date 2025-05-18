@@ -4,8 +4,9 @@ import rclpy
 import struct
 import time
 
-from server.main_server.main_service.comm.tcp_handler import TCPHandler
-from server.main_server.main_service.comm.message_router import MessageRouter
+
+from server.main_server.main_service.main_service.comm.tcp_handler import TCPHandler
+from server.main_server.main_service.main_service.comm.message_router import MessageRouter
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
@@ -433,7 +434,11 @@ def main(main_test_mode=False, ai_test_mode=False):
     # ROS2 초기화 및 노드 실행
     rclpy.init()
     logger = RoscarsLogWriter(db.get_session("roscars_log"))
-    ros_node = SensorUtils(logger, db)  # 이후 ROS Node 통합 시 교체 예정
+    ros_node = MultiNodeExecutor([
+        SensorUtils(logger, db),
+        LogQueryService(db),
+    ])
+
 
     if main_test_mode:
         runtime.enable_auto_shutdown(3)

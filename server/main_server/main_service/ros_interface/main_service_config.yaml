@@ -1,0 +1,27 @@
+server:
+  host: "0.0.0.0"
+  port: 5000
+
+roscar_settings:
+  emergency_battery_threshold: 10  # (%)
+
+namespace:
+  default_roscar_namespace: "pinky_07db"
+  use_namespace: true
+  support_namespaces: 
+    - "pinky_07db"
+    - "pinky_0830"
+
+domain_bridge:
+  bridges:
+    - topic_name: "/${namespace}/roscar/status/battery"
+      type: roscar_interfaces/msg/BatteryStatus
+      from_domain: 1
+      to_domain: 0
+    - topic_name: "/${namespace}/roscar/status/task"
+      type: roscar_interfaces/msg/TaskStatus
+      from_domain: 1
+      to_domain: 0
+
+
+
