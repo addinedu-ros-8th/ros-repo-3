@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
 from dotenv import load_dotenv
 import os
 
@@ -14,6 +15,10 @@ class DatabaseManager:
         DB_HOST = os.getenv("DB_HOST")
         DB_USER = os.getenv("DB_USER")
         DB_PSWD = os.getenv("DB_PSWD")
+
+        if not DB_HOST or not DB_USER or not DB_PSWD:
+            raise RuntimeError("DB 접속 정보를 .env에서 불러오지 못함")
+
 
         DB_URI = f"mysql+pymysql://{DB_USER}:{DB_PSWD}@{DB_HOST}"
 
@@ -36,3 +41,18 @@ class DatabaseManager:
     def close_engine(self, name: str):
         self.engines[name].dispose()
 
+    @contextmanager
+    def dual_session(self):
+        s1 = self.get_session("roscars")
+        s2 = self.get_session("roscars_log")
+        try:
+            yield s1, s2
+            s1.commit()
+            s2.commit()
+        except:
+            s1.rollback()
+            s2.rollback()
+            raise
+        finally:
+            s1.close()
+            s2.close()

@@ -128,8 +128,9 @@ class RackSensorLog(RoscarsLogBase):
     timestamp = Column(TIMESTAMP, server_default=func.now())
 
 class FileSystemLog(RoscarsLogBase):
-    __tablename__ = 'FileSystemLog'
+    __tablename__ = "file_system_log"
 
     log_id = Column(Integer, primary_key=True)
-    file_path = Column(String(255))
-    timestamp = Column(TIMESTAMP, server_default=func.now())
+    roscar_id = Column(Integer, nullable=True) 
+    file_path = Column(String(255), nullable=False)
+    timestamp = Column(TIMESTAMP, nullable=False)

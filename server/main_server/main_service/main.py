@@ -8,7 +8,7 @@ from server.main_server.main_service.comm.message_router import MessageRouter
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
-from server.main_server.databases.query import RoscarQuery
+from server.main_server.databases.query import MainServiceQuery
 from server.main_server.databases.models.roscars_log_models import RosCarEventType, DefaultEventType
 from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
 from server.main_server.databases.utils import SensorUtils, MessageUtils
@@ -28,12 +28,18 @@ class RuntimeController:
             self.shutdown_flag.set()
         threading.Timer(seconds, _shutdown).start()
 
-
 class MainService:
     def __init__(self, db: DatabaseManager):
-        self.session = db.get_session("roscars")
-        self.query = RoscarQuery(self.session)
-        self.logger = RoscarsLogWriter(self.session)
+        self.logger_session = db.get_session("roscars_log")
+        self.logger = RoscarsLogWriter(self.logger_session)
+
+        self.roscars_session = db.get_session("roscars")
+
+        self.query = MainServiceQuery(
+            roscars_session=self.roscars_session,
+            roscars_log_session=self.logger_session
+        )
+
         self.enable_shutdown_after_ai_result = False
 
     # [AU] 로그인 인증 요청
@@ -122,8 +128,8 @@ class MainService:
                 driving_phase_id=None,
                 destination=destination_enum
             )
-            self.session.add(delivery)
-            self.session.flush()
+            self.roscars_session.add(delivery)
+            self.roscars_session.flush()
             print(f"[IR] Delivery 생성 완료 → ID: {delivery.delivery_id}")
 
             first_task_id = None
@@ -140,8 +146,8 @@ class MainService:
                     print("[IR] 유효하지 않은 항목 → 생략")
                     continue
 
-                shoes_model = self.session.query(ShoesModel).filter_by(shoes_model_id=shoes_model_id).first()
-                location = self.session.query(RackLocation).filter_by(location_id=location_id).first()
+                shoes_model = self.roscars_session.query(ShoesModel).filter_by(shoes_model_id=shoes_model_id).first()
+                location = self.roscars_session.query(RackLocation).filter_by(location_id=location_id).first()
                 if not shoes_model or not location:
                     print(f"[IR] 존재하지 않는 모델 또는 위치 → 모델: {shoes_model}, 위치: {location}")
                     continue
@@ -153,8 +159,8 @@ class MainService:
                         location_id=location_id,
                         status="TO_DO"
                     )
-                    self.session.add(task)
-                    self.session.flush()
+                    self.roscars_session.add(task)
+                    self.roscars_session.flush()
                     task_count += 1
 
                     if not first_task_id:
@@ -164,18 +170,11 @@ class MainService:
 
             if not first_task_id:
                 print("[IR] Task 없음 → 롤백")
-                self.session.rollback()
+                self.roscars_session.rollback()
                 response = {"cmd": "IR", "status": 0x01}
             else:
-                self.session.commit()
+                self.roscars_session.commit()
                 print("[IR] 커밋 완료")
-
-                self.logger.log_delivery_event(
-                    delivery_id=delivery.delivery_id,
-                    user_id=user_id,
-                    previous=DefaultEventType.WAIT,
-                    new=DefaultEventType.PROGRESS_START
-                )
 
                 response = {
                     "cmd": "IR",
@@ -184,18 +183,18 @@ class MainService:
                     "first_task_id": first_task_id
                 }
 
-            print(f"[IR] 응답 전송: {response}")
+                self.logger.log_delivery_event(
+                    delivery_id=delivery.delivery_id,
+                    user_id=user_id,
+                    previous=DefaultEventType.WAIT,
+                    new=DefaultEventType.PROGRESS_START
+                )
 
-            self.logger.log_delivery_event(
-                delivery_id=delivery.delivery_id,
-                user_id=user_id,
-                previous=DefaultEventType.WAIT,
-                new=DefaultEventType.PROGRESS_START
-            )
+            print(f"[IR] 응답 전송: {response}")
 
         except Exception as e:
             print(f"[❌ IR 처리 예외 발생]: {e}")
-            self.session.rollback()
+            self.roscars_session.rollback()
             try:
                 if 'delivery' in locals():
                     self.logger.log_delivery_event(
@@ -223,7 +222,7 @@ class MainService:
                 return
 
             # 1. Delivery 및 연결된 Task 조회
-            delivery = self.session.query(Delivery).filter_by(delivery_id=delivery_id).first()
+            delivery = self.roscars_session.query(Delivery).filter_by(delivery_id=delivery_id).first()
 
             if not delivery:
                 response = { "cmd": "CD", "status": 0x01 }
@@ -247,7 +246,7 @@ class MainService:
 
             # 3. 상태 변경
             delivery.delivery_status = "CANCELLED"
-            self.session.commit()
+            self.roscars_session.commit()
 
             # TODO: 4. ROS2 메시지 전송
             # self.ros2_publisher.send_cancel_command(delivery_id=delivery_id)
@@ -263,7 +262,7 @@ class MainService:
 
 
         except Exception as e:
-            self.session.rollback()
+            self.roscars_session.rollback()
             try:
                 self.logger.log_delivery_event(
                     delivery_id=delivery_id,
@@ -290,7 +289,7 @@ class MainService:
                 return
 
             # 1. 해당 사용자의 Delivery 목록 조회
-            deliveries = self.session.query(Delivery).filter_by(user_id=user_id).all()
+            deliveries = self.roscars_session.query(Delivery).filter_by(user_id=user_id).all()
             if not deliveries:
                 response = { "cmd": "TR", "status": 0x00, "done_count": 0, "in_progress_count": 0, "in_progress_names": [] }
                 client_socket.sendall(MessageUtils.success(response).encode("utf-8"))
@@ -349,9 +348,9 @@ class MainService:
 
                 response["status"] = 0x00
 
-                if self.enable_shutdown_after_ai_result:
-                    print("[AI-TEST] IN 수신 확인 → 자동 종료 트리거")
-                    shutdown_flag.set()
+            if self.enable_shutdown_after_ai_result:
+                print("[AI-TEST] IN 수신 확인 → 자동 종료 트리거")
+                self.shutdown_flag.set()
 
 
         except Exception as e:
@@ -367,6 +366,9 @@ class MainService:
 
         finally:
             client_socket.sendall(MessageUtils.success(response, "IN").encode("utf-8"))
+    
+    def register_shutdown_flag(self, shutdown_flag):
+        self.shutdown_flag = shutdown_flag
 
 
 # ==========================
@@ -383,6 +385,8 @@ def main(main_test_mode=False, ai_test_mode=False):
 
     # 서비스 및 라우터 준비
     main_service = MainService(db)
+    main_service.register_shutdown_flag(runtime.shutdown_flag)
+
     router = MessageRouter(main_service)
 
     if ai_test_mode:

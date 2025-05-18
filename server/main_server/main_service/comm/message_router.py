@@ -17,13 +17,11 @@ class MessageRouter:
                 user_name = message[2:34].decode('utf-8').rstrip('\x00')
                 password  = message[34:66].decode('utf-8').rstrip('\x00')
                 payload = {"user_name": user_name, "password": password}
-                # 여기선 payload만 넘기고, MainService 쪽에서 type_로 "AU"를 사용하도록
                 self.main_service.handle_login_request(payload, client_socket)
 
             elif cmd == "IS":
                 qr = message[2:].decode('utf-8').rstrip('\x00')
                 payload = {"qr_code": qr}
-                #print(payload)
                 self.main_service.handle_qrcode_search(payload, client_socket)
 
             elif cmd == "IR":

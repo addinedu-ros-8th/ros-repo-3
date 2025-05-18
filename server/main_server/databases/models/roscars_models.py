@@ -193,3 +193,4 @@ class QRCode(RoscarsBase):
 
     inventory = relationship("ShoesInventory", back_populates="qrcodes")
 
+
