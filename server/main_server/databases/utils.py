@@ -27,7 +27,7 @@ class SensorUtils(Node):
             "ultra": json.loads(msg.ultrasonic_data),
         }
 
-    def save_sensor_data_to_db(self, roscar_name: str, timestamp, parsed: dict):
+    def save_sensor_data_to_db(self, roscar_namespace: str, timestamp, parsed: dict):
         """센서 데이터 저장 및 오래된 로그 정리"""
         try:
             with self.db.session_scope("roscars") as roscars_session, \
@@ -35,7 +35,7 @@ class SensorUtils(Node):
 
                 # 운영 DB에서 roscar_id 조회
                 roscar_id = roscars_session.query(RosCars.roscar_id)\
-                    .filter(RosCars.roscar_name == roscar_name)\
+                    .filter(RosCars.roscar_namespace == roscar_namespace)\
                     .scalar()
 
                 if roscar_id is None:
