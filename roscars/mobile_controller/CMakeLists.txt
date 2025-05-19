@@ -40,7 +40,9 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/dataunpacker/unpacker/*.cpp"
 )
 
-# roscar_register_publisher 노드 추가
+# ───────────────────────────────────────────────────────────────
+# 기존 노드 (예: roscar_register, battery, sensor_data 등)
+# ───────────────────────────────────────────────────────────────
 add_executable(roscar_register_publisher
   ros_nodes/roscar_register_publisher.cpp
 )
@@ -49,7 +51,6 @@ ament_target_dependencies(roscar_register_publisher
   shared_interfaces
 )
 
-# roscar_battery_publisher 노드 추가
 add_executable(roscar_battery_publisher
   ros_nodes/roscar_battery_publisher.cpp
   sensor_read/battery.cpp
@@ -59,7 +60,6 @@ ament_target_dependencies(roscar_battery_publisher
   shared_interfaces
 )
 
-# SensorData 퍼블리셔 (Lidar + IMU + 초음파 통합)
 add_executable(sensor_data_publisher
   ros_nodes/sensor_data_publisher.cpp
   sensor_read/imu_sensor.cpp
@@ -71,45 +71,190 @@ ament_target_dependencies(sensor_data_publisher
   rclcpp
   shared_interfaces
 )
-
 target_compile_definitions(sensor_data_publisher PRIVATE SDK_PLATFORM_LINUX)
 target_link_libraries(sensor_data_publisher
   ${LIBJSONCPP_LIBRARIES}
   ${LIBGPIOD_LIBRARIES}
 )
 
-# roscar_presure_reader 노드 추가
 add_executable(roscar_presure_reader
-  ros_nodes/roscar_presure_reader.cpp)
+  ros_nodes/roscar_presure_reader.cpp
+)
 ament_target_dependencies(roscar_presure_reader
   rclcpp
   std_msgs
 )
 
-# Start Delivery 서버 노드 추가
-add_executable(start_delivery_server 
-ros_nodes/start_delivery_server.cpp)
+# ───────────────────────────────────────────────────────────────
+# 토픽 구독자 / 발행자 노드 (ros_nodes/)
+# ───────────────────────────────────────────────────────────────
+# Main → Mobile (구독자)
+add_executable(roscar_status_charge_subscriber
+  ros_nodes/roscar_status_charge_subscriber.cpp
+)
+ament_target_dependencies(roscar_status_charge_subscriber
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_navigation_goal_subscriber
+  ros_nodes/roscar_navigation_goal_subscriber.cpp
+)
+ament_target_dependencies(roscar_navigation_goal_subscriber
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(dashboard_status_update_subscriber
+  ros_nodes/dashboard_status_update_subscriber.cpp
+)
+ament_target_dependencies(dashboard_status_update_subscriber
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_obstacle_response_subscriber
+  ros_nodes/roscar_obstacle_response_subscriber.cpp
+)
+ament_target_dependencies(roscar_obstacle_response_subscriber
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_avoidance_cmd_subscriber
+  ros_nodes/roscar_avoidance_cmd_subscriber.cpp
+)
+ament_target_dependencies(roscar_avoidance_cmd_subscriber
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_precision_stop_cmd_subscriber
+  ros_nodes/roscar_precision_stop_cmd_subscriber.cpp
+)
+ament_target_dependencies(roscar_precision_stop_cmd_subscriber
+  rclcpp
+  shared_interfaces
+)
+
+# Mobile → Main (퍼블리셔)
+add_executable(roscar_pose_update_publisher
+  ros_nodes/roscar_pose_update_publisher.cpp
+)
+ament_target_dependencies(roscar_pose_update_publisher
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_task_progress_publisher
+  ros_nodes/roscar_task_progress_publisher.cpp
+)
+ament_target_dependencies(roscar_task_progress_publisher
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_task_complete_publisher
+  ros_nodes/roscar_task_complete_publisher.cpp
+)
+ament_target_dependencies(roscar_task_complete_publisher
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_precision_stop_result_publisher
+  ros_nodes/roscar_precision_stop_result_publisher.cpp
+)
+ament_target_dependencies(roscar_precision_stop_result_publisher
+  rclcpp
+  shared_interfaces
+)
+
+add_executable(roscar_obstacle_detected_publisher
+  ros_nodes/roscar_obstacle_detected_publisher.cpp
+)
+ament_target_dependencies(roscar_obstacle_detected_publisher
+  rclcpp
+  shared_interfaces
+)
+
+
+# ───────────────────────────────────────────────────────────────
+# 액션 서버 노드 (Mobile Controller → 실제 로직 수행)
+# 소스는 action/ 폴더에 위치
+# ───────────────────────────────────────────────────────────────
+
+add_executable(start_delivery_server action/start_delivery_server.cpp)
 ament_target_dependencies(start_delivery_server
   rclcpp
   rclcpp_action
   shared_interfaces
 )
-install(TARGETS start_delivery_server
-  DESTINATION lib/${PROJECT_NAME}
+
+add_executable(move_to_goal_action_server
+  action/move_to_goal_action_server.cpp
+)
+ament_target_dependencies(move_to_goal_action_server
+  rclcpp
+  rclcpp_action
+  shared_interfaces
 )
 
-target_include_directories(start_delivery_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+add_executable(scan_inventory_action_server
+  action/scan_inventory_action_server.cpp
+)
+ament_target_dependencies(scan_inventory_action_server
+  rclcpp
+  rclcpp_action
+  shared_interfaces
 )
 
-# 실행 파일 설치
+add_executable(maintenance_charge_action_server
+  action/maintenance_charge_action_server.cpp
+)
+ament_target_dependencies(maintenance_charge_action_server
+  rclcpp
+  rclcpp_action
+  shared_interfaces
+)
+
+add_executable(security_patrol_action_server
+  action/security_patrol_action_server.cpp
+)
+ament_target_dependencies(security_patrol_action_server
+  rclcpp
+  rclcpp_action
+  shared_interfaces
+)
+
+# ───────────────────────────────────────────────────────────────
+# 설치 지시
+# ───────────────────────────────────────────────────────────────
 install(TARGETS
   roscar_register_publisher
   roscar_battery_publisher
   sensor_data_publisher
   roscar_presure_reader
+
+  roscar_status_charge_subscriber
+  roscar_navigation_goal_subscriber
+  dashboard_status_update_subscriber
+  roscar_obstacle_response_subscriber
+  roscar_avoidance_cmd_subscriber
+  roscar_precision_stop_cmd_subscriber
+
+  roscar_pose_update_publisher
+  roscar_task_progress_publisher
+  roscar_task_complete_publisher
+  roscar_precision_stop_result_publisher
+  roscar_obstacle_detected_publisher
+
+  move_to_goal_action_server
   start_delivery_server
+  scan_inventory_action_server
+  maintenance_charge_action_server
+  security_patrol_action_server
+
   DESTINATION lib/${PROJECT_NAME}
 )
 
