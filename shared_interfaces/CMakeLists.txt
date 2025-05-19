@@ -35,6 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RoscarStatusLog.msg"
   "msg/SensorData.msg"
   "msg/SensorFusion.msg"
+  "msg/StartTask.msg"
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
 
