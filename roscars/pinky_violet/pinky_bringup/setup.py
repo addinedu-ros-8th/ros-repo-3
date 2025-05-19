@@ -19,6 +19,7 @@ setup(
     maintainer_email='kyung133851@pinkab.art',
     description='TODO: Package description',
     license='TODO: License declaration',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'pinky_bringup = pinky_bringup.pinky_bringup:main',
