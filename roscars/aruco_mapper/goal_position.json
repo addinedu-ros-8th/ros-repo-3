@@ -1,0 +1,22 @@
+[
+  { "goal_position": "S1",  "x": -0.19,  "y": -0.198 },
+  { "goal_position": "S2",  "x": -0.19,  "y": -0.391 },
+  { "goal_position": "R1",  "x": -0.357, "y": -0.713 },
+  { "goal_position": "R2",  "x": -0.357, "y": -1.031 },
+  { "goal_position": "R3",  "x": -0.357, "y": -1.335 },
+  { "goal_position": "R4",  "x": -0.357, "y": -1.642 },
+  { "goal_position": "R5",  "x": -1.185, "y": -0.157 },
+  { "goal_position": "R6",  "x": -1.185, "y": -0.437 },
+  { "goal_position": "R7",  "x": -1.185, "y": -0.755 },
+  { "goal_position": "R8",  "x": -1.185, "y": -1.06 },
+  { "goal_position": "R9",  "x": -1.185, "y": -1.377 },
+  { "goal_position": "R10", "x": -1.185, "y": -1.681 },
+  { "goal_position": "G1",  "x": -0.475, "y": -2.0 },
+  { "goal_position": "G2",  "x": -0.208, "y": -2.3 },
+  { "goal_position": "G3",  "x": -0.475, "y": -2.574 },
+  { "goal_position": "G4",  "x": -0.755, "y": -2.33 },
+  { "goal_position": "G5",  "x": -0.721, "y": -2.746 },
+  { "goal_position": "G6",  "x": -0.838, "y": -3.097 },
+  { "goal_position": "G7",  "x": -1.209, "y": -3.039 },
+  { "goal_position": "G8",  "x": -1.135, "y": -2.67 }
+]
