@@ -410,7 +410,7 @@ class MainService:
                     event_type=RosCarEventType.OBJECT_DETECTED
                 )
 
-                # ROS2 전송 예시 (주석 해제 시 사용)
+                # ROS2 연동 (옵션)
                 # self.ros2_publisher.send_emergency_stop(roscar_id)
 
                 response["status"] = 0x00
@@ -418,7 +418,6 @@ class MainService:
             if self.enable_shutdown_after_ai_result:
                 print("[AI-TEST] IN 수신 확인 → 자동 종료 트리거")
                 self.shutdown_flag.set()
-
 
         except Exception as e:
             print(f"[IN] 예외 발생: {e}")
@@ -432,7 +431,13 @@ class MainService:
                 pass
 
         finally:
-            client_socket.sendall(MessageUtils.success(response, "IN").encode("utf-8"))
+            # 응답 직접 구성 (2바이트 명령어 + 1바이트 status)
+            try:
+                cmd_bytes = b"IN"
+                status_byte = bytes([response["status"]])
+                client_socket.sendall(cmd_bytes + status_byte)
+            except Exception as send_e:
+                print(f"[‼️ 응답 전송 실패] {send_e}")
     
     def register_shutdown_flag(self, shutdown_flag):
         self.shutdown_flag = shutdown_flag

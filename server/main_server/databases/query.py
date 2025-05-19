@@ -30,6 +30,12 @@ class MainServiceQuery:
 
     def get_roscar_by_id(self, roscar_id: int):
         return self.roscars_session.query(RosCars).filter_by(roscar_id=roscar_id).first()
+    
+    def get_roscar_id_by_name(self, roscar_namespace: str) -> int | None:
+        """roscar_namespace → roscar_id"""
+        roscar = self.roscars_session.query(RosCars)\
+            .filter_by(roscar_namespace=roscar_namespace).first()
+        return roscar.roscar_id if roscar else None
 
     def get_all_locations(self):
         return self.roscars_session.query(RackLocation).all()
@@ -94,7 +100,7 @@ class MainServiceQuery:
             "timestamp": log.timestamp,
             "event_type": log.new_event.name,
             "user_name": user.user_name if user else None,
-            "roscar_name": roscar.roscar_name if roscar else None,
+            "roscar_namespace": roscar.roscar_namespace if roscar else None,
         } for log in logs]
 
     def get_all_delivery_logs(self):
@@ -113,7 +119,7 @@ class MainServiceQuery:
                 "timestamp": log.timestamp,
                 "event_type": log.new_event.name,
                 "user_name": user.user_name if user else None,
-                "roscar_name": roscar.roscar_name if roscar else None,
+                "roscar_namespace": roscar.roscar_namespace if roscar else None,
             })
         return result
 
@@ -129,7 +135,7 @@ class MainServiceQuery:
         return [{
             "event_id": log.event_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "operational_status": roscar_map.get(log.roscar_id).operational_status if log.roscar_id in roscar_map else None,
             "roscar_ip_v4": roscar_map.get(log.roscar_id).roscar_ip_v4 if log.roscar_id in roscar_map else None,
             "cart_id": roscar_map.get(log.roscar_id).cart_id if log.roscar_id in roscar_map else None,
@@ -201,7 +207,7 @@ class MainServiceQuery:
             "timestamp": log.timestamp,
             "event_type": log.new_event.name,
             "user_name": user_map.get(log.delivery_id).user_name if log.delivery_id in user_map else None,
-            "roscar_name": roscar_map.get(log.delivery_id).roscar_name if log.delivery_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.delivery_id).roscar_namespace if log.delivery_id in roscar_map else None,
             "delivery_status": delivery_map.get(log.delivery_id).delivery_status if log.delivery_id in delivery_map else None,
         } for log in logs]
 
@@ -223,7 +229,7 @@ class MainServiceQuery:
         return [{
             "log_id": log.log_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "task_id": log.task_id,
             "is_success": log.is_success,
             "deviation_cm": log.deviation_cm,
@@ -245,7 +251,7 @@ class MainServiceQuery:
         return [{
             "trajectory_id": log.trajectory_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "task_id": log.task_id,
             "timestamp": log.timestamp,
             "position_x": log.position_x,
@@ -269,7 +275,7 @@ class MainServiceQuery:
         return [{
             "event_id": log.event_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "driving_event": log.driving_event.name,
             "timestamp": log.timestamp,
         } for log in logs]
@@ -291,7 +297,7 @@ class MainServiceQuery:
         return [{
             "sensor_log_id": log.sensor_log_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "timestamp": log.timestamp,
             "lidar_raw": log.lidar_raw,
             "imu_data": log.imu_data,
@@ -315,7 +321,7 @@ class MainServiceQuery:
         return [{
             "command_id": log.command_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "timestamp": log.timestamp,
             "linear_velocity": log.linear_velocity,
             "angular_velocity": log.angular_velocity,
@@ -338,7 +344,7 @@ class MainServiceQuery:
         return [{
             "log_id": log.log_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map.get(log.roscar_id).roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map.get(log.roscar_id).roscar_namespace if log.roscar_id in roscar_map else None,
             "file_path": log.file_path,
             "timestamp": log.timestamp,
         } for log in logs]
@@ -356,7 +362,7 @@ class MainServiceQuery:
         return [{
             "sensor_log_id": log.sensor_log_id,
             "roscar_id": log.roscar_id,
-            "roscar_name": roscar_map[log.roscar_id].roscar_name if log.roscar_id in roscar_map else None,
+            "roscar_namespace": roscar_map[log.roscar_id].roscar_namespace if log.roscar_id in roscar_map else None,
             "rack_id": log.rack_id,
             "rack_status": log.rack_status,
             "rack_position_x": log.rack_position_x,

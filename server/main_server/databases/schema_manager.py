@@ -62,6 +62,7 @@ class SchemaManager:
             else:
                 print("DB 구조 불일치: 재초기화 수행")
                 self.recreate_all_tables()
+                self.load_seed_data()
                 return True
         except Exception as e:
             print(f"DB 초기화 확인 중 오류: {e}")

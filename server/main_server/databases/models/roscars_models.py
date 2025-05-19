@@ -64,13 +64,13 @@ class DestinationGroup(enum.Enum):
     G7 = 'G7'
     G8 = 'G8'
 
-
 # Tables
 class RosCars(RoscarsBase):
     __tablename__ = 'RosCars'
 
     roscar_id = Column(Integer, primary_key=True)  # SSID
-    roscar_name = Column(String(255), unique=True)
+    roscar_namespace = Column(String(255), unique=True)
+    roscar_domain_id = Column(Integer)
     battery_percentage = Column(Integer)
     operational_status = Column(Enum(OperationalStatus, name='operational_status_enum'))
     roscar_ip_v4 = Column(String(15))

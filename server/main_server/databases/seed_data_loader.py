@@ -4,7 +4,7 @@ from server.main_server.databases.models.roscars_models import (
     User, UserRole,
     ShoesModel, ColorName,
     RackLocation, ShoesInventory,
-    QRCode
+    QRCode, RosCars
 )
 
 class SeedDataLoader:
@@ -29,7 +29,7 @@ class SeedDataLoader:
         shoes_list = [
             ShoesModel(name="Puma Palermo Trainers", size=240, color=ColorName.HYPERLINK_BLUE_FLAME_FLICKER_GUM),
             ShoesModel(name="Nike Air Rift", size=240, color=ColorName.BLACK),
-            ShoesModel(name="Adidas Gazelle", size=260, color=ColorName.HOTPINK),
+            ShoesModel(name="Adidas Gazelle", size=260, color=ColorName.HOTPINK), 
         ]
         self.roscars_session.add_all(shoes_list)
 
@@ -42,10 +42,12 @@ class SeedDataLoader:
         self.roscars_session.add_all(locations)
 
         inventory_list = [
-            ShoesInventory(location_id=locations[0].location_id, shoes_model_id=shoes_list[0].shoes_model_id,
+            ShoesInventory(location=locations[0], shoes_model=shoes_list[0],
                            quantity=5, timestamp=datetime.now()),
-            ShoesInventory(location_id=locations[1].location_id, shoes_model_id=shoes_list[1].shoes_model_id,
+            ShoesInventory(location=locations[1], shoes_model=shoes_list[1],
                            quantity=3, timestamp=datetime.now()),
+            ShoesInventory(location=locations[0], shoes_model=shoes_list[2],
+                           quantity=7, timestamp=datetime.now()),
         ]
         self.roscars_session.add_all(inventory_list)
 
@@ -56,17 +58,36 @@ class SeedDataLoader:
         print("[Seed] QR 코드 생성 중...")
 
         qrcodes = [
-            QRCode(qr_code_value="QR20250430X001", inventory_id=inventory_list[0].inventory_id),
-            QRCode(qr_code_value="QR20250430X002", inventory_id=inventory_list[1].inventory_id),
+            QRCode(qr_code_value="Puma Palermo Trainers | 240 | HYPERLINK_BLUE_FLAME_FLICKER_GUM | R3-S1-A1 | 5",
+                   inventory=inventory_list[0]),
+            QRCode(qr_code_value="Nike Air Rift | 240 | BLACK | R3-S2-B4 | 3",
+                   inventory=inventory_list[1]),
+            QRCode(qr_code_value="Adidas Gazelle | 260 | HOTPINK | R3-S1-A1 | 7",
+                   inventory=inventory_list[2]),  # ← 누락분 추가
+            QRCode(qr_code_value="PUMA PALERMO TRAINERS | 240 | HYPERLINK BLUE-FLAME FLICKER-GUM | R3-S1-A1 | 5",
+                   inventory=inventory_list[0]),  # ← 추가 QR
         ]
         self.roscars_session.add_all(qrcodes)
         print("[Seed] QR 코드 생성 완료")
+
+    def load_roscars(self):
+        print("[Seed] RosCars 로봇 데이터 생성 중...")
+
+        roscars = [
+            RosCars(roscar_namespace="pinky_0830", battery_percentage=100, operational_status="STANDBY",
+                    roscar_ip_v4="192.168.0.101", cart_id="cart_0830", cart_ip_v4="192.168.0.201"),
+            RosCars(roscar_namespace="pinky_07db", battery_percentage=100, operational_status="STANDBY",
+                    roscar_ip_v4="192.168.0.102", cart_id="cart_07db", cart_ip_v4="192.168.0.202"),
+        ]
+        self.roscars_session.add_all(roscars)
+        print("[Seed] RosCars 생성 완료")
 
     def load_all(self):
         try:
             self.load_users()
             inventories = self.load_shoes_and_inventory()
             self.load_qrcodes(inventories)
+            self.load_roscars()  # ← RosCars 로딩 추가
             self.roscars_session.commit()
             print("[Seed] 전체 커밋 완료")
         except Exception as e:
