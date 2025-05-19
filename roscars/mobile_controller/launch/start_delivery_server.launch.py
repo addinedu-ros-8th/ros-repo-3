@@ -7,12 +7,12 @@ class StartDeliveryLauncher:
     def __init__(self):
         self.roscar_ns_arg = DeclareLaunchArgument(
             'roscar_namespaces',
-            default_value='roscar_01,roscar_02',
+            default_value='roscar_0000,roscar_0214',
             description='Comma-separated list of roscar namespaces'
         )
         self.roscar_domain_arg = DeclareLaunchArgument(
             'roscar_domains',
-            default_value='11,12',
+            default_value='0, 214',
             description='Comma-separated list of domain IDs corresponding to namespaces'
         )
 

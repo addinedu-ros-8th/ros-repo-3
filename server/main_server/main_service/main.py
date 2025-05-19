@@ -54,8 +54,7 @@ class MainService:
         self.enable_shutdown_after_ai_result = False
 
     def _launch_start_delivery_client(self, roscar: RosCars, delivery: Delivery):
-        task_list = self.roscars_session.query(Task)\
-            .filter_by(delivery_id=delivery.delivery_id).all()
+        task_list = self.roscars_session.query(Task).filter_by(delivery_id=delivery.delivery_id).all()
 
         tasks = [
             {
@@ -74,20 +73,21 @@ class MainService:
             json_path = tf.name
 
         namespace = roscar.roscar_namespace
-        domain_id = str(roscar.roscar_domain_id)
+        domain_id = str(roscar.roscar_domain_id or "214")
 
         # 환경 변수 복사 후 수정
         env = os.environ.copy()
         env["ROS_DOMAIN_ID"] = domain_id
 
         # 명령어 리스트는 실행할 명령어와 인자들로만 구성
-        cmd = [
-            "python3",
-            "server/main_server/main_service/ros_interface/action/start_delivery_client.py",
-            namespace,
-            domain_id,
-            json_path
-        ]
+        ros_env_command = f"""
+        source ~/.bashrc && \
+        source .roscars_venv/bin/activate && \
+        source install/setup.bash && \
+        ROS_DOMAIN_ID={domain_id} python3 server/main_server/main_service/ros_interface/action/start_delivery_client.py {namespace} {domain_id} {json_path}
+        """
+
+        cmd = ["bash", "-c", ros_env_command]
 
         print(f"[ROS2 Client] subprocess 실행 → {cmd} with ROS_DOMAIN_ID={domain_id}")
         subprocess.Popen(cmd, env=env)
