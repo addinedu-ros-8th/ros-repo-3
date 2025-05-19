@@ -131,8 +131,9 @@ class MessageRouter:
 
             elif cmd == "IN":
                 ssid_len = message[2]
-                if len(message) < 3 + ssid_len + 1:
-                    print(f"[IN] 메시지 길이 부족 (받은 {len(message)} / 필요 {3 + ssid_len + 1})")
+                min_length = 3 + ssid_len + 1 + 4  # ssid_len 포함, result_code(1) + angle(4)
+                if len(message) < min_length:
+                    print(f"[IN] 메시지 길이 부족 (받은 {len(message)} / 필요 {min_length})")
                     client_socket.sendall(b"IN\x01")
                     return
 
@@ -140,9 +141,13 @@ class MessageRouter:
                 ssid = message[3:ssid_end].decode('utf-8', errors='replace')
                 result_code = message[ssid_end]
 
-                print(f"[IN] 결과 수신: SSID={ssid}, 코드={result_code:#04x}")
+                # float 4바이트 각도 디코딩
+                angle_bytes = message[ssid_end + 1:ssid_end + 5]
+                angle = struct.unpack(">f", angle_bytes)[0]
 
-                # Roscar ID 조회 (roscar_namespace = ssid)
+                print(f"[IN] 결과 수신: SSID={ssid}, 코드={result_code:#04x}, 각도={angle:.2f}도")
+
+                # Roscar ID 조회
                 roscar_id = self.main_service.query.get_roscar_id_by_name(ssid)
                 if roscar_id is None:
                     print(f"[IN] SSID({ssid})에 해당하는 roscar_id 없음")
@@ -151,7 +156,8 @@ class MessageRouter:
 
                 payload = {
                     "roscar_id": roscar_id,
-                    "result_code": result_code
+                    "result_code": result_code,
+                    "angle": angle
                 }
                 self.main_service.handle_ai_result(payload, client_socket)
 

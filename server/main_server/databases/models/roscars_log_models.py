@@ -18,7 +18,8 @@ class DefaultEventType(enum.Enum):
 class RosCarEventType(enum.Enum):
     TASK_START = 'TASK_START'
     TASK_DONE = 'TASK_DONE'
-    OBJECT_DETECTED = 'OBJECT_DETECTED'
+    OBJECT_DETECTED_PERSON = 'OBJECT_DETECTED_PERSON'
+    OBJECT_DETECTED_ROSCAR = 'OBJECT_DETECTED_ROSCAR'
     PATH_MODIFIED = 'PATH_MODIFIED'
     EMERGENCY_STOP = 'EMERGENCY_STOP'
     COLLISION = 'COLLISION'
@@ -67,6 +68,7 @@ class RosCarEventLog(RoscarsLogBase):
     task_id = Column(Integer)
     event_type = Column(Enum(RosCarEventType, name="roscar_event_type_enum"))
     timestamp = Column(TIMESTAMP, server_default=func.now())
+    camera_angle = Column(Integer, nullable=True) 
 
 class RosCarDrivingEventLog(RoscarsLogBase):
     __tablename__ = 'RosCarDrivingEventLog'

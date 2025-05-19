@@ -8,7 +8,7 @@ from rclpy.executors import MultiThreadedExecutor
 from datetime import datetime
 
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
-from server.main_server.main_service.comm.message_router import MessageRouter
+from server.main_server.main_service.comm.tcp_message_router import MessageRouter
 from server.main_server.main_service.ros_interface.service.log_query_service import LogQueryService
 from server.main_server.main_service.ros_interface.publisher.log_event_publisher import LogEventPublisher
 
@@ -392,28 +392,36 @@ class MainService:
         try:
             roscar_id = req_data.get("roscar_id")
             result_code = req_data.get("result_code")
+            angle = req_data.get("angle")
 
-            if roscar_id is None or result_code not in [0x00, 0x01]:
+            if roscar_id is None or result_code is None:
                 print(f"[IN] 잘못된 요청: roscar_id={roscar_id}, result_code={result_code}")
-            else:
-                detected_object = {
-                    0x00: "Roscar",
-                    0x01: "Person",
-                }.get(result_code, "Unknown")
+                raise ValueError("필수 필드 누락")
 
-                print(f"[IN] 객체 인식 결과 수신 → ID={roscar_id}, code={result_code} ({detected_object})")
+            # result_code → 이벤트 이름 자동 변환
+            code_name_map = {
+                0x00: "OBJECT_DETECTED_ROSCAR",
+                0x01: "OBJECT_DETECTED_PERSON"
+            }
 
-                # 로그 기록
-                self.logger.log_roscar_event(
-                    roscar_id=roscar_id,
-                    task_id=None,
-                    event_type=RosCarEventType.OBJECT_DETECTED
-                )
+            event_type_name = code_name_map.get(result_code)
+            if not event_type_name or not hasattr(RosCarEventType, event_type_name):
+                print(f"[IN] 지원되지 않는 result_code: {result_code}")
+                raise ValueError(f"지원되지 않는 result_code: {result_code}")
 
-                # ROS2 연동 (옵션)
-                # self.ros2_publisher.send_emergency_stop(roscar_id)
+            event_type = getattr(RosCarEventType, event_type_name)
 
-                response["status"] = 0x00
+            print(f"[IN] 객체 인식 결과 수신 → ID={roscar_id}, code=0x{result_code:02X}, event={event_type.name}, angle={angle:.2f}도")
+
+            # 로그 기록
+            self.logger.log_roscar_event(
+                roscar_id=roscar_id,
+                task_id=None,
+                event_type=event_type,
+                camera_angle=int(angle) if angle is not None else None
+            )
+
+            response["status"] = 0x00
 
             if self.enable_shutdown_after_ai_result:
                 print("[AI-TEST] IN 수신 확인 → 자동 종료 트리거")
@@ -427,15 +435,12 @@ class MainService:
                     task_id=None,
                     event_type=RosCarEventType.OBJECT_DETECTED
                 )
-            except:
-                pass
+            except Exception as log_err:
+                print(f"[IN] 로그 기록 실패: {log_err}")
 
         finally:
-            # 응답 직접 구성 (2바이트 명령어 + 1바이트 status)
             try:
-                cmd_bytes = b"IN"
-                status_byte = bytes([response["status"]])
-                client_socket.sendall(cmd_bytes + status_byte)
+                client_socket.sendall(b"IN" + bytes([response["status"]]))
             except Exception as send_e:
                 print(f"[‼️ 응답 전송 실패] {send_e}")
     

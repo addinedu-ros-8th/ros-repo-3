@@ -11,12 +11,13 @@ class RoscarsLogWriter:
     def __init__(self, log_session: Session):
         self.log_session = log_session
 
-    def log_roscar_event(self, roscar_id: int, task_id: int | None, event_type: RosCarEventType, commit=True):
+    def log_roscar_event(self, roscar_id: int, task_id: int | None, event_type: RosCarEventType, camera_angle: int | None = None, commit: bool = True):
         log = RosCarEventLog(
             roscar_id=roscar_id,
             task_id=task_id,
             event_type=event_type,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
+            camera_angle=camera_angle  # 🔥 추가
         )
         self._commit_log(log, commit)
 
