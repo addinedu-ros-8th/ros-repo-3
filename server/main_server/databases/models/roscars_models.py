@@ -47,7 +47,7 @@ class DrivingPhase(enum.Enum):
 class DeliveryStatus(enum.Enum):
     TO_DO = 'TO_DO'
     IN_PROGRESS = 'IN_PROGRESS'
-    COMPLETING = 'COMPLETING'
+    DONE = 'DONE'
 
 class TaskStatus(enum.Enum):
     TO_DO = 'TO_DO'

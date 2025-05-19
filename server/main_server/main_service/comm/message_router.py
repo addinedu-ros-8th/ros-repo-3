@@ -103,7 +103,7 @@ class MessageRouter:
                     "destination": destination,
                     "items": mapped
                 }
-                self.main_service.handle_inventory_request(payload, client_socket)
+                self.main_service.handle_delivery_request(payload, client_socket)
 
             elif cmd == "CD":
                 print("[🚫 배송 취소 요청 처리 시작]")

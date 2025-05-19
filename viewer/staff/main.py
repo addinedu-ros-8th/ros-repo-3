@@ -84,6 +84,7 @@ class MainWindow(QMainWindow):
             self._panels['task'] = panel
             self.stack.addWidget(panel)
         panel = self._panels['task']
+        print("[MainWindow] TaskStatusPanel로 전환, 조회 요청 보냄")
         panel.load_task_status()
         self.stack.setCurrentWidget(panel)
 
