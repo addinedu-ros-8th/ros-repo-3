@@ -5,6 +5,7 @@ import time
 import subprocess
 import json
 import tempfile
+import os
 
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -53,7 +54,6 @@ class MainService:
         self.enable_shutdown_after_ai_result = False
 
     def _launch_start_delivery_client(self, roscar: RosCars, delivery: Delivery):
-        # Task 목록 가져오기
         task_list = self.roscars_session.query(Task)\
             .filter_by(delivery_id=delivery.delivery_id).all()
 
@@ -66,7 +66,6 @@ class MainService:
             for t in task_list
         ]
 
-        # 임시 JSON 파일로 저장
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as tf:
             json.dump({
                 "delivery_id": delivery.delivery_id,
@@ -77,16 +76,21 @@ class MainService:
         namespace = roscar.roscar_namespace
         domain_id = str(roscar.roscar_domain_id)
 
+        # 환경 변수 복사 후 수정
+        env = os.environ.copy()
+        env["ROS_DOMAIN_ID"] = domain_id
+
+        # 명령어 리스트는 실행할 명령어와 인자들로만 구성
         cmd = [
             "python3",
-            "start_delivery_client.py",
+            "server/main_server/main_service/ros_interface/action/start_delivery_client.py",
             namespace,
             domain_id,
             json_path
         ]
 
-        print(f"[ROS2 Client] subprocess 실행 → {cmd}")
-        subprocess.Popen(cmd)
+        print(f"[ROS2 Client] subprocess 실행 → {cmd} with ROS_DOMAIN_ID={domain_id}")
+        subprocess.Popen(cmd, env=env)
 
 
     # [AU] 로그인 인증 요청
