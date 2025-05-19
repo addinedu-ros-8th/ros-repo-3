@@ -72,7 +72,7 @@ private:
     void publish_status()
     {
         auto msg = RoscarRegister();
-        msg.roscar_name = get_ap_ssid();
+        msg.roscar_namespace = get_ap_ssid();
         msg.battery_percentage = 100;
         msg.operational_status = "STANDBY";
         msg.roscar_ip_v4 = get_ip_address("wlan0");
@@ -80,7 +80,7 @@ private:
         msg.to_domain_id = 26;
 
         RCLCPP_INFO(this->get_logger(), "Publishing roscarRegister: name=%s, ip=%s, from_domain_id=%u",
-                    msg.roscar_name.c_str(), msg.roscar_ip_v4.c_str(), msg.from_domain_id);
+                    msg.roscar_namespace.c_str(), msg.roscar_ip_v4.c_str(), msg.from_domain_id);
         publisher_->publish(msg);
     }
 

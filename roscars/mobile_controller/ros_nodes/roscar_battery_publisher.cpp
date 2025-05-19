@@ -25,7 +25,7 @@ public:
         std::string ssid = get_ap_ssid();
         std::string topic_name = "/" + ssid + "/roscar/status/battery";
 
-        // ✅ QoS 설정
+        // QoS 설정
         rclcpp::QoS qos_profile(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
         qos_profile.keep_last(10);
         qos_profile.reliable();
@@ -49,7 +49,7 @@ private:
         float battery_percent = battery_.get_battery();
 
         shared_interfaces::msg::BatteryStatus msg;
-        msg.roscar_name = ssid;  // ✅ SSID 직접 포함
+        msg.roscar_namespace = ssid;  // SSID 직접 포함
         msg.battery_percent = battery_percent;
         msg.is_charging = false;  // 필요시 실제 센서 연결
         msg.stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
