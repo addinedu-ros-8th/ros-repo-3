@@ -21,6 +21,7 @@ setup(
             'log_query_service = service.log_query_service:main',
             'log_event_publisher = publisher.log_event_publisher:main',
             'control_command_publisher = publisher.control_command_publisher:main',
+            'start_delivery_client = action.start_delivery_client:main',
         ],
     },
 )

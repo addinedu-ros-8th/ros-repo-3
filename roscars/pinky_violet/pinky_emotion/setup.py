@@ -19,7 +19,6 @@ setup(
     maintainer_email='kyung133851@pinklab.art',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             "pinky_emotion=pinky_emotion.pinky_emotion:main"
