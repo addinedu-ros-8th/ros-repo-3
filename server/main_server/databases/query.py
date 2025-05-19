@@ -30,6 +30,12 @@ class MainServiceQuery:
 
     def get_roscar_by_id(self, roscar_id: int):
         return self.roscars_session.query(RosCars).filter_by(roscar_id=roscar_id).first()
+    
+    def get_roscar_id_by_name(self, roscar_name: str) -> int | None:
+        """roscar_name → roscar_id"""
+        roscar = self.roscars_session.query(RosCars)\
+            .filter_by(roscar_name=roscar_name).first()
+        return roscar.roscar_id if roscar else None
 
     def get_all_locations(self):
         return self.roscars_session.query(RackLocation).all()

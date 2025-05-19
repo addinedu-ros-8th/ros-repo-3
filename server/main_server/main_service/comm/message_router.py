@@ -130,18 +130,30 @@ class MessageRouter:
                 self.main_service.handle_task_result_check(payload, client_socket)
 
             elif cmd == "IN":
-                roscar_id = message[2]
-                result_code = message[3]
+                ssid_len = message[2]
+                if len(message) < 3 + ssid_len + 1:
+                    print(f"[❌ IN] 메시지 길이 부족 (받은 {len(message)} / 필요 {3 + ssid_len + 1})")
+                    client_socket.sendall(b"IN\x01")
+                    return
+
+                ssid_end = 3 + ssid_len
+                ssid = message[3:ssid_end].decode('utf-8', errors='replace')
+                result_code = message[ssid_end]
+
+                print(f"[IN] 결과 수신: SSID={ssid}, 코드={result_code:#04x}")
+
+                # ✅ Roscar ID 조회 (roscar_name = ssid)
+                roscar_id = self.main_service.query.get_roscar_id_by_name(ssid)
+                if roscar_id is None:
+                    print(f"[❌ IN] SSID({ssid})에 해당하는 roscar_id 없음")
+                    client_socket.sendall(b"IN\x01")
+                    return
+
                 payload = {
                     "roscar_id": roscar_id,
                     "result_code": result_code
                 }
                 self.main_service.handle_ai_result(payload, client_socket)
-
-
-            else:
-                print(f"[❌ 알 수 없는 명령어] '{cmd}'")
-                client_socket.sendall(b"??")
 
         except Exception as e:
             print(f"[❌ route_message 예외] {e}")
