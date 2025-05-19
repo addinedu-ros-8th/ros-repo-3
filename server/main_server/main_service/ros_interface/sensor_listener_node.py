@@ -52,7 +52,7 @@ class SensorListener(Node):
         dt = datetime.fromtimestamp(t)
 
         self.get_logger().info(
-            f'[BATTERY] name={msg.roscar_name}, '
+            f'[BATTERY] name={msg.roscar_namespace}, '
             f'battery={msg.battery_percent:.1f}%, '
             f'is_charging={"YES" if msg.is_charging else "NO"}, '
             f'time={dt.strftime("%Y-%m-%d %H:%M:%S")}'
@@ -75,7 +75,7 @@ class SensorListener(Node):
 
     def register_callback(self, msg):
         self.get_logger().info(
-            f'[REGISTER] name={msg.roscar_name}, '
+            f'[REGISTER] name={msg.roscar_namespace}, '
             f'battery={msg.battery_percentage}%, '
             f'status={msg.operational_status}, '
             f'ip={msg.roscar_ip_v4}, '
@@ -86,7 +86,7 @@ class SensorListener(Node):
         try:
             with self.db_manager.session_scope("roscars") as session:
                 stmt = mysql_insert(RosCars).values(
-                    roscar_name=msg.roscar_name,
+                    roscar_namespace=msg.roscar_namespace,
                     battery_percentage=msg.battery_percentage,
                     roscar_ip_v4=msg.roscar_ip_v4
                 )
@@ -95,7 +95,7 @@ class SensorListener(Node):
                     roscar_ip_v4=stmt.inserted.roscar_ip_v4
                 )
                 session.execute(stmt)
-                self.get_logger().info(f"RosCars DB에 '{msg.roscar_name}' 정보 업데이트 완료")
+                self.get_logger().info(f"RosCars DB에 '{msg.roscar_namespace}' 정보 업데이트 완료")
         except Exception as e:
             self.get_logger().error(f"RosCars UPSERT 실패: {e}")
 

@@ -1,18 +1,15 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>main_service</name>
-  <version>0.0.1</version>
-  <description>Main service ROS interface package</description>
-  <maintainer email="yonmilk@icloud.com">milka</maintainer>
-  <license>MIT</license>
+  <name>roscar_nav</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="tlacogns@gmail.com">pinky</maintainer>
+  <license>TODO: License declaration</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
-  <exec_depend>shared_interfaces</exec_depend>
   <depend>rclpy</depend>
-  <depend>rclpy_action</depend>
-  <depend>std_msgs</depend>
-
+  <depend>nav2_msgs</depend>
+  <depend>geometry_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

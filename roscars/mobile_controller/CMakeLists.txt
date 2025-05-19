@@ -4,6 +4,7 @@ project(mobile_controller)
 # 기본 패키지 설정
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(shared_interfaces REQUIRED)
 
@@ -23,6 +24,7 @@ include_directories(
   sdk/src/arch/linux
   sdk/src/hal
   sdk/src/net
+  ${rclcpp_INCLUDE_DIRS}
   ${LIBGPIOD_INCLUDE_DIRS}
   ${LIBJSONCPP_INCLUDE_DIRS}
 )
@@ -38,7 +40,7 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/dataunpacker/unpacker/*.cpp"
 )
 
-# ✅ roscar_register_publisher 노드 추가
+# roscar_register_publisher 노드 추가
 add_executable(roscar_register_publisher
   ros_nodes/roscar_register_publisher.cpp
 )
@@ -47,7 +49,7 @@ ament_target_dependencies(roscar_register_publisher
   shared_interfaces
 )
 
-# ✅ roscar_battery_publisher 노드 추가
+# roscar_battery_publisher 노드 추가
 add_executable(roscar_battery_publisher
   ros_nodes/roscar_battery_publisher.cpp
   sensor_read/battery.cpp
@@ -57,7 +59,7 @@ ament_target_dependencies(roscar_battery_publisher
   shared_interfaces
 )
 
-# ✅ SensorData 퍼블리셔 (Lidar + IMU + 초음파 통합)
+# SensorData 퍼블리셔 (Lidar + IMU + 초음파 통합)
 add_executable(sensor_data_publisher
   ros_nodes/sensor_data_publisher.cpp
   sensor_read/imu_sensor.cpp
@@ -70,7 +72,13 @@ ament_target_dependencies(sensor_data_publisher
   shared_interfaces
 )
 
-# ✅ roscar_presure_reader 노드 추가
+target_compile_definitions(sensor_data_publisher PRIVATE SDK_PLATFORM_LINUX)
+target_link_libraries(sensor_data_publisher
+  ${LIBJSONCPP_LIBRARIES}
+  ${LIBGPIOD_LIBRARIES}
+)
+
+# roscar_presure_reader 노드 추가
 add_executable(roscar_presure_reader
   ros_nodes/roscar_presure_reader.cpp)
 ament_target_dependencies(roscar_presure_reader
@@ -78,10 +86,21 @@ ament_target_dependencies(roscar_presure_reader
   std_msgs
 )
 
-target_compile_definitions(sensor_data_publisher PRIVATE SDK_PLATFORM_LINUX)
-target_link_libraries(sensor_data_publisher
-  ${LIBJSONCPP_LIBRARIES}
-  ${LIBGPIOD_LIBRARIES}
+# Start Delivery 서버 노드 추가
+add_executable(start_delivery_server 
+ros_nodes/start_delivery_server.cpp)
+ament_target_dependencies(start_delivery_server
+  rclcpp
+  rclcpp_action
+  shared_interfaces
+)
+install(TARGETS start_delivery_server
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+target_include_directories(start_delivery_server PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 
 # 실행 파일 설치
@@ -90,6 +109,7 @@ install(TARGETS
   roscar_battery_publisher
   sensor_data_publisher
   roscar_presure_reader
+  start_delivery_server
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -1,11 +1,14 @@
 from setuptools import setup, find_packages
 
 package_name = 'main_service'
+package_path = 'server/main_server/main_service/ros_interface'
+package_path_relative = package_path.replace('/', '.')
 
 setup(
     name=package_name,
     version='0.0.1',
-    packages=find_packages(include=['*']),
+    packages=find_packages(include=[f'{package_path_relative}.*'],
+                           where='package_path_relative'),
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
@@ -18,10 +21,10 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'log_query_service = service.log_query_service:main',
-            'log_event_publisher = publisher.log_event_publisher:main',
-            'control_command_publisher = publisher.control_command_publisher:main',
-            'start_delivery_client = action.start_delivery_client:main',
+            f'start_delivery_client = {package_path_relative}.action.start_delivery_client:main',
+            f'log_query_service = {package_path_relative}.service.log_query_service:main',
+            f'log_event_publisher = {package_path_relative}.publisher.log_event_publisher:main',
+            f'control_command_publisher = {package_path_relative}.publisher.control_command_publisher:main',
         ],
     },
 )

@@ -15,10 +15,8 @@ find_package(builtin_interfaces REQUIRED)
 
 # Interface generation
 rosidl_generate_interfaces(${PROJECT_NAME}
-  # Messages
   "msg/BatteryStatus.msg"
   "msg/ChargeCommand.msg"
-  "msg/DashboardStatus.msg"
   "msg/EmergencyAlert.msg"
   "msg/EmergencyCommand.msg"
   "msg/InventoryResult.msg"

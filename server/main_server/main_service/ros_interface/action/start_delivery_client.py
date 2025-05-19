@@ -1,3 +1,8 @@
+import sys
+import os
+import json
+import rclpy
+
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -5,11 +10,11 @@ from rclpy.node import Node
 from shared_interfaces.action import StartDelivery
 from shared_interfaces.msg import StartTask
 
-
 class StartDeliveryClient(Node):
-    def __init__(self):
-        super().__init__('start_delivery_client')
-        self._client = ActionClient(self, StartDelivery, '/pinky_07db/start_delivery')  # 예시 namespace 사용
+    def __init__(self, namespace: str):
+        super().__init__(f'start_delivery_client_{namespace}', namespace=f"/{namespace}")
+        action_name = f"/{namespace}/start_delivery"
+        self._client = ActionClient(self, StartDelivery, action_name)
 
     def send_goal(self, delivery_id: int, tasks: list[dict]):
         if not self._client.wait_for_server(timeout_sec=5.0):
@@ -51,18 +56,33 @@ class StartDeliveryClient(Node):
         self.get_logger().info(f'[StartDeliveryClient] 결과: success={result.success}')
 
 
-def main(args=None):
-    rclpy.init(args=args)
-    node = StartDeliveryClient()
+def main():
+    print("[CLIENT] main() 시작됨")
+    
+    if len(sys.argv) != 4:
+        print("Usage: python start_delivery_client.py <namespace> <domain_id> <json_path>")
+        sys.exit(1)
 
-    # 테스트용 예시 요청
-    node.send_goal(
-        delivery_id=1234,
-        tasks=[
-            {"task_id": 1, "shoes_model_id": 101, "location_id": 501},
-            {"task_id": 2, "shoes_model_id": 102, "location_id": 502}
-        ]
-    )
+    namespace   = sys.argv[1]
+    domain_id   = sys.argv[2]
+    json_path   = sys.argv[3]
+
+    os.environ['ROS_DOMAIN_ID'] = domain_id
+    rclpy.init()
+
+    try:
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"[❌ JSON 파싱 실패] {e}")
+        sys.exit(1)
+
+
+    delivery_id = data['delivery_id']
+    tasks = data['tasks']
+
+    node = StartDeliveryClient(namespace)
+    node.send_goal(delivery_id=delivery_id, tasks=tasks)
 
     try:
         rclpy.spin(node)
@@ -71,3 +91,6 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()

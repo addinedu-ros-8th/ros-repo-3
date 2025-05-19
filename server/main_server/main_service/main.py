@@ -2,6 +2,9 @@ import signal
 import threading
 import struct
 import time
+import subprocess
+import json
+import tempfile
 
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -17,9 +20,8 @@ from server.main_server.databases.schema_manager import SchemaManager
 from server.main_server.databases.logger import RoscarsLogWriter
 from server.main_server.databases.query import MainServiceQuery
 from server.main_server.databases.models.roscars_log_models import *
-from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task
-from server.main_server.databases.models.roscars_models import TaskStatus
-from server.main_server.databases.utils import SensorUtils, MessageUtils
+from server.main_server.databases.models.roscars_models import ShoesModel, RackLocation, Delivery, DestinationGroup, Task, TaskStatus, RosCars, OperationalStatus
+from server.main_server.databases.utils import SensorUtils
 
 class RuntimeController:
     def __init__(self):
@@ -50,6 +52,43 @@ class MainService:
 
         self.enable_shutdown_after_ai_result = False
 
+    def _launch_start_delivery_client(self, roscar: RosCars, delivery: Delivery):
+        # Task 목록 가져오기
+        task_list = self.roscars_session.query(Task)\
+            .filter_by(delivery_id=delivery.delivery_id).all()
+
+        tasks = [
+            {
+                "task_id": t.task_id,
+                "shoes_model_id": t.shoes_model_id,
+                "location_id": t.location_id
+            }
+            for t in task_list
+        ]
+
+        # 임시 JSON 파일로 저장
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as tf:
+            json.dump({
+                "delivery_id": delivery.delivery_id,
+                "tasks": tasks
+            }, tf)
+            json_path = tf.name
+
+        namespace = roscar.roscar_namespace
+        domain_id = str(roscar.roscar_domain_id)
+
+        cmd = [
+            "python3",
+            "start_delivery_client.py",
+            namespace,
+            domain_id,
+            json_path
+        ]
+
+        print(f"[ROS2 Client] subprocess 실행 → {cmd}")
+        subprocess.Popen(cmd)
+
+
     # [AU] 로그인 인증 요청
     def handle_login_request(self, req_data, client_socket):
         try:
@@ -69,7 +108,7 @@ class MainService:
 
                 response = cmd + status + user_id + user_role
                 client_socket.sendall(response)
-                print(f"[✅ 로그인 성공] user_id={user.user_id}, role={user.user_role}")
+                print(f"[로그인 성공] user_id={user.user_id}, role={user.user_role}")
             else:
                 # 실패 응답: "AU" + 0x01
                 response = b"AU" + bytes([0x01])
@@ -150,11 +189,23 @@ class MainService:
                 print(f"[IR] 실패 응답 → {body!r}")
                 client_socket.sendall(body)
                 return
+            
+            roscar = self.roscars_session.query(RosCars)\
+                .filter_by(operational_status=OperationalStatus.STANDBY)\
+                .order_by(RosCars.battery_percentage.desc())\
+                .first()
+
+            if not roscar:
+                print("[IR] 사용 가능한 Roscar 없음")
+                # 실패 응답 반환
+                body = b"IR" + struct.pack("B", 0x01)
+                client_socket.sendall(body)
+                return
 
             # Delivery 생성
             delivery = Delivery(
                 user_id=user_id,
-                roscar_id=None,
+                roscar_id=roscar.roscar_id,
                 delivery_status="TO_DO",
                 driving_phase_id=None,
                 destination=dest_enum
@@ -162,7 +213,7 @@ class MainService:
             self.roscars_session.add(delivery)
             self.roscars_session.flush()
 
-            # ✅ Delivery 로그 추가
+            # Delivery 로그 추가
             delivery_log = DeliveryEventLog(
                 delivery_id=delivery.delivery_id,
                 user_id=user_id,
@@ -192,13 +243,12 @@ class MainService:
                         delivery_id=delivery.delivery_id,
                         shoes_model_id=sid,
                         location_id=lid,
-                        #status="TO_DO"
-                        status="IN_PROGRESS",
+                        status="TO_DO"
                     )
                     self.roscars_session.add(t)
                     self.roscars_session.flush()
 
-                    # ✅ Task 로그 추가
+                    # Task 로그 추가
                     task_log = TaskEventLog(
                         task_id=t.task_id,
                         previous_event="WAIT",
@@ -211,6 +261,11 @@ class MainService:
                         first_task_id = t.task_id
 
             self.logger_session.commit()
+
+            self._launch_start_delivery_client(
+                roscar=roscar,
+                delivery=delivery
+            )
 
             # 성공/실패에 따라 body 생성
             if not first_task_id:
@@ -355,6 +410,7 @@ class MainService:
         except Exception as e:
             print(f"[handle_task_result_check] 예외: {e}")
             client_socket.sendall(b"TR" + struct.pack(">BHB", 0x01, 0, 0))
+
     # [TR_NOTIFY] 작업 상태 변경 알림
     def send_task_status_notification(self, client_socket, task_id: int, delivery_id: int, status: str, shoes_model_name: str):
         try:
@@ -490,6 +546,7 @@ def main(main_test_mode=False, ai_test_mode=False):
     executor.add_node(sensor_node)
     executor.add_node(log_query_node)
     executor.add_node(log_event_publisher)
+
 
     if main_test_mode:
         runtime.enable_auto_shutdown(3)

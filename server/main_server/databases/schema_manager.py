@@ -67,3 +67,5 @@ class SchemaManager:
         except Exception as e:
             print(f"DB 초기화 확인 중 오류: {e}")
             return False
+
+

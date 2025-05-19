@@ -1,0 +1,5 @@
+actions:
+  - name: /pinky_07db/start_delivery
+    type: shared_interfaces/action/StartDelivery
+    from_domain: 0
+    to_domain: 214

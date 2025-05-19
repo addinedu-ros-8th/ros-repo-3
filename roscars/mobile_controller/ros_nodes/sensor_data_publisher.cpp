@@ -35,7 +35,7 @@ public:
       std::bind(&SensorDataPublisher::publish_sensor_data, this)
     );
 
-    RCLCPP_INFO(this->get_logger(), "✅ SensorData 퍼블리셔 시작됨 (topic: %s)", topic.c_str());
+    RCLCPP_INFO(this->get_logger(), "SensorData 퍼블리셔 시작됨 (topic: %s)", topic.c_str());
   }
 
 private:
@@ -67,7 +67,7 @@ private:
       return;
     }
     drv_->startScan(false, true);
-    RCLCPP_INFO(this->get_logger(), "✅ Lidar 초기화 완료");
+    RCLCPP_INFO(this->get_logger(), "Lidar 초기화 완료");
   }
 
   void publish_sensor_data() {
@@ -77,7 +77,7 @@ private:
     msg.roscar_id = ssid_;
     msg.stamp = this->now();
 
-    // ✅ LiDAR JSON
+    // LiDAR JSON
     node_count_ = COUNT_OF(nodes_);
     if (SL_IS_OK(drv_->grabScanDataHq(nodes_, node_count_))) {
       drv_->ascendScanData(nodes_, node_count_);
@@ -92,7 +92,7 @@ private:
       msg.lidar_raw = Json::writeString(Json::StreamWriterBuilder(), lidar_json);
     }
 
-    // ✅ IMU JSON
+    // IMU JSON
     try {
       float ax, ay, az, gx, gy, gz, mx, my, mz;
       imu_.read_sensor(ax, ay, az, gx, gy, gz, mx, my, mz);
@@ -111,7 +111,7 @@ private:
       msg.imu_data = "{}";
     }
 
-    // ✅ 초음파 JSON
+    // 초음파 JSON
     try {
       float dist = ultra_sensor_->read_distance();
       Json::Value ultra_json;
@@ -127,7 +127,7 @@ private:
   }
 };
 
-// ✅ main 함수 추가
+// main 함수 추가
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);

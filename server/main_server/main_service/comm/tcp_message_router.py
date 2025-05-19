@@ -103,6 +103,7 @@ class MessageRouter:
                     "destination": destination,
                     "items": mapped
                 }
+                
                 self.main_service.handle_delivery_request(payload, client_socket)
 
             elif cmd == "CD":
