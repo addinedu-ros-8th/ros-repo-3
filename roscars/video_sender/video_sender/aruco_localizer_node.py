@@ -31,7 +31,7 @@ class ArucoLocalizer(Node):
 
         self.bridge = CvBridge()
 
-        # ✅ 절대 경로로 calibration 파일 지정
+        # 절대 경로로 calibration 파일 지정
         calib_path = os.path.expanduser("~/ros-repo-3/roscars/video_sender/camera_calibration.npz")
 
         self.cam = Camera()

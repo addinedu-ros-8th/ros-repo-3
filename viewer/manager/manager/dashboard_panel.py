@@ -126,9 +126,9 @@ class MonitorPanel(QWidget):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         return table
 
-    def update_roscar_list(self, roscar_name):
+    def update_roscar_list(self, roscar_namespace):
         # 로봇 리스트에 새로운 로봇 이름 추가
-        self.roscar_list.addItem(roscar_name)
+        self.roscar_list.addItem(roscar_namespace)
 
     def add_roscar(self):
         # 사용자가 입력한 로봇 ID와 IP 주소를 가져옵니다.
@@ -141,7 +141,7 @@ class MonitorPanel(QWidget):
 
         # ROS2 메시지 전송
         msg = RoscarInfo()
-        msg.roscar_name = roscar_id
+        msg.roscar_namespace = roscar_id
         msg.roscar_ip = roscar_ip
         self.roscar_info_publisher.publish(msg)
 
@@ -194,7 +194,7 @@ class MonitorPanel(QWidget):
 
     # [추가] RoscarRegister 메시지를 수신하면 테이블에 반영하는 콜백
     def roscar_register_callback(self, msg):
-        roscar_id = msg.roscar_name
+        roscar_id = msg.roscar_namespace
         battery = f"{msg.battery_percentage}%"
         status = msg.operational_status
         self.update_roscar_table(roscar_id, battery, status)
