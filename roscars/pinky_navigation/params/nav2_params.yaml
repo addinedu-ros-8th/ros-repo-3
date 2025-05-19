@@ -107,7 +107,12 @@ local_costmap:
       height: 3
       resolution: 0.05
       #robot_radius: 0.22
-      footprint: '[[0.05, 0.06], [0.05, -0.06], [-0.05, -0.06], [-0.05, 0.06]]'
+      footprint: '[
+        [ 0.11,  0.06],    # 전방 왼쪽
+        [ 0.11, -0.06],    # 전방 오른쪽
+        [-0.11, -0.06],    # 후방 오른쪽
+        [-0.11,  0.06]     # 후방 왼쪽
+      ]'
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
