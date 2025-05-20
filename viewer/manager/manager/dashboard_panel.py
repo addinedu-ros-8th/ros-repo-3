@@ -15,18 +15,21 @@ from geometry_msgs.msg import PoseStamped
 from shared_interfaces.msg import RoscarRegister, RoscarInfo
 from shared_interfaces.srv import LogQuery
 from viewer.theme import apply_theme
-from shared_interfaces.msg import RoscarInfo, RoscarRegister
-from shared_interfaces.srv import LogQuery
-from geometry_msgs.msg import PoseStamped
 
 class MonitorPanel(QWidget):
     def __init__(self):
         super().__init__()
         apply_theme(self)
 
+        # --- 맵·로봇 상태 저장용 ---
         self.base_pixmap = None
+        # 회전 전 원본 PGM 크기
+        self.orig_w      = 0
+        self.orig_h      = 0
+        # 회전 후 pixmap 크기
         self.map_width   = 0
         self.map_height  = 0
+
         self.origin_x    = None
         self.origin_y    = None
         self.resolution  = None
@@ -38,15 +41,10 @@ class MonitorPanel(QWidget):
         self._redraw_map()
         self._load_all_logs()
 
-        # Temporary test: draw a fake pose at (1.5, 2.0)m
-        fake = PoseStamped()
-        fake.pose.position.x = 36.0
-        fake.pose.position.y = 1.5
-        self._pose_callback(fake)
-
     def _init_ui(self):
         layout = QVBoxLayout(self)
 
+        # 1) Map QLabel
         self.map_label = QLabel()
         self.map_label.setSizePolicy(
             QSizePolicy.Policy.Expanding,
@@ -59,6 +57,7 @@ class MonitorPanel(QWidget):
         )
         layout.addWidget(self.map_label)
 
+        # 2) Roscar Status Overview
         grp = QGroupBox("Roscar Status Overview")
         v = QVBoxLayout()
         self.roscar_table = QTableWidget(0, 3)
@@ -72,6 +71,7 @@ class MonitorPanel(QWidget):
         grp.setLayout(v)
         layout.addWidget(grp)
 
+        # 3) Log Tabs
         self.query_map = {
             "delivery":       ["delivery_id","event","timestamp","user","roscar"],
             "task":           ["task_id","status","timestamp","shoes","location"],
@@ -101,6 +101,7 @@ class MonitorPanel(QWidget):
     def _load_map_yaml_and_pgm(self):
         pgm_path  = "/home/sang/dev_ws/git_ws/ros-repo-3/roscars/pinky_navigation/map/roscars_map.pgm"
         yaml_path = pgm_path.replace(".pgm", ".yaml")
+        # YAML에서 resolution, origin 읽기
         if os.path.exists(yaml_path):
             with open(yaml_path, 'r') as f:
                 cfg = yaml.safe_load(f)
@@ -108,11 +109,12 @@ class MonitorPanel(QWidget):
                 ox, oy, _    = cfg.get('origin', [0.0,0.0,0.0])
                 self.origin_x, self.origin_y = ox, oy
 
+        # PGM 로드 → 회전 전 원본 크기 저장 → 왼쪽 90° 회전
         if os.path.exists(pgm_path):
-            pix = QPixmap(pgm_path)
-            if not pix.isNull():
-                # 왼쪽으로 90도 회전
-                rot = pix.transformed(QTransform().rotate(-90))
+            orig = QPixmap(pgm_path)
+            if not orig.isNull():
+                self.orig_w, self.orig_h = orig.width(), orig.height()
+                rot = orig.transformed(QTransform().rotate(-90))
                 self.base_pixmap = rot
                 self.map_width   = rot.width()
                 self.map_height  = rot.height()
@@ -129,7 +131,7 @@ class MonitorPanel(QWidget):
         qos.reliability = ReliabilityPolicy.RELIABLE
 
         self.node.create_subscription(
-            PoseStamped, '/main_server/robot_pose',
+            PoseStamped, '/main_server/roscar_pose',
             self._pose_cb, qos
         )
         self.node.create_subscription(
@@ -166,18 +168,31 @@ class MonitorPanel(QWidget):
             and self.origin_y is not None
             and self.resolution is not None):
 
-            raw_x = (self.robot_pose.position.x - self.origin_x) / self.resolution
-            raw_y = (self.robot_pose.position.y - self.origin_y) / self.resolution
+            # 1) 월드→원본픽셀 (bottom-left origin)
+            u0 = (self.robot_pose.position.x - self.origin_x) / self.resolution
+            v0 = (self.robot_pose.position.y - self.origin_y) / self.resolution
 
-            px = int(raw_x * (scaled.width()  / self.map_width))
-            py = int((self.map_height - raw_y) * (scaled.height() / self.map_height))
+            # 2) 원본 높이 기준 top-left v 계산
+            v_top = self.orig_h - 1 - v0
 
-            print(f"raw_x={raw_x:.1f}, raw_y={raw_y:.1f}, px={px}, py={py}")
+            # 3) 왼쪽 90° 회전 보정
+            u_rot = v_top
+            v_rot = self.orig_w - 1 - u0
 
+            # 4) QLabel 스케일 비율
+            sx = scaled.width()  / self.map_width
+            sy = scaled.height() / self.map_height
+
+            px = int(u_rot * sx)
+            py = int(v_rot * sy)
+
+            print(f"u0={u0:.1f}, v0={v0:.1f}, u_rot={u_rot:.1f}, v_rot={v_rot:.1f} → px={px}, py={py}")
+
+            # 5) 화면 안일 때만 그리기
             if 0 <= px < scaled.width() and 0 <= py < scaled.height():
                 painter = QPainter(scaled)
                 painter.setBrush(QColor(255, 0, 0, 180))
-                r = 6
+                r = 20
                 painter.drawEllipse(px-r, py-r, 2*r, 2*r)
                 painter.end()
 
@@ -239,49 +254,3 @@ class MonitorPanel(QWidget):
         self.node.destroy_node()
         rclpy.shutdown()
         event.accept()
-
-    # [추가] RoscarRegister 메시지를 수신하면 테이블에 반영하는 콜백
-    def roscar_register_callback(self, msg):
-        roscar_id = msg.roscar_namespace
-        battery = f"{msg.battery_percentage}%"
-        status = msg.operational_status
-        self.update_roscar_table(roscar_id, battery, status)
-
-    # [추가] Roscar Status Overview 테이블 갱신 함수
-    def update_roscar_table(self, roscar_id, battery, status):
-        table = self.roscar_table
-        for row in range(table.rowCount()):
-            item = table.item(row, 0)
-            if item and item.text() == roscar_id:
-                table.setItem(row, 1, QTableWidgetItem(battery))
-                table.setItem(row, 2, QTableWidgetItem(status))
-                return
-
-        row_position = table.rowCount()
-        table.insertRow(row_position)
-        table.setItem(row_position, 0, QTableWidgetItem(roscar_id))
-        table.setItem(row_position, 1, QTableWidgetItem(battery))
-        table.setItem(row_position, 2, QTableWidgetItem(status))
-
-    # 콜백 메서드 구현
-
-    def _pose_callback(self, msg: PoseStamped):
-        # 1) 월드 좌표 추출
-        x = msg.pose.position.x
-        y = msg.pose.position.y
-
-        # 2) 픽셀 좌표로 변환
-        px = int((x - self.origin_x) / self.resolution)
-        py = int(self.base_pixmap.height() - (y - self.origin_y) / self.resolution)
-
-        # 3) 마커 그리기
-        overlay = QPixmap(self.base_pixmap)
-        painter = QPainter(overlay)
-        painter.setBrush(QColor(255, 0, 0, 100))
-        painter.setPen(Qt.PenCapStyle.Nopen)
-        r = 10
-        painter.drawEllipse(px - r, py - r, 2*r, 2*r)
-        painter.end()
-
-        # 4) Qlabel 갱싱
-        self.map_label.setPixmap(overlay)

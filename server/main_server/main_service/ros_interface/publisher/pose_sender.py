@@ -11,7 +11,7 @@ class MapPoseForwarder(Node):
 
         self.pose_pub = self.create_publisher(
             PoseStamped,
-            '/main_server/robot_pose',
+            '/main_server/roscar_pose',
             qos_pose
         )
         self.create_subscription(
@@ -22,7 +22,7 @@ class MapPoseForwarder(Node):
         )
 
         self.get_logger().info(
-            'Forwarding /tracked_pose ➔ /main_server/robot_pose'
+            'Forwarding /tracked_pose ➔ /main_server/roscar_pose'
         )
 
     def pose_callback(self, msg: PoseStamped):
