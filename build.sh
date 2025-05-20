@@ -93,6 +93,8 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 # python3 -m viewer.mode_select 
 ## manager 로그인
 # python3 -m viewer.login.manager_login
+# GUI dashboard
+# python3 -m viewer.manager.manager.dashboard_panel
 ## staff 로그인
 # python3 -m viewer.login.staff_login
  

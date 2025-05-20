@@ -1,4 +1,4 @@
-import sys, json
+import json
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
@@ -12,10 +12,11 @@ from PyQt6.QtWidgets import (
     QSizePolicy, QMessageBox
 )
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QPixmap, QImage, QPainter, QColor
+from PyQt6.QtGui import QPixmap
 from viewer.theme import apply_theme
 
 class MonitorPanel(QWidget):
+
     def __init__(self):
         super().__init__()
         apply_theme(self)
@@ -23,24 +24,46 @@ class MonitorPanel(QWidget):
         self.robot_pose = None
 
         self._init_ui()
-        self._init_rclpy()
+
+        # ROS2 초기화 및 Node 생성
+        rclpy.init(args=None)  # ROS2 초기화
+        self.node = Node('monitor_panel')  # Node 생성
+
+        # ROS2 퍼블리셔 생성 (Roscar 추가용)
+        self.roscar_info_publisher = self.node.create_publisher(RoscarInfo, '/roscar/access', 10)
+
+        # [추가] ROS2 구독자 생성 (/roscar/register 구독)
+        self.roscar_register_subscriber = self.node.create_subscription(
+            RoscarRegister,
+            '/roscar/register',
+            self.roscar_register_callback,
+            10
+        )
+
+        self.log_query_client = self.node.create_client(LogQuery, '/log/request/query')
+
+        # [추가] QTimer를 활용해 rclpy.spin_once 주기 호출
+        self.ros_timer = QTimer()
+        self.ros_timer.timeout.connect(lambda: rclpy.spin_once(self.node, timeout_sec=0.01))
+        self.ros_timer.start(50)
+
         self._load_all_logs()
 
     def _init_ui(self):
         main_layout = QVBoxLayout(self)
 
-        # 1) Map 표시 영역
+        # 1. 상단: Map만 표시
         self.map_label = QLabel()
-        self.map_label.setFixedSize(1200, 400)
+        self.map_label.setPixmap(QPixmap("/path/to/your/static_map.png"))  # 이미지 경로 수정 필요
         self.map_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.map_label.setStyleSheet(
-            "background-color: #e7e3d4; border: 2px solid #a89f7d;"
-        )
+        self.map_label.setFixedSize(1200, 400)
+        self.map_label.setStyleSheet("background-color: #e7e3d4; border: 2px solid #a89f7d;")
         main_layout.addWidget(self.map_label)
 
-        # 2) Roscar Status 테이블
-        status_group = QGroupBox("Roscar Status Overview")
-        status_layout = QVBoxLayout()
+        # 2. 중간: Roscar Status 테이블
+        roscar_status_group = QGroupBox("Roscar Status Overview")
+        roscar_status_layout = QVBoxLayout()
+
         self.roscar_table = QTableWidget(0, 3)
         self.roscar_table.setHorizontalHeaderLabels(
             ["Roscar ID", "Battery", "Status"]
@@ -53,7 +76,7 @@ class MonitorPanel(QWidget):
         status_group.setLayout(status_layout)
         main_layout.addWidget(status_group)
 
-        # 3) Log 탭
+        # 3. 하단: Log Tabs (모든 쿼리 포함)
         self.query_map = {
             "delivery": ["delivery_id","event","timestamp","user","roscar"],
             "task":     ["task_id",    "status", "timestamp","shoes","location"],
@@ -68,10 +91,12 @@ class MonitorPanel(QWidget):
         }
         self.tab_widget = QTabWidget()
         self.log_tables = {}
-        for qtype, headers in self.query_map.items():
-            tbl = self._create_log_table(headers)
-            self.tab_widget.addTab(tbl, qtype.replace("_"," ").title())
-            self.log_tables[qtype] = tbl
+
+        for query_type, headers in self.query_map.items():
+            table = self._create_log_table(headers)
+            self.tab_widget.addTab(table, query_type.replace("_", " ").title())
+            self.log_tables[query_type] = table
+
         main_layout.addWidget(self.tab_widget)
 
         self.setLayout(main_layout)
@@ -128,125 +153,151 @@ class MonitorPanel(QWidget):
 
     # --------------- 로그 로딩 ---------------
     def _load_all_logs(self):
-        for qtype, tbl in self.log_tables.items():
-            self._query_and_display(qtype, tbl)
+        for query_type, table in self.log_tables.items():
+            self._query_and_display(query_type, table)
 
-    def _query_and_display(self, qtype, table):
-        if not self.log_client.wait_for_service(timeout_sec=2.0):
+
+    def _query_and_display(self, query_type, table):
+        if not self.log_query_client.wait_for_service(timeout_sec=2.0):
             return
-        req = LogQuery.Request()
-        req.query_type = qtype
-        fut = self.log_client.call_async(req)
-        fut.add_done_callback(
-            lambda f, qt=qtype, tb=table: self._on_log_response(f, qt, tb)
-        )
 
-    def _on_log_response(self, future, qtype, table):
+        request = LogQuery.Request()
+        request.query_type = query_type
+
+        future = self.log_query_client.call_async(request)
+
+        def callback(fut):
+            try:
+                result = fut.result()
+                data = json.loads(result.json_result)
+                table.setRowCount(0)
+                for row in data:
+                    row_index = table.rowCount()
+                    table.insertRow(row_index)
+                    for col, key in enumerate(row.values()):
+                        table.setItem(row_index, col, QTableWidgetItem(str(key)))
+            except Exception as e:
+                self.show_message("Error", f"{query_type} 로딩 실패: {e}")
+
+        future.add_done_callback(callback)
+
+
+    def _create_log_table(self, headers):
+        table = QTableWidget(0, len(headers))
+        table.setHorizontalHeaderLabels(headers)
+        table.horizontalHeader().setStretchLastSection(True)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        return table
+
+    def update_roscar_list(self, roscar_namespace):
+        # 로봇 리스트에 새로운 로봇 이름 추가
+        self.roscar_list.addItem(roscar_namespace)
+
+    def add_roscar(self):
+        # 사용자가 입력한 로봇 ID와 IP 주소를 가져옵니다.
+        roscar_id = self.roscar_id_input.text()
+        roscar_ip = self.roscar_ip_input.text()
+
+        if not roscar_id or not roscar_ip:
+            self.show_message("Error", "Please provide both roscar ID and IP address.")
+            return
+
+        # ROS2 메시지 전송
+        msg = RoscarInfo()
+        msg.roscar_namespace = roscar_id
+        msg.roscar_ip = roscar_ip
+        self.roscar_info_publisher.publish(msg)
+
+        # 추가된 로봇 리스트에 표시
+        self.update_roscar_list(roscar_id)
+
+        self.show_message("Success", f"Roscar {roscar_id} added successfully!")
+
+    def query_logs(self):
+        if not self.log_query_client.wait_for_service(timeout_sec=2.0):
+            self.show_message("Error", "LogQuery Service is not available.")
+            return
+
+        request = LogQuery.Request()
+        request.query_type = "delivery"  # 또는 task, roscar, 등등
+
+        future = self.log_query_client.call_async(request)
+        future.add_done_callback(self.handle_log_response)
+
+    def handle_log_response(self, future):
         try:
-            res = future.result()
-            raw = res.json_result
-            data = json.loads(raw)
+            response = future.result()
+            data = json.loads(response.json_result)
 
-            # 단일 dict이면 리스트로 감싸고, 아닌 경우 그대로 사용
-            if isinstance(data, dict):
-                data = [data]
-            elif not isinstance(data, list):
-                raise ValueError(f"예상 리스트 형태, 받음: {type(data)}")
-
-            headers = self.query_map[qtype]
-            table.setRowCount(0)
+            # 기존 테이블 초기화
+            self.task_log_table.setRowCount(0)
 
             for row in data:
-                r = table.rowCount()
-                table.insertRow(r)
-                for c, key in enumerate(headers):
-                    val = row.get(key, "")
-                    table.setItem(r, c, QTableWidgetItem(str(val)))
-
+                row_index = self.task_log_table.rowCount()
+                self.task_log_table.insertRow(row_index)
+                self.task_log_table.setItem(row_index, 0, QTableWidgetItem(str(row.get("timestamp"))))
+                self.task_log_table.setItem(row_index, 1, QTableWidgetItem(str(row.get("delivery_id", "-"))))
+                self.task_log_table.setItem(row_index, 2, QTableWidgetItem(str(row.get("event_type", "-"))))
         except Exception as e:
-            self._show_message("Error", f"{qtype} 로딩 실패: {e}")
+            self.show_message("Error", f"Failed to parse response: {e}")
 
-    # ------------- 테이블 생성 -------------
-    def _create_log_table(self, headers):
-        tbl = QTableWidget(0, len(headers))
-        # 컬럼 이름을 보기 편하게 title case 로 표시
-        tbl.setHorizontalHeaderLabels([h.replace("_"," ").title() for h in headers])
-        tbl.horizontalHeader().setStretchLastSection(True)
-        tbl.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        tbl.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-        )
-        return tbl
 
-    # ------- Roscar 상태 테이블 갱신 -------
-    def _update_roscar_table(self, rid, battery, status):
-        table = self.roscar_table
-        for row in range(table.rowCount()):
-            if table.item(row, 0).text() == rid:
-                table.setItem(row, 1, QTableWidgetItem(battery))
-                table.setItem(row, 2, QTableWidgetItem(status))
-                return
-        r = table.rowCount()
-        table.insertRow(r)
-        table.setItem(r, 0, QTableWidgetItem(rid))
-        table.setItem(r, 1, QTableWidgetItem(battery))
-        table.setItem(r, 2, QTableWidgetItem(status))
-
-    # -------- 맵 + 로봇 위치 렌더링 --------
-    def _update_map_display(self):
-        if not self.map_msg:
-            return
-        info = self.map_msg.info
-        w, h = info.width, info.height
-        data = self.map_msg.data
-
-        img = QImage(w, h, QImage.Format.Format_Grayscale8)
-        for yy in range(h):
-            for xx in range(w):
-                v = data[xx + yy * w]
-                c = 255 - v if v >= 0 else 127
-                img.setPixel(xx, h - yy - 1, QColor(c, c, c).rgb())
-
-        pix = QPixmap.fromImage(img).scaled(
-            self.map_label.width(),
-            self.map_label.height(),
-            Qt.AspectRatioMode.KeepAspectRatio
-        )
-
-        if self.robot_pose:
-            ox = info.origin.position.x
-            oy = info.origin.position.y
-            res = info.resolution
-            px = int((self.robot_pose.position.x - ox) / res)
-            py = int((self.robot_pose.position.y - oy) / res)
-            py = h - py - 1
-            sx = pix.width() / w
-            sy = pix.height() / h
-
-            painter = QPainter(pix)
-            painter.setBrush(QColor(255, 0, 0))
-            painter.drawEllipse(int(px * sx) - 5, int(py * sy) - 5, 10, 10)
-            painter.end()
-
-        self.map_label.setPixmap(pix)
-
-    # ---------------- 유틸 ----------------
-    def _show_message(self, title, msg):
-        dlg = QMessageBox(self)
-        dlg.setIcon(QMessageBox.Icon.Information)
-        dlg.setWindowTitle(title)
-        dlg.setText(msg)
-        dlg.exec()
+    def show_message(self, title, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setWindowTitle(title)
+        msg.setText(message)
+        msg.exec()
 
     def closeEvent(self, event):
+        # ROS2 노드 종료 처리
         self.node.destroy_node()
         rclpy.shutdown()
         event.accept()
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    win = MonitorPanel()
-    win.show()
-    sys.exit(app.exec())
+    # [추가] RoscarRegister 메시지를 수신하면 테이블에 반영하는 콜백
+    def roscar_register_callback(self, msg):
+        roscar_id = msg.roscar_namespace
+        battery = f"{msg.battery_percentage}%"
+        status = msg.operational_status
+        self.update_roscar_table(roscar_id, battery, status)
+
+    # [추가] Roscar Status Overview 테이블 갱신 함수
+    def update_roscar_table(self, roscar_id, battery, status):
+        table = self.roscar_table
+        for row in range(table.rowCount()):
+            item = table.item(row, 0)
+            if item and item.text() == roscar_id:
+                table.setItem(row, 1, QTableWidgetItem(battery))
+                table.setItem(row, 2, QTableWidgetItem(status))
+                return
+
+        row_position = table.rowCount()
+        table.insertRow(row_position)
+        table.setItem(row_position, 0, QTableWidgetItem(roscar_id))
+        table.setItem(row_position, 1, QTableWidgetItem(battery))
+        table.setItem(row_position, 2, QTableWidgetItem(status))
+
+    # 콜백 메서드 구현
+
+    def _pose_callback(self, msg: PoseStamped):
+        # 1) 월드 좌표 추출
+        x = msg.pose.position.x
+        y = msg.pose.position.y
+
+        # 2) 픽셀 좌표로 변환
+        px = int((x - self.origin_x) / self.resolution)
+        py = int(self.base_pixmap.height() - (y - self.origin_y) / self.resolution)
+
+        # 3) 마커 그리기
+        overlay = QPixmap(self.base_pixmap)
+        painter = QPainter(overlay)
+        painter.setBrush(QColor(255, 0, 0, 100))
+        painter.setPen(Qt.PenCapStyle.Nopen)
+        r = 10
+        painter.drawEllipse(px - r, py - r, 2*r, 2*r)
+        painter.end()
+
+        # 4) Qlabel 갱싱
+        self.map_label.setPixmap(overlay)
