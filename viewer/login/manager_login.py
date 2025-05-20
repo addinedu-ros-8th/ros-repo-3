@@ -20,6 +20,9 @@ class windowsClass(QMainWindow, from_class):
         # 로그인 버튼 시그널 연결
         self.login_btn.clicked.connect(self.try_login)
 
+        # 엔터키로 로그인 동작
+        self.pw_input.returnPressed.connect(self.try_login)
+
     def try_login(self):
         username = self.id_input.text()
         password = self.pw_input.text()
