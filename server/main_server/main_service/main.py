@@ -262,7 +262,7 @@ class MainService:
                     self.logger_session.add(task_log)
 
                     if first_task_id is None:
-                        first_task_id = t.task_id
+                        first_task_idset    B = t.task_id
 
             self.logger_session.commit()
 
