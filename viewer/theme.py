@@ -1,17 +1,22 @@
-# theme.py
 def apply_theme(widget):
     widget.setStyleSheet("""
+        /* 전체 배경과 기본 텍스트 */
         QMainWindow, QDialog, QWidget {
-            background-color: #f4f2ec;
+            background-color: white;
+            color: black;
         }
+
+        /* 제목 레이블 */
         QLabel#titleLabel {
             font-size: 20px;
             font-weight: bold;
-            color: #3e3e3e;
+            color: black;
         }
+
+        /* 그룹박스 */
         QGroupBox {
-            background-color: #fffdf6;
-            border: 1px solid #c2bca2;
+            background-color: white;
+            border: 1px solid black;
             border-radius: 6px;
             margin-top: 10px;
         }
@@ -20,28 +25,32 @@ def apply_theme(widget):
             left: 10px;
             padding: 0 5px;
             font-weight: bold;
-            color: #5b5a4e;
+            color: black;
         }
+
+        /* 버튼 */
         QPushButton {
-            background-color: #708238;
+            background-color: black;
             color: white;
             border-radius: 5px;
             padding: 6px 12px;
             font-weight: bold;
         }
         QPushButton:hover {
-            background-color: #5e6f2a;
+            background-color: #333333;
         }
+
+        /* 테이블 위젯 */
         QTableWidget {
-            background-color: #fffdf6;
-            color: #3e3e3e;
-            gridline-color: #a89f7d;
+            background-color: white;
+            color: black;
+            gridline-color: black;
         }
         QHeaderView::section {
-            background-color: #d2c8a9;
-            color: #3e3e3e;
+            background-color: black;
+            color: white;
             font-weight: bold;
             padding: 6px;
-            border: 1px solid #c2bca2;
+            border: 1px solid black;
         }
     """)

@@ -53,7 +53,7 @@ class MonitorPanel(QWidget):
         self.map_label.setMaximumHeight(400)
         self.map_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.map_label.setStyleSheet(
-            "background-color: #e7e3d4; border: 2px solid #a89f7d;"
+            "background-color: #ffffff; border: 2px solid #ffffff;"
         )
         layout.addWidget(self.map_label)
 
