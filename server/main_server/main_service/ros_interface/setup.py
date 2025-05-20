@@ -1,4 +1,5 @@
 from setuptools import setup
+import os
 
 package_name = 'main_service'
 
@@ -15,9 +16,10 @@ setup(
     ],
     package_dir={'ros_interface': '.'},
     data_files=[
-        ('share/ament_index/resource_index/packages',
-         ['resource/' + package_name]),
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        # config 파일 설치
+        (os.path.join('share', package_name, 'config'), ['config/goal_position.json']),
     ],
     install_requires=[
         'setuptools',

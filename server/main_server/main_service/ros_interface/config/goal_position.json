@@ -1,0 +1,22 @@
+[
+  { "goal_position": "S1",  "x": -0.19,  "y": -0.198, "theta": 0.0 },
+  { "goal_position": "S2",  "x": -0.19,  "y": -0.391, "theta": 0.0 },
+  { "goal_position": "R1",  "x": -0.357, "y": -0.713, "theta": 0.0 },
+  { "goal_position": "R2",  "x": -0.357, "y": -1.031, "theta": 0.0 },
+  { "goal_position": "R3",  "x": -0.357, "y": -1.335, "theta": 0.0 },
+  { "goal_position": "R4",  "x": -0.357, "y": -1.642, "theta": 0.0 },
+  { "goal_position": "R5",  "x": -1.185, "y": -0.157, "theta": 0.0 },
+  { "goal_position": "R6",  "x": -1.185, "y": -0.437, "theta": 0.0 },
+  { "goal_position": "R7",  "x": -1.185, "y": -0.755, "theta": 0.0 },
+  { "goal_position": "R8",  "x": -1.185, "y": -1.06,  "theta": 0.0 },
+  { "goal_position": "R9",  "x": -1.185, "y": -1.377, "theta": 0.0 },
+  { "goal_position": "R10", "x": -1.185, "y": -1.681, "theta": 0.0 },
+  { "goal_position": "G1",  "x": -0.475, "y": -2.0,   "theta": 0.0 },
+  { "goal_position": "G2",  "x": -0.208, "y": -2.3,   "theta": 0.0 },
+  { "goal_position": "G3",  "x": -0.475, "y": -2.574, "theta": 0.0 },
+  { "goal_position": "G4",  "x": -0.755, "y": -2.33,  "theta": 0.0 },
+  { "goal_position": "G5",  "x": -0.721, "y": -2.746, "theta": 0.0 },
+  { "goal_position": "G6",  "x": -0.838, "y": -3.097, "theta": 0.0 },
+  { "goal_position": "G7",  "x": -1.209, "y": -3.039, "theta": 0.0 },
+  { "goal_position": "G8",  "x": -1.135, "y": -2.67,  "theta": 0.0 }
+]

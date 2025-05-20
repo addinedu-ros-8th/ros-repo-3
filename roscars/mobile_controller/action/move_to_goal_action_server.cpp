@@ -43,9 +43,11 @@ private:
     const rclcpp_action::GoalUUID &,
     std::shared_ptr<const MoveToGoal::Goal> goal)
   {
+    // goal_position 필드 읽어 함께 로깅
     RCLCPP_INFO(get_logger(),
-      "Goal received: id=%u, x=%.2f, y=%.2f, θ=%.2f",
+      "Goal received: id=%u, position=%s, x=%.3f, y=%.3f, θ=%.3f",
       goal->roscar_id,
+      goal->goal_position.c_str(),
       goal->goal_x, goal->goal_y, goal->theta);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }

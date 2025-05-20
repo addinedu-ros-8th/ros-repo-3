@@ -1,16 +1,15 @@
 # Goal
-uint8 roscar_id
+uint8   roscar_id
+string  goal_position
 float32 goal_x
 float32 goal_y
 float32 theta
-
 ---
 # Result
-bool success
+bool   success
 string message
-
 ---
 # Feedback
-uint8 progress              # 진행률 (0~100)
+uint8   progress
 float32 current_x
 float32 current_y
