@@ -40,6 +40,7 @@ setup(
             'log_event_publisher       = ros_interface.publisher.log_event_publisher:main',
             'control_command_publisher = ros_interface.publisher.control_command_publisher:main',
             'sensor_listener_node      = ros_interface.subscriber.sensor_listener_node:main',
+            'pose_sender = ros_interface.publisher.pose_sender:main',
         ],
     },
 )
