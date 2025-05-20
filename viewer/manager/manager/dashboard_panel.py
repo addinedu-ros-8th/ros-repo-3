@@ -15,6 +15,9 @@ from geometry_msgs.msg import PoseStamped
 from shared_interfaces.msg import RoscarRegister, RoscarInfo
 from shared_interfaces.srv import LogQuery
 from viewer.theme import apply_theme
+from shared_interfaces.msg import RoscarInfo, RoscarRegister
+from shared_interfaces.srv import LogQuery
+from geometry_msgs.msg import PoseStamped
 
 class MonitorPanel(QWidget):
     def __init__(self):
@@ -34,6 +37,12 @@ class MonitorPanel(QWidget):
         self._init_ros()
         self._redraw_map()
         self._load_all_logs()
+
+        # Temporary test: draw a fake pose at (1.5, 2.0)m
+        fake = PoseStamped()
+        fake.pose.position.x = 36.0
+        fake.pose.position.y = 1.5
+        self._pose_callback(fake)
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
@@ -230,3 +239,49 @@ class MonitorPanel(QWidget):
         self.node.destroy_node()
         rclpy.shutdown()
         event.accept()
+
+    # [추가] RoscarRegister 메시지를 수신하면 테이블에 반영하는 콜백
+    def roscar_register_callback(self, msg):
+        roscar_id = msg.roscar_namespace
+        battery = f"{msg.battery_percentage}%"
+        status = msg.operational_status
+        self.update_roscar_table(roscar_id, battery, status)
+
+    # [추가] Roscar Status Overview 테이블 갱신 함수
+    def update_roscar_table(self, roscar_id, battery, status):
+        table = self.roscar_table
+        for row in range(table.rowCount()):
+            item = table.item(row, 0)
+            if item and item.text() == roscar_id:
+                table.setItem(row, 1, QTableWidgetItem(battery))
+                table.setItem(row, 2, QTableWidgetItem(status))
+                return
+
+        row_position = table.rowCount()
+        table.insertRow(row_position)
+        table.setItem(row_position, 0, QTableWidgetItem(roscar_id))
+        table.setItem(row_position, 1, QTableWidgetItem(battery))
+        table.setItem(row_position, 2, QTableWidgetItem(status))
+
+    # 콜백 메서드 구현
+
+    def _pose_callback(self, msg: PoseStamped):
+        # 1) 월드 좌표 추출
+        x = msg.pose.position.x
+        y = msg.pose.position.y
+
+        # 2) 픽셀 좌표로 변환
+        px = int((x - self.origin_x) / self.resolution)
+        py = int(self.base_pixmap.height() - (y - self.origin_y) / self.resolution)
+
+        # 3) 마커 그리기
+        overlay = QPixmap(self.base_pixmap)
+        painter = QPainter(overlay)
+        painter.setBrush(QColor(255, 0, 0, 100))
+        painter.setPen(Qt.PenCapStyle.Nopen)
+        r = 10
+        painter.drawEllipse(px - r, py - r, 2*r, 2*r)
+        painter.end()
+
+        # 4) Qlabel 갱싱
+        self.map_label.setPixmap(overlay)
