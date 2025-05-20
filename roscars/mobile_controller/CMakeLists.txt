@@ -138,13 +138,6 @@ ament_target_dependencies(roscar_precision_stop_cmd_subscriber
 )
 
 # Mobile → Main (퍼블리셔)
-add_executable(roscar_pose_update_publisher
-  ros_nodes/roscar_pose_update_publisher.cpp
-)
-ament_target_dependencies(roscar_pose_update_publisher
-  rclcpp
-  shared_interfaces
-)
 
 add_executable(roscar_task_progress_publisher
   ros_nodes/roscar_task_progress_publisher.cpp
@@ -243,7 +236,6 @@ install(TARGETS
   roscar_avoidance_cmd_subscriber
   roscar_precision_stop_cmd_subscriber
 
-  roscar_pose_update_publisher
   roscar_task_progress_publisher
   roscar_task_complete_publisher
   roscar_precision_stop_result_publisher
