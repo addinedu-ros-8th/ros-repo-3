@@ -1,19 +1,30 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 package_name = 'main_service'
-package_path = 'server/main_server/main_service/ros_interface'
-package_path_relative = package_path.replace('/', '.')
 
 setup(
     name=package_name,
     version='0.0.1',
-    packages=find_packages(include=[f'{package_path_relative}.*'],
-                           where='package_path_relative'),
+    # ros_interface 폴더를 루트로 삼아, 하위 패키지들을 나열
+    packages=[
+        'ros_interface',
+        'ros_interface.action',
+        'ros_interface.publisher',
+        'ros_interface.service',
+        'ros_interface.subscriber',
+    ],
+    package_dir={'ros_interface': '.'},
     data_files=[
-        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/ament_index/resource_index/packages',
+         ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'rclpy',
+        'rclpy_action',
+        'shared_interfaces',
+    ],
     zip_safe=True,
     maintainer='yonmilk',
     maintainer_email='yonmilk@icloud.com',
@@ -21,11 +32,12 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            f'start_delivery_client = {package_path_relative}.action.start_delivery_client:main',
-            f'log_query_service = {package_path_relative}.service.log_query_service:main',
-            f'log_event_publisher = {package_path_relative}.publisher.log_event_publisher:main',
-            f'control_command_publisher = {package_path_relative}.publisher.control_command_publisher:main',
-            f'sensor_listener_node = {package_path_relative}.subscriber.sensor_listener_node:main',
+            'start_delivery_client     = ros_interface.action.start_delivery_client:main',
+            'move_to_goal_client       = ros_interface.action.move_to_goal_client:main',
+            'log_query_service         = ros_interface.service.log_query_service:main',
+            'log_event_publisher       = ros_interface.publisher.log_event_publisher:main',
+            'control_command_publisher = ros_interface.publisher.control_command_publisher:main',
+            'sensor_listener_node      = ros_interface.subscriber.sensor_listener_node:main',
         ],
     },
 )
