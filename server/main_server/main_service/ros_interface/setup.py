@@ -25,6 +25,7 @@ setup(
             f'log_query_service = {package_path_relative}.service.log_query_service:main',
             f'log_event_publisher = {package_path_relative}.publisher.log_event_publisher:main',
             f'control_command_publisher = {package_path_relative}.publisher.control_command_publisher:main',
+            f'sensor_listener_node = {package_path_relative}.subscriber.sensor_listener_node:main',
         ],
     },
 )
