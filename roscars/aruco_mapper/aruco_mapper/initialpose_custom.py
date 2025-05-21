@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import sys
 import json
 import time
 import numpy as np
@@ -14,36 +17,61 @@ class ArucoInitialPosePublisher(Node):
     WEST_MARKER_IDS   = {0,5,6,7,8,20,22,23,24,32}
     SOUTH_MARKER_IDS  = {1,4,11,19,21,25,26,27,31,35}
     NORTH_MARKER_IDS  = {9,10,12,33}
-    MARKER_IDS_36 = {36}
-    MARKER_IDS_37 = {37}
-    MARKER_IDS_38 = {38}
-    MARKER_IDS_39 = {39}
+    MARKER_IDS_36     = {36}
+    MARKER_IDS_37     = {37}
+    MARKER_IDS_38     = {38}
+    MARKER_IDS_39     = {39}
 
     def __init__(self):
         super().__init__('aruco_initialpose_publisher')
 
         # 파라미터 선언
-        self.declare_parameter('marker_map_path', '')
-        self.declare_parameter('calibration_file', '')
-        map_path = self.get_parameter('marker_map_path').get_parameter_value().string_value
-        npz_path = self.get_parameter('calibration_file').get_parameter_value().string_value
+        self.declare_parameter(
+            'marker_map_path',
+            '/home/pinky/ros-repo-3/roscars/aruco_mapper/aruco_marker_positions.json'
+        )
+        self.declare_parameter(
+            'calibration_file',
+            '/home/pinky/ros-repo-3/roscars/aruco_mapper/camera_calibration.npz'
+        )
+        map_json_path = self.get_parameter('marker_map_path')\
+                            .get_parameter_value().string_value
+        calib_path    = self.get_parameter('calibration_file')\
+                            .get_parameter_value().string_value
 
-        # 마커 맵 로드
-        with open(map_path, encoding='utf-8') as f:
+        # JSON으로 된 마커 맵 로드
+        with open(map_json_path, encoding='utf-8') as f:
             data = json.load(f)
-        self.marker_map = {int(item['id']): np.array([float(item['x']), float(item['y']), 0.0]) for item in data}
+        self.marker_map = {
+            int(item['id']): np.array([
+                float(item['x']),
+                float(item['y']),
+                0.0
+            ])
+            for item in data
+        }
 
-        # 캘리브레이션 로드
-        calib = np.load(npz_path)
+        # 카메라 캘리브레이션 로드
+        calib = np.load(calib_path)
         files = calib.files
-        self.calib_mat = calib.get('calibration_matrix', calib.get('camera_matrix', calib[files[0]]))
-        self.dist_coeffs = calib.get('dist_coeffs', calib.get('distortion_coefficients', calib[files[1] if len(files) > 1 else files[0]]))
+        self.calib_mat   = calib.get(
+            'calibration_matrix',
+            calib.get('camera_matrix', calib[files[0]])
+        )
+        self.dist_coeffs = calib.get(
+            'dist_coeffs',
+            calib.get('distortion_coefficients',
+                      calib[files[1] if len(files) > 1 else files[0]])
+        )
 
         # 퍼블리셔 설정
         self.pose_pub = self.create_publisher(
             PoseWithCovarianceStamped,
             '/initialpose',
-            qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+            qos_profile=QoSProfile(
+                depth=1,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL
+            )
         )
         self.cmd_pub = self.create_publisher(
             Twist,
@@ -52,12 +80,16 @@ class ArucoInitialPosePublisher(Node):
         )
 
         # ArUco 세팅
-        self.aruco_dict   = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
+        self.aruco_dict   = cv2.aruco.getPredefinedDictionary(
+            cv2.aruco.DICT_6X6_250
+        )
         self.aruco_params = cv2.aruco.DetectorParameters_create()
 
         # Picamera2 초기화
         self.picam2 = Picamera2()
-        config = self.picam2.create_preview_configuration(main={'format': 'XRGB8888', 'size': (640, 480)})
+        config = self.picam2.create_preview_configuration(
+            main={'format': 'XRGB8888', 'size': (640, 480)}
+        )
         self.picam2.configure(config)
 
         self.published = False
@@ -72,57 +104,59 @@ class ArucoInitialPosePublisher(Node):
 
         while rclpy.ok() and not self.published:
             frame = self.picam2.capture_array()
-            gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             corners, ids, _ = cv2.aruco.detectMarkers(
-                gray, self.aruco_dict, parameters=self.aruco_params
+                gray,
+                self.aruco_dict,
+                parameters=self.aruco_params
             )
 
             if ids is None or len(ids) == 0:
-                # 우측 회전 명령
                 twist = Twist()
                 twist.angular.z = -1.0
                 self.cmd_pub.publish(twist)
                 continue
 
-            # 마커 발견 시 회전 멈춤
+            # 회전 멈추기
             self.cmd_pub.publish(Twist())
+
             mid = int(ids[0][0])
             if mid not in self.marker_map:
                 self.get_logger().warn(f'Marker {mid} not in map')
                 continue
 
-            # 자세 계산
+            # 포즈 계산
             rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
                 [corners[0]], 0.044, self.calib_mat, self.dist_coeffs
             )
             rvec, tvec = rvecs[0][0], tvecs[0][0]
             mpos = self.marker_map[mid]
 
-            # 오프셋 계산 (기존 로직)
+            # 오프셋 계산
             if mid in self.EAST_MARKER_IDS:
                 x = mpos[0] + tvec[2] + 0.07
-                y = mpos[1] + abs(tvec[0]) if tvec[0]>=0 else mpos[1] - abs(tvec[0])
+                y = mpos[1] + abs(tvec[0])
             elif mid in self.SOUTH_MARKER_IDS:
                 y = mpos[1] - abs(tvec[2]) - 0.07
-                x = mpos[0] - abs(tvec[0]) if tvec[0]>=0 else mpos[0] + abs(tvec[0])
+                x = mpos[0] - abs(tvec[0])
             elif mid in self.WEST_MARKER_IDS:
                 x = mpos[0] - abs(tvec[2]) - 0.07
-                y = mpos[1] + abs(tvec[0]) if tvec[0]>=0 else mpos[1] - abs(tvec[0])
+                y = mpos[1] + abs(tvec[0])
             elif mid in self.NORTH_MARKER_IDS:
                 y = mpos[1] + abs(tvec[2]) + 0.07
-                x = mpos[0] + abs(tvec[0]) if tvec[0]>=0 else mpos[0] - abs(tvec[0])
+                x = mpos[0] + abs(tvec[0])
             elif mid in self.MARKER_IDS_36:
-                y = mpos[1] + abs(tvec[2]/2) + 0.04
-                x = mpos[0] + abs(tvec[2]/2) + 0.04
+                offset = abs(tvec[2] / 2) + 0.04
+                x = mpos[0] + offset; y = mpos[1] + offset
             elif mid in self.MARKER_IDS_37:
-                y = mpos[1] - abs(tvec[2]/2) - 0.04
-                x = mpos[0] + abs(tvec[2]/2) + 0.04
+                offset = abs(tvec[2] / 2) + 0.04
+                x = mpos[0] + offset; y = mpos[1] - offset
             elif mid in self.MARKER_IDS_38:
-                y = mpos[1] - abs(tvec[2]/2) - 0.04
-                x = mpos[0] - abs(tvec[2]/2) - 0.04
+                offset = abs(tvec[2] / 2) + 0.04
+                x = mpos[0] - offset; y = mpos[1] - offset
             elif mid in self.MARKER_IDS_39:
-                y = mpos[1] + abs(tvec[2]/2) + 0.04
-                x = mpos[0] - abs(tvec[2]/2) - 0.04
+                offset = abs(tvec[2] / 2) + 0.04
+                x = mpos[0] - offset; y = mpos[1] + offset
             else:
                 x, y = mpos[0], mpos[1]
 
@@ -134,20 +168,22 @@ class ArucoInitialPosePublisher(Node):
             pose_msg = PoseWithCovarianceStamped()
             pose_msg.header.stamp    = self.get_clock().now().to_msg()
             pose_msg.header.frame_id = 'map'
-            pose_msg.pose.pose.position.x = float(x)
-            pose_msg.pose.pose.position.y = float(y)
+            pose_msg.pose.pose.position.x = float(-x)
+            pose_msg.pose.pose.position.y = float(-y)
             pose_msg.pose.pose.position.z = 0.0
             pose_msg.pose.pose.orientation.w = quat[0]
             pose_msg.pose.pose.orientation.x = quat[1]
             pose_msg.pose.pose.orientation.y = quat[2]
             pose_msg.pose.pose.orientation.z = quat[3]
-            pose_msg.pose.covariance = [0.05]*36
+            pose_msg.pose.covariance = [0.05] * 36
 
             self.pose_pub.publish(pose_msg)
-            self.get_logger().info(f"✅ initialpose from marker {mid}: x={x:.3f}, y={y:.3f}")
+            self.get_logger().info(
+                f"✅ initialpose from marker {mid}: x={x:.3f}, y={y:.3f}"
+            )
             self.published = True
 
-        # 마커 인식 후 카메라 종료
+        # 감지 완료 후 카메라 종료
         self.picam2.close()
 
 
@@ -157,6 +193,7 @@ def main(args=None):
     node.run_detection()
     node.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
