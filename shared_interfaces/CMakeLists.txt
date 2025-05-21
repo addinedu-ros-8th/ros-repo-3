@@ -38,7 +38,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/StartTask.msg"
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
-
+  "msg/ImuStatus.msg"
+  "msg/LidarScan.msg"
+  "msg/UltraStatus.msg"
   # Services
   "srv/ManualOverride.srv"
   "srv/QueryTaskStatus.srv"

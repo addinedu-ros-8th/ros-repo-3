@@ -171,6 +171,37 @@ ament_target_dependencies(roscar_obstacle_detected_publisher
   shared_interfaces
 )
 
+# roscar_lidar_publisher 노드
+add_executable(roscar_lidar_publisher
+  ros_nodes/roscar_lidar_publisher.cpp
+  ${SLLIDAR_SDK_SRC}
+)
+ament_target_dependencies(roscar_lidar_publisher
+  rclcpp
+  shared_interfaces
+)
+target_compile_definitions(roscar_lidar_publisher PRIVATE
+  SDK_PLATFORM_LINUX
+)
+
+# roscar_ultra_publisher 노드 (libgpiod 연동)
+add_executable(roscar_ultra_publisher ros_nodes/roscar_ultra_publisher.cpp
+  sensor_read/ultra_sensor.cpp)
+ament_target_dependencies(roscar_ultra_publisher
+  rclcpp
+  shared_interfaces
+)
+target_link_libraries(roscar_ultra_publisher ${LIBGPIOD_LIBRARIES})  # libgpiod 연결
+
+# roscar_imu_publisher 노드
+add_executable(roscar_imu_publisher ros_nodes/roscar_imu_publisher.cpp
+  sensor_read/imu_sensor.cpp
+  sensor_read/kalman_filter.cpp)
+ament_target_dependencies(roscar_imu_publisher
+  rclcpp
+  shared_interfaces
+)
+
 
 # ───────────────────────────────────────────────────────────────
 # 액션 서버 노드 (Mobile Controller → 실제 로직 수행)
@@ -228,6 +259,9 @@ install(TARGETS
   roscar_battery_publisher
   sensor_data_publisher
   roscar_presure_reader
+  roscar_lidar_publisher
+  roscar_imu_publisher
+  roscar_ultra_publisher
 
   roscar_status_charge_subscriber
   roscar_navigation_goal_subscriber
