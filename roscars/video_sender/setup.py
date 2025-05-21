@@ -26,6 +26,7 @@ setup(
             'aruco_localizer_node = video_sender.aruco_localizer_node:main',
             'marker_recorder = video_sender.marker_recorder:main',
             'udp_streamer_node = video_sender.udp_streamer_node:main',
+            'video_streamer = video_sender.video_streamer:main',
         ],
     },
 )
