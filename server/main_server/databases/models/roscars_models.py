@@ -10,8 +10,8 @@ RoscarsBase = declarative_base()
 
 # Enum definitions
 class UserRole(enum.Enum):
-    STAFF = 'Staff'
-    MANAGER = 'Manager'
+    STAFF = 'STAFF'
+    MANAGER = 'MANAGER'
 
 class ColorName(enum.Enum):
     BLACK = 'black'

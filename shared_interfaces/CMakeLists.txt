@@ -11,7 +11,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(action_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)       # ← 추가
+find_package(geometry_msgs REQUIRED)      
 
 # Generate messages, services, and actions
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -45,8 +45,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/ManualOverride.srv"
   "srv/QueryTaskStatus.srv"
   "srv/RequestDiagnostics.srv"
-  "srv/StartInventoryCheck.srv"
   "srv/LogQuery.srv"
+  "srv/Login.srv"
 
   # Actions
   "action/ChargeProcess.action"
@@ -60,7 +60,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES
     builtin_interfaces
     action_msgs
-    geometry_msgs                       # ← 추가
+    geometry_msgs                      
 )
 
 # Enable lint tests

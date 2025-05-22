@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StaffLoginWindow</class>
- <widget class="QMainWindow" name="StaffLoginWindow">
+ <class>ManagerLoginWindow</class>
+ <widget class="QMainWindow" name="ManagerLoginWindow">
   <property name="geometry">
    <rect><x>0</x><y>0</y><width>400</width><height>300</height></rect>
   </property>
   <property name="windowTitle">
-   <string>Staff GUI</string>
+   <string>Manager GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">background-color: #F9F7F1;</string>
+    <string notr="true">background-color: white;</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QLabel" name="title_label">
       <property name="text">
-       <string>Staff GUI</string>
+       <string>Manager GUI</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -79,14 +79,14 @@
       <property name="styleSheet">
        <string notr="true">
         QPushButton {
-          background-color: #687141;
+          background-color: black;
           color: white;
           font-weight: bold;
           font-size: 14pt;
           border-radius: 5px;
         }
         QPushButton:hover {
-          background-color: #818c4a;
+          background-color: navy;
         }
        </string>
       </property>

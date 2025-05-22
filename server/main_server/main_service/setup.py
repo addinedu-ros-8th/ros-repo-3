@@ -36,6 +36,7 @@ setup(
 
             # 서비스
             'log_query_service               = main_service.service.log_query_service:main',
+            'manager_login_service           = main_service.service.manager_login_service:main',
 
             'log_event_publisher             = main_service.publisher.log_event_publisher:main',
             'control_command_publisher       = main_service.publisher.control_command_publisher:main',

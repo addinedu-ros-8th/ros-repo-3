@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QLabel
 )
-from viewer.staff.base_panel import BasePanel
+from gui.staff.base_panel import BasePanel
 
 class TaskStatusPanel(BasePanel):
     def __init__(self, tcp_thread, user_id, main_window, parent=None):

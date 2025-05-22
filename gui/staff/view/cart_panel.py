@@ -2,7 +2,7 @@
 
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt6.QtCore import Qt
-from viewer.theme import apply_theme
+from gui.theme import apply_theme
 
 class CartPanel(QWidget):
     def __init__(self, parent=None):

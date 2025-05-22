@@ -77,8 +77,8 @@ echo "[INFO] 환경 준비 완료. launch 파일을 실행할 수 있습니다."
 
 ### main_service test
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-# python3 -m server.main_server.main_service.main              # 일반 실행 (port 9000)
-python3 -m server.main_server.main_service.main --test       # 3초 후 자동 종료
+python3 -m server.main_server.main_service.main              # 일반 실행 (port 9000)
+# python3 -m server.main_server.main_service.main --test       # 3초 후 자동 종료
 # echo "[INFO] main_service/main.py 실행 테스트 완료"
 
 ### AI 연동용 실행 (port 5001)

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QMessageBox
 from PyQt6.QtCore import Qt, pyqtSignal
-from viewer.theme import apply_theme
-from viewer.staff.message_router import MessageRouter
+from gui.theme import apply_theme
+from gui.staff.message_router import MessageRouter
 
 class LoginWindow(QMainWindow):
     loginSuccess = pyqtSignal(int, str)

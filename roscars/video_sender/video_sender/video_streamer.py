@@ -22,13 +22,13 @@ class UdpStreamer(Node):
         self.declare_parameter('server_ip', '192.168.0.30')
         self.declare_parameter('server_port', 4436)
         self.declare_parameter('jpeg_quality', 60)
-        self.declare_parameter('robot_ssid', self.get_ssid_from_hostapd())
+        self.declare_parameter('roscar_ssid', self.get_ssid_from_hostapd())
 
         p = self.get_parameter
         self.server_ip   = p('server_ip').get_parameter_value().string_value
         self.server_port = p('server_port').get_parameter_value().integer_value
         self.quality     = p('jpeg_quality').get_parameter_value().integer_value
-        self.robot_ssid  = p('robot_ssid').get_parameter_value().string_value
+        self.roscar_ssid  = p('roscar_ssid').get_parameter_value().string_value
 
         # 2) Picamera2 설정
         self.picam2 = Picamera2()
@@ -52,7 +52,7 @@ class UdpStreamer(Node):
 
         # 5) 주기적 캡처 타이머 (10Hz)
         self.create_timer(0.1, self.timer_callback)
-        self.get_logger().info(f"UDP 송신 준비 → ssid={self.robot_ssid}, q={self.quality}")
+        self.get_logger().info(f"UDP 송신 준비 → ssid={self.roscar_ssid}, q={self.quality}")
 
     def get_ssid_from_hostapd(self):
         """hostapd.conf에서 SSID 파싱 (AP 모드용)"""
@@ -60,7 +60,7 @@ class UdpStreamer(Node):
             "/etc/hostapd/hostapd.conf",
             "/etc/hostapd.conf",
             "/etc/network/hostapd.conf",
-            "/home/pinky/robot_ap.conf"
+            "/home/pinky/roscar_ap.conf"
         ]
         for path in paths:
             if os.path.exists(path):
@@ -98,7 +98,7 @@ class UdpStreamer(Node):
 
                 comp = zlib.compress(buf.tobytes())
                 comp_len = len(comp)
-                ssid_b = self.robot_ssid.encode('utf-8')
+                ssid_b = self.roscar_ssid.encode('utf-8')
                 ssid_len = len(ssid_b)
 
                 # 패킷: [1B ssid_len][ssid][4B comp_len][data]

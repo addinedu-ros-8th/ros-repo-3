@@ -17,7 +17,7 @@ class RoscarsLogWriter:
             task_id=task_id,
             event_type=event_type,
             timestamp=datetime.utcnow(),
-            camera_angle=camera_angle  # 🔥 추가
+            camera_angle=camera_angle 
         )
         self._commit_log(log, commit)
 

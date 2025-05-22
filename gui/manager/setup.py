@@ -19,15 +19,11 @@ setup(
     zip_safe=True,
     maintainer='sang',
     maintainer_email='hinoonyaso@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='ros package for Manager GUI',
+    license='MIT',
     entry_points={
         'console_scripts': [
-            'manager_view = manager.manager_view:main',
-            'dashboard = manager.dashboard:main',
-            'dialogs = manager.dialogs:main',
-            'main = manager.main:main',
-            'ros_bridge = manager.ros_bridge:main',
+            'main = manager.view.main:main',
         ],
     },
 )
