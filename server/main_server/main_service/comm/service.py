@@ -2,7 +2,6 @@ import os
 import json
 import tempfile
 import subprocess
-from datetime import datetime
 
 from server.main_server.databases.logger import RoscarsLogWriter
 from server.main_server.databases.query import MainServiceQuery
@@ -35,7 +34,7 @@ class MainService:
             "source ~/.bashrc && "
             "source .roscars_venv/bin/activate && "
             "source install/setup.bash && "
-            f"ROS_DOMAIN_ID={domain_id} python3 server/main_server/main_service/ros_interface/action/start_delivery_client.py {namespace} {domain_id} {json_path}"
+            f"ROS_DOMAIN_ID={domain_id} python3 server/main_server/main_service/main_service/action/start_delivery_client.py {namespace} {domain_id} {json_path}"
         )
         cmd = ["bash", "-c", ros_env_command]
         print(f"[ROS2 Client] subprocess 실행 → {cmd} with ROS_DOMAIN_ID={domain_id}")

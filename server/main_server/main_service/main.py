@@ -1,9 +1,15 @@
 import sys
 import threading
 import rclpy
+from rclpy.executors import MultiThreadedExecutor
 
-from server.main_server.main_service.controller import RuntimeController
-from server.main_server.main_service.service import MainService
+from server.main_server.databases.logger import RoscarsLogWriter
+from server.main_server.main_service.main_service.service.log_query_service import LogQueryService
+from server.main_server.main_service.main_service.publisher.log_event_publisher import LogEventPublisher
+from server.main_server.databases.database_manager import DatabaseManager
+from server.main_server.databases.utils import SensorUtils
+from server.main_server.main_service.comm.controller import RuntimeController
+from server.main_server.main_service.comm.service import MainService
 from server.main_server.main_service.handler.login_handler import handle_login_request
 from server.main_server.main_service.handler.qrcode_handler import handle_qrcode_search
 from server.main_server.main_service.handler.delivery_handler import (
@@ -15,12 +21,21 @@ from server.main_server.main_service.handler.task_handler import (
     send_task_status_notification
 )
 from server.main_server.main_service.handler.ai_handler import handle_ai_result
-from server.main_server.main_service.ros_executor import create_executor
 from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.tcp_message_router import MessageRouter
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 
+def create_executor(db: DatabaseManager):
+    logger = RoscarsLogWriter(db.get_session("roscars_log"))
+    sensor_node = SensorUtils(logger, db)
+    log_query_node = LogQueryService()
+    log_event_publisher = LogEventPublisher()
+    executor = MultiThreadedExecutor()
+    executor.add_node(sensor_node)
+    executor.add_node(log_query_node)
+    executor.add_node(log_event_publisher)
+    return executor
 
 def main():
     # 1) 런타임 컨트롤러 및 DB 초기화
@@ -68,10 +83,10 @@ def main():
         print("[MAIN] 종료 처리 중...")
         executor.shutdown()
         rclpy.shutdown()
-        tcp_server.shutdown_server()
         tcp_thread.join(timeout=2)
         print("[MAIN] 종료 완료")
 
 
 if __name__ == "__main__":
     main()
+    

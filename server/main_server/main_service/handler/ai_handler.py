@@ -1,5 +1,3 @@
-import time
-import struct
 from server.main_server.databases.models.roscars_log_models import RosCarEventType
 
 def handle_ai_result(main_service, req_data, client_socket):

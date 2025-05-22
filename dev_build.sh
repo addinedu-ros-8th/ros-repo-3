@@ -2,20 +2,6 @@
 
 set -e
 
-# 시스템 패키지 최신화
-echo "[INFO] 시스템 패키지 최신화 중..."
-sudo apt update && sudo apt upgrade -y
-
-# [GUI] pyzbar 의존성 설치
-sudo apt install libzbar0 libxcb-cursor0 -y
-
-# ROS2
-echo "[INFO] 시스템 의존성 설치 중..."
-sudo apt install -y \
-    ros-jazzy-domain-bridge \
-    ros-jazzy-tf-transformations \
-    libgpiod-dev
-
 # 가상환경 설정
 VENV_DIR=".roscars_venv"
 
@@ -68,7 +54,7 @@ colcon build \
   --cmake-args \
     "-DCMAKE_CXX_FLAGS=-Wno-error=unused-parameter -Wno-error=pedantic -Wno-error=sign-compare" \
   --continue-on-error \
-  || echo "[WARN] colcon 빌드 중 일부 에러가 발생했지만, 계속 진행합니다."
+  # || echo "[WARN] colcon 빌드 중 일부 에러가 발생했지만, 계속 진행합니다."
 echo "[INFO] colcon 빌드 완료"
 
 # ROS2 워크스페이스 적용
