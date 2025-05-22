@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch version="0.1.0">
+
+  <arg name="use_sim_time" default="false"/>
+  <arg name="motor_ratio" default="1.0"/>
+
+  <include file="$(find-pkg-share pinky_description)/launch/upload.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+
+  <node pkg="mobile_controller" exec="roscar_imu_publisher" name="imu_pub" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="mobile_controller" exec="roscar_lidar_publisher" name="lidar_pub" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="mobile_controller" exec="roscar_ultra_publisher" name="ultra_pub" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="slam_toolbox" exec="sync_slam_toolbox_node" name="slam_toolbox" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="slam_params_file"
+           value="$(find-pkg-share pinky_navigation)/config/slam_toolbox_params.yaml"/>
+    <remap from="/scan"  to="/roscar/sensor/lidar"/>
+    <remap from="/scan_matched_points" to="/roscar/sensor/lidar"/>
+  </node>
+
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_odom" output="screen"
+        args="0 0 0 0 0 0 map odom"/>
+
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="odom_to_base_link" output="screen"
+        args="0 0 0 0 0 0 odom base_footprint"/>
+
+  <node pkg="mobile_controller" exec="teb_local_planner" name="teb_local_planner" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="mobile_controller" exec="control_bridge" name="control_bridge" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="pinky_bringup" exec="pinky_bringup">
+        <param name="motor_ratio" value="$(var motor_ratio)"/>
+  </node>
+
+</launch>
