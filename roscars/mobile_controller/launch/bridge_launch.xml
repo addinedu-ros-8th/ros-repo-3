@@ -1,49 +1,117 @@
 <?xml version="1.0"?>
 <launch version="0.1.0">
 
+  <!-- 1. 공통 인자 -->
   <arg name="use_sim_time" default="false"/>
   <arg name="motor_ratio" default="1.0"/>
 
+  <!-- 2. URDF 업로드 & robot_state_publisher -->
   <include file="$(find-pkg-share pinky_description)/launch/upload.launch.xml">
     <arg name="use_sim_time" value="$(var use_sim_time)"/>
   </include>
 
-  <node pkg="mobile_controller" exec="roscar_imu_publisher" name="imu_pub" output="screen">
+  <!-- 3. 센서 퍼블리셔 -->
+  <node pkg="mobile_controller" exec="roscar_imu_publisher"    name="imu_pub"   output="screen">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
-
   <node pkg="mobile_controller" exec="roscar_lidar_publisher" name="lidar_pub" output="screen">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
-
   <node pkg="mobile_controller" exec="roscar_ultra_publisher" name="ultra_pub" output="screen">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
 
+  <!-- 4. SLAM Toolbox (LiDAR → /scan 리맵 포함) -->
   <node pkg="slam_toolbox" exec="sync_slam_toolbox_node" name="slam_toolbox" output="screen">
-    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="use_sim_time"    value="$(var use_sim_time)"/>
     <param name="slam_params_file"
            value="$(find-pkg-share pinky_navigation)/config/slam_toolbox_params.yaml"/>
-    <remap from="/scan"  to="/roscar/sensor/lidar"/>
+    <remap from="/scan"                to="/roscar/sensor/lidar"/>
     <remap from="/scan_matched_points" to="/roscar/sensor/lidar"/>
   </node>
 
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_odom" output="screen"
+  <!-- 5. TF static transform -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_odom"       output="screen"
         args="0 0 0 0 0 0 map odom"/>
-
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="odom_to_base_link" output="screen"
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="odom_to_base_footprint" output="screen"
         args="0 0 0 0 0 0 odom base_footprint"/>
 
+  <!-- 6. TEB Local Planner & Control Bridge -->
   <node pkg="mobile_controller" exec="teb_local_planner" name="teb_local_planner" output="screen">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
-
-  <node pkg="mobile_controller" exec="control_bridge" name="control_bridge" output="screen">
+  <node pkg="mobile_controller" exec="control_bridge"     name="control_bridge"     output="screen">
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
 
-  <node pkg="pinky_bringup" exec="pinky_bringup">
-        <param name="motor_ratio" value="$(var motor_ratio)"/>
+  <!-- 7. 모터 구동 런치 -->
+  <node pkg="pinky_bringup" exec="pinky_bringup" name="pinky_bringup" output="screen">
+    <param name="motor_ratio" value="$(var motor_ratio)"/>
+  </node>
+
+  <!-- 8. Nav2 Map Server -->
+  <node pkg="nav2_map_server" exec="map_server" name="map_server" output="screen">
+    <param name="use_sim_time"   value="$(var use_sim_time)"/>
+    <param name="yaml_filename"
+           value="$(find-pkg-share pinky_navigation)/map/pinklab.yaml"/>
+  </node>
+
+  <!-- 9. Nav2 Lifecycle Manager -->
+  <node pkg="nav2_lifecycle_manager" exec="lifecycle_manager" name="lifecycle_manager" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="autostart"    value="true"/>
+    <param name="node_names"       type="yaml"
+           value="['map_server','amcl','planner_server','controller_server','bt_navigator','behavior_server','waypoint_follower','velocity_smoother']"/>
+  </node>
+
+  <!-- 10. AMCL (Localization) -->
+  <node pkg="nav2_amcl" exec="amcl" name="amcl" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
+    <remap from="/scan" to="/roscar/sensor/lidar"/>
+  </node>
+
+  <!-- 11. Global Planner -->
+  <node pkg="nav2_planner" exec="planner_server" name="planner_server" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
+  </node>
+
+  <!-- 12. Controller Server -->
+  <node pkg="nav2_controller" exec="controller_server" name="controller_server" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
+  </node>
+
+  <!-- 13. Behavior Server -->
+  <node pkg="nav2_behaviors" exec="behavior_server" name="behavior_server" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
+  </node>
+
+  <!-- 14. BT Navigator -->
+  <node pkg="nav2_bt_navigator" exec="bt_navigator" name="bt_navigator" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
+  </node>
+
+  <!-- 15. Waypoint Follower -->
+  <node pkg="nav2_waypoint_follower" exec="waypoint_follower" name="waypoint_follower" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
+  </node>
+
+  <!-- 16. Velocity Smoother -->
+  <node pkg="nav2_velocity_smoother" exec="velocity_smoother" name="velocity_smoother" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share pinky_navigation)/config/nav2_params.yaml"/>
   </node>
 
 </launch>
