@@ -3,10 +3,10 @@ import os
 
 package_name = 'main_service'
 
+# 루트 경로(루트: server/main_server/main_service 혹은 ros_interface)에 따라 경로 수정 필요
 setup(
     name=package_name,
     version='0.0.1',
-    # ros_interface 폴더를 루트로 삼아, 하위 패키지들을 나열
     packages=[
         'ros_interface',
         'ros_interface.action',
@@ -19,7 +19,10 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         # config 파일 설치
-        (os.path.join('share', package_name, 'config'), ['config/goal_position.json']),
+        (os.path.join('share', package_name, 'config'), ['config/goal_position.json',
+                                                         'config/nav2_params.yaml']),
+        # launch 파일 설치
+        (os.path.join('share', package_name, 'launch'), ['launch/planner_launch.launch.xml']),
     ],
     install_requires=[
         'setuptools',
@@ -58,6 +61,9 @@ setup(
             'task_complete_subscriber        = ros_interface.subscriber.task_complete_subscriber:main',
             'precision_stop_result_subscriber= ros_interface.subscriber.precision_stop_result_subscriber:main',
             'obstacle_detected_subscriber    = ros_interface.subscriber.obstacle_detected_subscriber:main',
+            # 새로 추가된 플래너 노드
+            'global_planner                  = ros_interface.global_planner:main',
+            'path_follower                   = ros_interface.path_follower:main',
         ],
     },
 )

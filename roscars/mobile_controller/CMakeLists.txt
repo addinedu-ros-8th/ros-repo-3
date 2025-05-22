@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(mobile_controller)
 
-# 기본 패키지 설정
+# ───────────────────────────────────────────────────────────────
+# 1. 패키지 설정
+# ───────────────────────────────────────────────────────────────
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -22,7 +24,9 @@ pkg_check_modules(LIBJSONCPP REQUIRED jsoncpp)
 # libgpiod 설정 (초음파 센서 인터페이스)
 pkg_check_modules(LIBGPIOD REQUIRED libgpiod)
 
-# include 디렉토리 설정
+# ───────────────────────────────────────────────────────────────
+# 2. include 디렉토리 설정
+# ───────────────────────────────────────────────────────────────
 include_directories(
   include
   include/mobile_controller
@@ -36,7 +40,13 @@ include_directories(
   ${LIBJSONCPP_INCLUDE_DIRS}
 )
 
+<<<<<<< Updated upstream
 # SLLIDAR SDK 소스 파일 설정
+=======
+# ───────────────────────────────────────────────────────────────
+# 3. SLLIDAR SDK 소스 파일 모음
+# ───────────────────────────────────────────────────────────────
+>>>>>>> Stashed changes
 set(SLLIDAR_SDK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/sdk")
 file(GLOB_RECURSE SLLIDAR_SDK_SRC
   "${SLLIDAR_SDK_PATH}/src/*.cpp"
@@ -48,6 +58,7 @@ file(GLOB_RECURSE SLLIDAR_SDK_SRC
 )
 
 # ───────────────────────────────────────────────────────────────
+<<<<<<< Updated upstream
 # 유틸리티 노드
 # ───────────────────────────────────────────────────────────────
 
@@ -73,8 +84,25 @@ add_executable(roscar_register_publisher ros_nodes/roscar_register_publisher.cpp
 ament_target_dependencies(roscar_register_publisher
   rclcpp
   shared_interfaces
+=======
+# 4. 액션 서버 노드들
+# ───────────────────────────────────────────────────────────────
+file(GLOB ACTION_SRC
+  action/*.cpp
+>>>>>>> Stashed changes
 )
+foreach(src ${ACTION_SRC})
+  get_filename_component(name ${src} NAME_WE)
+  add_executable(${name} ${src})
+  ament_target_dependencies(${name}
+    rclcpp
+    rclcpp_action
+    std_msgs
+    shared_interfaces
+  )
+endforeach()
 
+<<<<<<< Updated upstream
 # Battery Publisher
 add_executable(roscar_battery_publisher
   ros_nodes/roscar_battery_publisher.cpp
@@ -208,13 +236,88 @@ add_executable(control_bridge drive/control_bridge.cpp)
 ament_target_dependencies(control_bridge
   rclcpp
   geometry_msgs
+=======
+# ───────────────────────────────────────────────────────────────
+# 5. actuator 노드
+# ───────────────────────────────────────────────────────────────
+add_executable(actuator actuator.cpp)
+ament_target_dependencies(actuator
+  rclcpp
+  std_msgs
+)
+target_link_libraries(actuator
+  ${LIBGPIOD_LIBRARIES}
+>>>>>>> Stashed changes
 )
 # 타겟 링크 필요 시 추가
 
 # ───────────────────────────────────────────────────────────────
-# 설치 지시
+# 6. nav_drive 패키지 노드들
+# ───────────────────────────────────────────────────────────────
+add_executable(astar nav_drive/astar.cpp)
+ament_target_dependencies(astar
+  rclcpp
+  geometry_msgs
+  nav_msgs
+)
+
+add_executable(waypoint_follower nav_drive/waypoint_follower.cpp)
+ament_target_dependencies(waypoint_follower
+  rclcpp
+  rclcpp_action
+  geometry_msgs
+  nav_msgs
+)
+
+# ───────────────────────────────────────────────────────────────
+# 7. ROS 일반 노드들 (ros_nodes)
+# ───────────────────────────────────────────────────────────────
+file(GLOB ROS_NODE_SRC
+  ros_nodes/*.cpp
+)
+foreach(src ${ROS_NODE_SRC})
+  get_filename_component(name ${src} NAME_WE)
+  add_executable(${name} ${src})
+  ament_target_dependencies(${name}
+    rclcpp
+    std_msgs
+    shared_interfaces
+  )
+endforeach()
+
+# ───────────────────────────────────────────────────────────────
+# 8. 센서 읽기용 노드들 (sensor_read)
+# ───────────────────────────────────────────────────────────────
+file(GLOB SENSOR_READ_SRC
+  sensor_read/*.cpp
+)
+foreach(src ${SENSOR_READ_SRC})
+  get_filename_component(name ${src} NAME_WE)
+  add_executable(${name} ${src})
+  ament_target_dependencies(${name}
+    rclcpp
+  )
+endforeach()
+
+# ───────────────────────────────────────────────────────────────
+# 9. SLLIDAR SDK와 링크
+# ───────────────────────────────────────────────────────────────
+add_library(sllidar_sdk STATIC ${SLLIDAR_SDK_SRC})
+target_include_directories(sllidar_sdk PUBLIC
+  sdk/include
+  sdk/src
+)
+ament_target_dependencies(sllidar_sdk
+  # 필요한 시스템 라이브러리 없으면 생략
+)
+# 예시: 내가 만든 Lidar 노드에 링크
+# target_link_libraries(roscar_lidar_publisher sllidar_sdk)
+
+# ───────────────────────────────────────────────────────────────
+# 10. 설치 지시 (install)
 # ───────────────────────────────────────────────────────────────
 install(TARGETS
+<<<<<<< Updated upstream
   teb_local_planner
   roscar_register_publisher
   roscar_battery_publisher
@@ -243,5 +346,20 @@ DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+=======
+  actuator
+  astar
+  waypoint_follower
+  ${ACTION_SRC}
+  ${ROS_NODE_SRC}
+  ${SENSOR_READ_SRC}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+>>>>>>> Stashed changes
 
 ament_package()
