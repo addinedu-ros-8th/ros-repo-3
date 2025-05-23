@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QHBoxLayout
-from gui.staff.base_panel import BasePanel
+from gui.staff.view.base_panel import BasePanel
 
 class ProductInfoPanel(BasePanel):
     def __init__(self, main_window, parent=None):

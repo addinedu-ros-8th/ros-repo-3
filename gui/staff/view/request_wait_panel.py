@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QPushButton
 from PyQt6.QtCore import Qt
-from gui.staff.base_panel import BasePanel
+from gui.staff.view.base_panel import BasePanel
 
 class RequestWaitPanel(BasePanel):
     def __init__(self, parent=None):

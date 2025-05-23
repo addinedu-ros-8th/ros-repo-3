@@ -2,8 +2,8 @@ from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 import cv2, time
-from gui.staff.base_panel import BasePanel
-from gui.staff.qr_reader import decode_qr
+from gui.staff.view.base_panel import BasePanel
+from gui.staff.comm.qr_reader import decode_qr
 
 class CameraPanel(BasePanel):
     def __init__(self, tcp_thread, main_window, parent=None):

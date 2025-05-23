@@ -1,11 +1,11 @@
 # viewer/staff/main.py
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QStackedWidget
-from viewer.staff.base_panel import BasePanel
-from viewer.staff.cache_manager import CacheManager
-from viewer.staff.tcp_sender import TCPClientThread
-from viewer.staff.message_router import MessageRouter
-from viewer.staff.staff_login import LoginWindow
+from gui.staff.view.base_panel import BasePanel
+from gui.staff.view.cache_manager import CacheManager
+from gui.staff.comm.tcp_sender import TCPClientThread
+from gui.staff.comm.message_router import MessageRouter
+from gui.staff.view.staff_login import LoginWindow
 
 class MainWindow(QMainWindow):
     def __init__(self, tcp_client, user_id, user_role):
@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
 
     def go_to_camera(self):
         if 'camera' not in self._panels:
-            from viewer.staff.camera_panel import CameraPanel
+            from gui.staff.view.camera_panel import CameraPanel
             panel = CameraPanel(tcp_thread=self.tcp_client, parent=self, main_window=self)
             self._panels['camera'] = panel
             self.stack.addWidget(panel)
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
 
     def go_to_product_info(self, product_data=None):
         if 'product' not in self._panels:
-            from viewer.staff.product_info_panel import ProductInfoPanel
+            from gui.staff.view.product_info_panel import ProductInfoPanel
             panel = ProductInfoPanel(parent=self, main_window=self)
             self._panels['product'] = panel
             self.stack.addWidget(panel)
@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
 
     def go_to_cart(self):
         if 'cart' not in self._panels:
-            from viewer.staff.cart_panel import CartPanel
+            from gui.staff.view.cart_panel import CartPanel
             panel = CartPanel(parent=self)
             self._panels['cart'] = panel
             self.stack.addWidget(panel)
@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
 
     def go_to_request_wait(self, status_text="요청중..."):
         if 'request' not in self._panels:
-            from viewer.staff.request_wait_panel import RequestWaitPanel
+            from gui.staff.view.request_wait_panel import RequestWaitPanel
             panel = RequestWaitPanel(parent=self)
             self._panels['request'] = panel
             self.stack.addWidget(panel)
@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
 
     def go_to_task_status(self):
         if 'task' not in self._panels:
-            from viewer.staff.task_status_cancel import TaskStatusPanel
+            from gui.staff.comm.task_status_cancel import TaskStatusPanel
             panel = TaskStatusPanel(tcp_thread=self.tcp_client,
                                     main_window=self,
                                     user_id=self.user_id,

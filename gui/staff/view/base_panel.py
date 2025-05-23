@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget
-from gui.theme import apply_theme
+from gui.shared.theme import apply_theme
 
 class BasePanel(QWidget):
     def __init__(self, parent=None):
