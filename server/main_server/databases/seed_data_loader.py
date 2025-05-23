@@ -58,13 +58,13 @@ class SeedDataLoader:
         print("[Seed] QR 코드 생성 중...")
 
         qrcodes = [
-            QRCode(qr_code_value="Puma Palermo Trainers | 240 | HYPERLINK_BLUE_FLAME_FLICKER_GUM | R3-S1-A1 | 5",
+            QRCode(qr_code_value="Puma Palermo Trainers | 240 | HYPERLINK_BLUE_FLAME_FLICKER_GUM | R3-G4-S1 | 5",
                    inventory=inventory_list[0]),
-            QRCode(qr_code_value="Nike Air Rift | 240 | BLACK | R3-S2-B4 | 3",
+            QRCode(qr_code_value="Nike Air Rift | 240 | BLACK | R4-G2-S2 | 3",
                    inventory=inventory_list[1]),
-            QRCode(qr_code_value="Adidas Gazelle | 260 | HOTPINK | R3-S1-A1 | 7",
+            QRCode(qr_code_value="Adidas Gazelle | 260 | HOTPINK | R5-G6-S1 | 7",
                    inventory=inventory_list[2]),  # ← 누락분 추가
-            QRCode(qr_code_value="PUMA PALERMO TRAINERS | 240 | HYPERLINK BLUE-FLAME FLICKER-GUM | R3-S1-A1 | 5",
+            QRCode(qr_code_value="PUMA PALERMO TRAINERS | 240 | HYPERLINK BLUE-FLAME FLICKER-GUM | R7-G2-S2 | 5",
                    inventory=inventory_list[0]),  # ← 추가 QR
         ]
         self.roscars_session.add_all(qrcodes)
