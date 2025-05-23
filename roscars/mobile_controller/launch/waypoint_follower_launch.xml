@@ -1,10 +1,20 @@
 <launch>
-  <!-- Nav2 waypoint follower 실행 및 클라이언트 노드 -->
-  <node pkg="nav2_waypoint_follower" exec="waypoint_follower" name="waypoint_follower_server" output="screen">
+  <!-- 1) 서버 측 waypoint follower -->
+  <node
+    pkg="nav2_waypoint_follower"
+    exec="waypoint_follower"
+    name="waypoint_follower_server"
+    output="screen">
     <param name="stop_on_failure" value="true"/>
     <param name="loop_rate" value="20"/>
   </node>
-  <node pkg="nav2_astar_waypoint_follower" exec="waypoint_follower" name="waypoint_follower_client" output="screen">
+
+  <!-- 2) 클라이언트 측 waypoint follower (패키지명을 실제 패키지로 변경) -->
+  <node
+    pkg="mobile_controller"            
+    exec="waypoint_follower"           
+    name="waypoint_follower_client"
+    output="screen">
     <param name="use_sim_time" value="false"/>
   </node>
 </launch>
