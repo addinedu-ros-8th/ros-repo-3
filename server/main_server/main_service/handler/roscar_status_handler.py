@@ -14,20 +14,22 @@ class QueryRoscarStatusService(Node):
             'query_roscar_status',
             self.handle_query
         )
-        # DB 세션 준비
-        dbm = DatabaseManager()
-        self.session = dbm.get_session('roscars')
+        # DB 매니저 준비 (handle_query에서 새 세션 사용)
+        self.dbm = DatabaseManager()
 
     def handle_query(self, request, response):
-        # DB에서 RosCars 테이블 전체 조회
-        rows = self.session.query(RosCars).all()
-        for r in rows:
-            # RoscarStatus 메시지로 변환
-            rs = RoscarStatus()
-            rs.roscar_namespace    = r.roscar_namespace
-            rs.battery_percentage  = r.battery_percentage
-            rs.operational_status  = r.operational_status.name
-            response.ros_cars.append(rs)
+        # 매 호출마다 새로운 세션 생성하여 최신 데이터 조회
+        session = self.dbm.get_session('roscars')
+        try:
+            rows = session.query(RosCars).all()
+            for r in rows:
+                rs = RoscarStatus()
+                rs.roscar_namespace    = r.roscar_namespace
+                rs.battery_percentage  = r.battery_percentage
+                rs.operational_status  = r.operational_status.name
+                response.ros_cars.append(rs)
+        finally:
+            session.close()
         return response
 
 def main(args=None):
