@@ -55,6 +55,8 @@ class SchemaManager:
 
             if existing_main == expected_main and existing_log == expected_log:
                 print("DB 구조 일치")
+                self.recreate_all_tables()
+                self.load_seed_data()
             else:
                 print("DB 구조 불일치: 재초기화 수행")
                 self.recreate_all_tables()
