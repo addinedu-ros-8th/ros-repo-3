@@ -19,7 +19,6 @@ class ManagerROS(QObject):
         # ROS 통신 설정
         self.node.create_subscription(PoseStamped, '/main_server/roscar_pose', self._pose_cb, 10)
         self.node.create_subscription(RoscarRegister, '/roscar/register', self._register_cb, 10)
-        self.roscar_info_publisher = self.node.create_publisher(RoscarInfo, '/roscar/access', 10)
         self.log_query_client = self.node.create_client(LogQuery, '/log/request/query')
         self.login_client = self.node.create_client(Login, '/user/manager/login')
         

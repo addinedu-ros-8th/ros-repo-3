@@ -4,9 +4,9 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 
 from server.main_server.databases.logger import RoscarsLogWriter
-from server.main_server.main_service.main_service.service.log_query_service import LogQueryService
-from server.main_server.main_service.main_service.service.manager_login_service import ManagerLoginService
-from server.main_server.main_service.main_service.publisher.log_event_publisher import LogEventPublisher
+from server.main_server.main_service.ros_interface.service.log_query_service import LogQueryService
+from server.main_server.main_service.ros_interface.service.manager_login_service import ManagerLoginService
+from server.main_server.main_service.ros_interface.publisher.log_event_publisher import LogEventPublisher
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.utils import SensorUtils
 from server.main_server.main_service.comm.controller import RuntimeController
@@ -98,4 +98,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
