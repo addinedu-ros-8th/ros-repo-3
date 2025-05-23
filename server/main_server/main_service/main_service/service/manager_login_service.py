@@ -27,7 +27,7 @@ class ManagerLoginService(Node):
             ):
                 response.success = True
                 response.user_id = result.user_id
-                response.role = result.user_role
+                response.role = result.user_role.value
                 self.get_logger().info(f"[로그인 성공] user_id={result.user_id}, role={result.user_role}")
             else:
                 response.success = False
