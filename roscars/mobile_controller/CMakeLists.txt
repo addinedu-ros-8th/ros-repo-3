@@ -138,7 +138,6 @@ ament_target_dependencies(roscar_precision_stop_cmd_subscriber
 )
 
 # Mobile → Main (퍼블리셔)
-
 add_executable(roscar_task_progress_publisher
   ros_nodes/roscar_task_progress_publisher.cpp
 )
@@ -171,6 +170,15 @@ ament_target_dependencies(roscar_obstacle_detected_publisher
   shared_interfaces
 )
 
+# SSID Publisher 추가
+add_executable(roscar_ssid_publisher
+  ros_nodes/roscar_ssid_publisher.cpp
+)
+ament_target_dependencies(roscar_ssid_publisher
+  rclcpp
+  std_msgs
+)
+
 # roscar_lidar_publisher 노드
 add_executable(roscar_lidar_publisher
   ros_nodes/roscar_lidar_publisher.cpp
@@ -201,7 +209,6 @@ ament_target_dependencies(roscar_imu_publisher
   rclcpp
   shared_interfaces
 )
-
 
 # ───────────────────────────────────────────────────────────────
 # 액션 서버 노드 (Mobile Controller → 실제 로직 수행)
@@ -274,6 +281,7 @@ install(TARGETS
   roscar_task_complete_publisher
   roscar_precision_stop_result_publisher
   roscar_obstacle_detected_publisher
+  roscar_ssid_publisher
 
   move_to_goal_action_server
   start_delivery_server
