@@ -28,7 +28,6 @@ class RosCarEventType(enum.Enum):
 
 class DrivingEvent(enum.Enum):
     GO_TO_STANDBY_ZONE = 'GO_TO_STANDBY_ZONE'
-    GO_TO_CHARGING_ZONE = 'GO_TO_CHARGING_ZONE'
     DISCONNECT = 'DISCONNECT'
 
 class ControlSource(enum.Enum):
