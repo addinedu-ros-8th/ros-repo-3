@@ -44,29 +44,26 @@ class SchemaManager:
 
     def check_db_init(self) -> bool:
         try:
-            main_engine = self.roscars_engine
-            log_engine = self.roscars_log_engine
-
-            insp_main = inspect(main_engine)
-            insp_log = inspect(log_engine)
+            insp_main = inspect(self.roscars_engine)
+            insp_log = inspect(self.roscars_log_engine)
 
             existing_main = set(insp_main.get_table_names())
             expected_main = set(RoscarsBase.metadata.tables.keys())
 
             existing_log = set(insp_log.get_table_names())
             expected_log = set(RoscarsLogBase.metadata.tables.keys())
-            self.recreate_all_tables()
-            self.load_seed_data()
-            # if existing_main == expected_main and existing_log == expected_log:
-            #     print("DB 구조 일치")
-            #     return True
-            # else:
-            #     print("DB 구조 불일치: 재초기화 수행")
-            #     self.recreate_all_tables()
-            #     self.load_seed_data()
-            #     return True
+
+            if existing_main == expected_main and existing_log == expected_log:
+                print("DB 구조 일치")
+            else:
+                print("DB 구조 불일치: 재초기화 수행")
+                self.recreate_all_tables()
+                self.load_seed_data()
+
+            return True
         except Exception as e:
             print(f"DB 초기화 확인 중 오류: {e}")
             return False
+
 
 
