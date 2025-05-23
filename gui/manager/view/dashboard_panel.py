@@ -42,7 +42,7 @@ class MonitorPanel(QWidget):
         grp = QGroupBox("Roscar Status Overview")
         v = QVBoxLayout()
         self.roscar_table = QTableWidget(0, 3)
-        self.roscar_table.setHorizontalHeaderLabels(["Roscar ID", "Battery", "Status"])
+        self.roscar_table.setHorizontalHeaderLabels(["Roscar SSID", "Battery","Charging_Status", "Drive_Status"])
         self.roscar_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         v.addWidget(self.roscar_table)
         grp.setLayout(v)

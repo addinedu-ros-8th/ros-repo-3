@@ -1,12 +1,11 @@
-from setuptools import setup, find_packages
-import os
+from setuptools import setup
 
 package_name = 'main_service'
 
 setup(
     name=package_name,
     version='0.0.1',
-    packages=find_packages(include=[package_name, package_name + '.*']),  # 하위 모든 서브패키지를 포함
+    packages=[package_name],  # 명시적으로 main_service만 포함
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -16,7 +15,7 @@ setup(
         'setuptools',
         'rclpy',
         'rclpy_action',
-        'shared_interfaces',
+        # 'shared_interfaces',  # pip 설치 불가한 로컬 패키지는 제거
     ],
     zip_safe=True,
     maintainer='yonmilk',
