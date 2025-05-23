@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor
 from gui.shared.theme import apply_theme
+from gui.manager.ros_interface.roscar_status_client import RoscarStatusClient  # RoscarStatusClient import
 
 class MonitorPanel(QWidget):
     def __init__(self, ros_interface):
@@ -15,23 +16,32 @@ class MonitorPanel(QWidget):
         apply_theme(self)
         self.ros_interface = ros_interface
 
+        # 실시간 DB 조회용 클라이언트 생성
+        self.status_client = RoscarStatusClient(poll_interval_ms=5000, spin_interval_ms=50)
+
+        # 지도 표시용 변수 초기화
         self.base_pixmap = None
         self.orig_w = self.orig_h = 0
         self.map_width = self.map_height = 0
         self.origin_x = self.origin_y = self.resolution = None
         self.roscar_pose = None
 
+        # UI 초기화
         self._init_ui()
         self._load_map_yaml_and_pgm()
         self._connect_ros_signals()
         self._redraw_map()
 
+        # 초기 로그 요청
         for query_type in self.query_map.keys():
             self.ros_interface.request_log(query_type)
+        # 실시간 RosCars 상태 첫 요청
+        self.status_client.request_status()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
 
+        # 맵 레이블
         self.map_label = QLabel()
         self.map_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.map_label.setMaximumHeight(400)
@@ -39,15 +49,17 @@ class MonitorPanel(QWidget):
         self.map_label.setStyleSheet("background-color: #ffffff; border: 2px solid #ffffff;")
         layout.addWidget(self.map_label)
 
+        # Roscar 상태 테이블
         grp = QGroupBox("Roscar Status Overview")
         v = QVBoxLayout()
         self.roscar_table = QTableWidget(0, 3)
-        self.roscar_table.setHorizontalHeaderLabels(["Roscar SSID", "Battery","Charging_Status", "Drive_Status"])
+        self.roscar_table.setHorizontalHeaderLabels(["Roscar SSID", "Battery", "Drive_Status"])
         self.roscar_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         v.addWidget(self.roscar_table)
         grp.setLayout(v)
         layout.addWidget(grp)
 
+        # 로그 탭
         self.query_map = {
             "delivery":       ["delivery_id", "event", "timestamp", "user", "roscar"],
             "task":           ["task_id", "status", "timestamp", "shoes", "location"],
@@ -132,12 +144,13 @@ class MonitorPanel(QWidget):
                 painter.drawEllipse(px - r, py - r, 2 * r, 2 * r)
                 painter.end()
 
-        self.map_label.setPixmap(scaled)  # 항상 실행
+        self.map_label.setPixmap(scaled)
 
     def _connect_ros_signals(self):
         self.ros_interface.pose_received.connect(self._on_pose_received)
         self.ros_interface.roscar_registered.connect(self._on_roscar_registered)
         self.ros_interface.log_query_response.connect(self._on_log_query_response)
+        self.status_client.roscar_status_response.connect(self._on_roscar_status_response)
 
     def _on_pose_received(self, msg):
         self.roscar_pose = msg.pose
@@ -161,6 +174,18 @@ class MonitorPanel(QWidget):
             for c, v in enumerate(row.values()):
                 tbl.setItem(i, c, QTableWidgetItem(str(v)))
 
+    def _on_roscar_status_response(self, data: list):
+        print(f"[MonitorPanel] Received RosCars data: {data}")  # 디버그 로그
+        print(f"[MonitorPanel] _on_roscar_status_response() data={data}")
+        tbl = self.roscar_table
+        tbl.setRowCount(0)
+        for row in data:
+            i = tbl.rowCount()
+            tbl.insertRow(i)
+            tbl.setItem(i, 0, QTableWidgetItem(row['roscar_namespace']))
+            tbl.setItem(i, 1, QTableWidgetItem(f"{row['battery_percentage']}%"))
+            tbl.setItem(i, 2, QTableWidgetItem(row['operational_status']))
+
     def update_roscar_table(self, ns, battery, status):
         tbl = self.roscar_table
         for r in range(tbl.rowCount()):
@@ -182,4 +207,5 @@ class MonitorPanel(QWidget):
 
     def closeEvent(self, event):
         self.ros_interface.shutdown()
+        self.status_client.shutdown()
         event.accept()

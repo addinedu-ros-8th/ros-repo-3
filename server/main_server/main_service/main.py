@@ -26,6 +26,7 @@ from server.main_server.main_service.comm.tcp_handler import TCPHandler
 from server.main_server.main_service.comm.tcp_message_router import MessageRouter
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
+from server.main_server.main_service.handler.roscar_status_handler import QueryRoscarStatusService
 
 def create_executor(db: DatabaseManager):
     logger = RoscarsLogWriter(db.get_session("roscars_log"))
@@ -34,12 +35,15 @@ def create_executor(db: DatabaseManager):
     log_query_node = LogQueryService()
     log_event_publisher = LogEventPublisher()
     manager_login_node = ManagerLoginService()
+
+    status_service_node = QueryRoscarStatusService()
     
     executor = MultiThreadedExecutor()
     executor.add_node(sensor_node)
     executor.add_node(log_query_node)
     executor.add_node(manager_login_node)
     executor.add_node(log_event_publisher)
+    executor.add_node(status_service_node)
     return executor
 
 def main():

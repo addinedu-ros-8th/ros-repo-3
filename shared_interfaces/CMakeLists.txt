@@ -41,12 +41,15 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ImuStatus.msg"
   "msg/LidarScan.msg"
   "msg/UltraStatus.msg"
+  "msg/RoscarStatus.msg"
+
   # Services
   "srv/ManualOverride.srv"
   "srv/QueryTaskStatus.srv"
   "srv/RequestDiagnostics.srv"
   "srv/LogQuery.srv"
   "srv/Login.srv"
+  "srv/QueryRoscarStatus.srv"
 
   # Actions
   "action/ChargeProcess.action"
