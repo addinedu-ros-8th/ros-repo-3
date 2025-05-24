@@ -6,10 +6,26 @@ from server.main_server.databases.models.roscars_models import (
     RackLocation, ShoesInventory,
     QRCode, RosCars
 )
-
+from server.main_server.databases.models.roscars_log_models import (
+    RoscarSensorFusionRawLog,
+    RoscarTrajectoryLog,
+    RosCarEventLog,
+    RosCarDrivingEventLog,
+    ControlCommandLog,
+    PrecisionStopLog,
+    DeliveryEventLog,
+    TaskEventLog,
+    RackSensorLog,
+    FileSystemLog,
+    DefaultEventType,
+    RosCarEventType,
+    DrivingEvent,
+    ControlSource
+)
 class SeedDataLoader:
-    def __init__(self, roscars_session):
+    def __init__(self, roscars_session, log_session):
         self.roscars_session = roscars_session
+        self.log_session = log_session
 
     def _hash_password(self, plain_pw: str) -> str:
         return bcrypt.hashpw(plain_pw.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
@@ -79,17 +95,102 @@ class SeedDataLoader:
         ]
         self.roscars_session.add_all(roscars)
         print("[Seed] RosCars 생성 완료")
+        
+    def load_test_logs(self):
+        print("[Seed] 테스트 로그 데이터 생성 중...")
+
+        now = datetime.now()
+
+        logs = [
+            RoscarSensorFusionRawLog(
+                roscar_id=1,
+                lidar_raw={"points": [1, 2, 3]},
+                imu_data={"accel": [0.1, 0.2, 0.3]},
+                ultrasonic_data={"left": 1.1, "right": 1.2},
+                camera_frame_id="frame_001",
+                timestamp=now
+            ),
+            RoscarTrajectoryLog(
+                roscar_id=1,
+                task_id=100,
+                position_x=12.34,
+                position_y=56.78,
+                velocity=0.45,
+                heading_angle=90.0,
+                timestamp=now
+            ),
+            RosCarEventLog(
+                roscar_id=1,
+                task_id=100,
+                event_type=RosCarEventType.TASK_START,
+                timestamp=now,
+                camera_angle=45
+            ),
+            RosCarDrivingEventLog(
+                roscar_id=1,
+                driving_event=DrivingEvent.GO_TO_STANDBY_ZONE,
+                timestamp=now
+            ),
+            ControlCommandLog(
+                roscar_id=1,
+                linear_velocity=1.2,
+                angular_velocity=0.3,
+                control_source=ControlSource.OBSTACLE_AVOIDANCE,
+                timestamp=now
+            ),
+            PrecisionStopLog(
+                roscar_id=1,
+                task_id=100,
+                is_success=True,
+                deviation_cm=1.5,
+                timestamp=now
+            ),
+            DeliveryEventLog(
+                delivery_id=200,
+                previous_event=DefaultEventType.WAIT,
+                new_event=DefaultEventType.PROGRESS_START,
+                user_id=1,
+                timestamp=now
+            ),
+            TaskEventLog(
+                task_id=100,
+                previous_event=DefaultEventType.WAIT,
+                current_event=DefaultEventType.PROGRESS_START,
+                changed_at=now
+            ),
+            RackSensorLog(
+                roscar_id=1,
+                rack_id=10,
+                rack_status="OCCUPIED",
+                rack_position_x=5.0,
+                rack_position_y=3.0,
+                rack_position_z=1.8,
+                timestamp=now
+            ),
+            FileSystemLog(
+                roscar_id=1,
+                file_path="/var/log/roscar/0830/sensor_data_20250524.json",
+                timestamp=now
+            )
+        ]
+
+        self.log_session.add_all(logs)
+        print("[Seed] 테스트 로그 데이터 생성 완료")
 
     def load_all(self):
         try:
             self.load_users()
             inventories = self.load_shoes_and_inventory()
             self.load_qrcodes(inventories)
-            self.load_roscars()  # ← RosCars 로딩 추가
+            self.load_roscars()
+            self.load_test_logs()
             self.roscars_session.commit()
+            self.log_session.commit()
             print("[Seed] 전체 커밋 완료")
         except Exception as e:
             self.roscars_session.rollback()
+            self.log_session.rollback()
             print(f"[Seed] 오류 발생 → 롤백: {e}")
         finally:
+            self.log_session.close()
             self.roscars_session.close()

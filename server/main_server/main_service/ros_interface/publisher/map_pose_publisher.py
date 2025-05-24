@@ -3,7 +3,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from geometry_msgs.msg import PoseStamped
 
-class MapPoseForwarder(Node):
+class MapPosePublisher(Node):
     def __init__(self):
         super().__init__('map_pose_forwarder')
         qos_pose = QoSProfile(depth=10)
@@ -30,7 +30,7 @@ class MapPoseForwarder(Node):
 
 def main():
     rclpy.init()
-    node = MapPoseForwarder()
+    node = MapPosePublisher()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

@@ -36,15 +36,14 @@ class ManagerLoginWindow(QMainWindow, from_class):
 
         self.ros = dashboard_ros
         self.ros.login_response.connect(self.handle_login_result)
-        self.ros.start()
 
         self.login_btn.clicked.connect(self.try_login)
         self.pw_input.returnPressed.connect(self.try_login)
 
     def try_login(self):
-        username = self.id_input.text()
+        user_name = self.id_input.text()
         password = self.pw_input.text()
-        self.ros.request_login(username, password)
+        self.ros.request_login(user_name, password)
 
     def handle_login_result(self, success, role, user_id):
         print(success)

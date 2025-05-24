@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>manager</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>ros package for Manager GUI</description>
   <maintainer email="hinoonyaso@gmail.com">sang</maintainer>
   <license>MIT</license>

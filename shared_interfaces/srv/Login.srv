@@ -1,4 +1,4 @@
-string username
+string user_name
 string password
 ---
 bool success

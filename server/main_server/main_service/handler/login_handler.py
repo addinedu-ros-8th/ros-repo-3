@@ -3,7 +3,8 @@ import struct
 def handle_login_request(main_service, req_data, client_socket):
     try:
         print(f"[handle_login_request] user_name={req_data.get('user_name')}, password={req_data.get('password')}")
-        user = main_service.query.get_user_by_name(req_data.get("user_name"))
+        user = main_service.verify_user_login(req_data.get("user_name"))
+
         if user and user.check_password(req_data.get("password")):
             cmd = b"AU"
             status = b"\x00"

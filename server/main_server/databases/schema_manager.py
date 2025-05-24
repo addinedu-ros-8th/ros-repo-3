@@ -12,7 +12,8 @@ class SchemaManager:
     
     def load_seed_data(self):
         session = self.db.get_session("roscars")
-        loader = SeedDataLoader(session)
+        log_session = self.db.get_session("roscars_log")
+        loader = SeedDataLoader(session, log_session)
         loader.load_all()
 
     def drop_all_tables(self, engine: Engine):
@@ -55,8 +56,6 @@ class SchemaManager:
 
             if existing_main == expected_main and existing_log == expected_log:
                 print("DB 구조 일치")
-                self.recreate_all_tables()
-                self.load_seed_data()
             else:
                 print("DB 구조 불일치: 재초기화 수행")
                 self.recreate_all_tables()

@@ -8,16 +8,12 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor
 from gui.shared.theme import apply_theme
-from gui.manager.ros_interface.roscar_status_client import RoscarStatusClient  # RoscarStatusClient import
 
 class MonitorPanel(QWidget):
     def __init__(self, ros_interface):
         super().__init__()
         apply_theme(self)
         self.ros_interface = ros_interface
-
-        # 실시간 DB 조회용 클라이언트 생성
-        self.status_client = RoscarStatusClient(poll_interval_ms=5000, spin_interval_ms=50)
 
         # 지도 표시용 변수 초기화
         self.base_pixmap = None
@@ -36,7 +32,7 @@ class MonitorPanel(QWidget):
         for query_type in self.query_map.keys():
             self.ros_interface.request_log(query_type)
         # 실시간 RosCars 상태 첫 요청
-        self.status_client.request_status()
+        self.ros_interface.request_status()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
@@ -150,7 +146,7 @@ class MonitorPanel(QWidget):
         self.ros_interface.pose_received.connect(self._on_pose_received)
         self.ros_interface.roscar_registered.connect(self._on_roscar_registered)
         self.ros_interface.log_query_response.connect(self._on_log_query_response)
-        self.status_client.roscar_status_response.connect(self._on_roscar_status_response)
+        self.ros_interface.roscar_status_response.connect(self._on_roscar_status_response)
 
     def _on_pose_received(self, msg):
         self.roscar_pose = msg.pose
@@ -207,5 +203,4 @@ class MonitorPanel(QWidget):
 
     def closeEvent(self, event):
         self.ros_interface.shutdown()
-        self.status_client.shutdown()
         event.accept()
