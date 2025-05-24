@@ -1,0 +1,47 @@
+map_server:
+  ros__parameters:
+    yaml_filename: "/home/sang/dev_ws/git_ws/ros-repo-3/roscars/pinky_navigation/map/roscars_map.yaml"
+
+lifecycle_manager:
+  ros__parameters:
+    autostart: true
+    node_names: ["map_server","amcl","planner_server"]
+
+amcl:
+  ros__parameters:
+    use_map_topic: true
+    scan_topic:    "/scan"
+    odom_frame_id: "odom"
+    base_frame_id: "base_link"
+
+# 여기에 추가
+global_costmap:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link   # <— base_link 으로 변경
+    update_frequency: 5.0
+    publish_frequency: 1.0
+    static_map: true
+
+local_costmap:
+  ros__parameters:
+    global_frame: odom
+    robot_base_frame: base_link   # <— base_link 으로 변경
+    update_frequency: 10.0
+    publish_frequency: 1.0
+
+global_planner:
+  ros__parameters:
+    service_name: "/compute_path"
+
+path_follower:
+  ros__parameters:
+    start_x:  0.0
+    start_y: 0.0
+    goal_x:  -0.05
+    goal_y:  -0.05
+
+# detection_bridge:
+#   ros__parameters:
+#     ai_host: "192.168.1.100"
+#     ai_port: 9000

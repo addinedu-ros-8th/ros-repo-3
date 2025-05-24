@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<launch version="0.1.0">
+
+  <arg name="use_sim_time" default="false"/>
+
+  <!-- URDF 업로드 & robot_state_publisher -->
+  <include file="$(find-pkg-share pinky_description)/launch/upload.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+  </include>
+
+  <!-- map -> odom -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_odom" output="screen"
+        args="0 0 0 0 0 0 map odom"/>
+
+  <!-- odom -> base_link -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="odom_to_base_link" output="screen"
+        args="0 0 0 0 0 0 odom base_footprint"/>
+
+  <node pkg="nav2_map_server" exec="map_server" name="map_server" output="screen">
+    <param name="yaml_filename"
+           value="/home/sang/dev_ws/git_ws/ros-repo-3/roscars/pinky_navigation/map/roscars_map.yaml"/>
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+  </node>
+
+  <node pkg="nav2_lifecycle_manager" exec="lifecycle_manager" name="lifecycle_manager" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="autostart" value="true"/>
+    <param name="node_names" type="yaml" value="['map_server','amcl','planner_server']"/>
+  </node>
+
+  <node pkg="nav2_amcl" exec="amcl" name="amcl" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share main_service)/config/nav2_params.yaml"/>
+  </node>
+
+  <node pkg="main_service" exec="global_planner" name="global_planner" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share main_service)/config/nav2_params.yaml"/>
+  </node>
+
+  <node pkg="main_service" exec="path_follower" name="path_follower" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share main_service)/config/nav2_params.yaml"/>
+    <param name="publish_path" value="true"/>
+    <param name="path_topic"   value="/global_path"/>
+  </node>
+
+  <node pkg="nav2_planner" exec="planner_server" name="planner_server" output="screen">
+    <param name="use_sim_time" value="$(var use_sim_time)"/>
+    <param name="params_file"
+           value="$(find-pkg-share main_service)/config/nav2_params.yaml"/>
+  </node>
+
+</launch>

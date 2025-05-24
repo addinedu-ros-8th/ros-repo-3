@@ -13,6 +13,8 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/main_service/config', ['ros_interface/config/goal_position.json']),
+        ('share/main_service/config', ['ros_interface/config/nav2_params.yaml']),
+        (os.path.join('share', package_name, 'launch'), ['ros_interface/launch/planner_launch.launch.xml']),
         (os.path.join('lib', package_name), ['main.py']),  
     ],
     install_requires=[
@@ -75,10 +77,14 @@ setup(
             # *[
             #     f'{name} = {base_path}.service.{name}:main' for name in [
             #         'log_query_service',
-            #         'manager_login_service',
+            #         'manager_login_service',w
             #         'roscar_status_service',
             #     ]
             # ],
+
+            # 새로 추가된 플래너 노드
+            'global_planner = ' + base_path + '.global_planner:main',
+            'path_follower = ' + base_path + '.path_follower:main',
         ],
     },
 )

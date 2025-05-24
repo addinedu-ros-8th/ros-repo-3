@@ -37,7 +37,6 @@ export AMENT_PREFIX_PATH=$(filter_existing_paths "$AMENT_PREFIX_PATH")
 export CMAKE_PREFIX_PATH=$(filter_existing_paths "$CMAKE_PREFIX_PATH")
 echo "[INFO] AMENT_PREFIX_PATH: $AMENT_PREFIX_PATH"
 echo "[INFO] CMAKE_PREFIX_PATH: $CMAKE_PREFIX_PATH"
-# export PYTHONPATH=$PYTHONPATH:$(python -c "import site; print(site.getsitepackages()[0])")
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 echo "[STEP 5] colcon 빌드 시작 (패키지: $TARGET_PKG)"
