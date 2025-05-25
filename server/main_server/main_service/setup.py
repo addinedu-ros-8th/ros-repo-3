@@ -72,7 +72,7 @@ setup(
                 ]
             ],
 
-
+            ### main_ctl_service를 받아야 실행 가능
             # # service (Manager) 
             # *[
             #     f'{name} = {base_path}.service.{name}:main' for name in [
@@ -82,9 +82,14 @@ setup(
             #     ]
             # ],
 
-            # 새로 추가된 플래너 노드
-            'global_planner = ' + base_path + '.global_planner:main',
-            'path_follower = ' + base_path + '.path_follower:main',
+            # 주행용 플래너 노드
+            *[
+                f'{name} = {base_path}.drive.{name}:main' for name in [
+                    # 'a_star_planner',
+                    'global_planner',
+                    'path_follower',
+                ]
+            ]
         ],
     },
 )
