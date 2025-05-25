@@ -169,7 +169,6 @@ install(TARGETS
   roscar_task_complete_publisher
   roscar_precision_stop_result_publisher
   roscar_ssid_publisher
-
   start_delivery_server
   waypoint_follower
   teb_local_planner
