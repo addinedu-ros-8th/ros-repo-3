@@ -1,0 +1,7 @@
+# Request
+string query_type
+
+---
+
+# Response
+string json_result

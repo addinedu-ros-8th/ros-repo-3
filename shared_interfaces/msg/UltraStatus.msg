@@ -1,0 +1,2 @@
+string roscar_name
+float32 distance

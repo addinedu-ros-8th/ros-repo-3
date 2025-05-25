@@ -14,9 +14,8 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 ament_python_install_package(${PROJECT_NAME})
 
-install(
-  PROGRAMS
-    pinky_navigation/initialpose.py
+install(PROGRAMS
+  pinky_navigation/initialpose.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -36,10 +35,5 @@ install(
   DIRECTORY launch params map rviz
   DESTINATION share/${PROJECT_NAME}
   )
-
-install(
-  DIRECTORY config/
-  DESTINATION share/${PROJECT_NAME}/config
-)
 
 ament_package()

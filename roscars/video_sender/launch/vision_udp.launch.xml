@@ -1,0 +1,12 @@
+    <!-- AI 서버로 UDP 영상 송신 -->
+    <node
+        pkg="video_sender"
+        exec="video_streamer"
+        name="video_streamer"
+        output="screen">
+        <param name="server_ip"   value="192.168.0.73"/>
+        <param name="server_port" value="4436"/>
+        <param name="roscar_id"   value="1"/>
+        <param name="send_rate"   value="5.0"/>
+    </node>
+</launch>

@@ -1,0 +1,4 @@
+# 요청(Request)에는 아무 필드도 없음
+---
+# 응답(Response)
+RoscarStatus[] ros_cars  

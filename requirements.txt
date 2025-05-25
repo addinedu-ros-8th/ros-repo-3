@@ -1,9 +1,9 @@
+empy
 python-dotenv
 SQLAlchemy
 PyMySQL
 catkin_pkg
-empy
-numpy
+numpy<2.0.0
 lark
 lark-parser
 Cython
@@ -12,5 +12,15 @@ pyyaml
 wheel
 pytest
 cryptography
+transforms3d
 jinja2
 typeguard
+bcrypt
+rpi-lgpio
+spidev
+PyQt6
+PyQt6-sip
+opencv-python
+ultralytics
+pyzbar
+deep-sort-realtime

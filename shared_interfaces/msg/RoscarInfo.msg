@@ -1,2 +1,2 @@
 string roscar_ip
-string roscar_name
+string roscar_namespace

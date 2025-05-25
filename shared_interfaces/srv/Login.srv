@@ -1,0 +1,6 @@
+string user_name
+string password
+---
+bool success
+string role
+uint32 user_id

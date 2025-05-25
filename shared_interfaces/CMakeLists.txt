@@ -9,23 +9,19 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)      
 
-# Interface generation
+# Generate messages, services, and actions
 rosidl_generate_interfaces(${PROJECT_NAME}
   # Messages
-  "msg/AccessResult.msg"
-  "msg/AIModuleStatus.msg"
   "msg/BatteryStatus.msg"
   "msg/ChargeCommand.msg"
   "msg/DashboardStatus.msg"
   "msg/EmergencyAlert.msg"
   "msg/EmergencyCommand.msg"
   "msg/InventoryResult.msg"
-  "msg/LidarScan.msg"
-  "msg/LogEventAdmin.msg"
   "msg/LogEvent.msg"
   "msg/NavigationGoal.msg"
   "msg/ObstacleAvoidanceCmd.msg"
@@ -33,21 +29,27 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ObstacleResponse.msg"
   "msg/PrecisionStopCmd.msg"
   "msg/PrecisionStopResult.msg"
-  "msg/QRCodeScan.msg"
   "msg/RoscarInfo.msg"
   "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"
   "msg/RoscarStatusLog.msg"
   "msg/SensorData.msg"
   "msg/SensorFusion.msg"
+  "msg/StartTask.msg"
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
+  "msg/ImuStatus.msg"
+  "msg/LidarScan.msg"
+  "msg/UltraStatus.msg"
+  "msg/RoscarStatus.msg"
 
   # Services
   "srv/ManualOverride.srv"
   "srv/QueryTaskStatus.srv"
   "srv/RequestDiagnostics.srv"
-  "srv/StartInventoryCheck.srv"
+  "srv/LogQuery.srv"
+  "srv/Login.srv"
+  "srv/QueryRoscarStatus.srv"
 
   # Actions
   "action/ChargeProcess.action"
@@ -58,18 +60,19 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/SecurityPatrol.action"
   "action/StartDelivery.action"
 
-  DEPENDENCIES std_msgs geometry_msgs builtin_interfaces
+  DEPENDENCIES
+    builtin_interfaces
+    action_msgs
+    geometry_msgs                      
 )
 
-# Tests
+# Enable lint tests
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  set(ament_cmake_copyright_FOUND TRUE)
-  set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# Export
+# Export dependencies for downstream packages
 ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
