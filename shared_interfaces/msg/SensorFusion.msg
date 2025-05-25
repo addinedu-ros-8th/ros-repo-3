@@ -1,7 +1,0 @@
-uint8 roscar_id
-float32 ir_front
-float32 ultrasonic_left
-float32 ultrasonic_right
-geometry_msgs/Vector3 imu_accel
-geometry_msgs/Vector3 imu_gyro
-builtin_interfaces/Time stamp

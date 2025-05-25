@@ -37,8 +37,6 @@ setup(
                 f'{name} = {base_path}.action.{name}:main' for name in [
                     'maintenance_charge_action_client',
                     'move_to_goal_client',
-                    'scan_inventory_action_client',
-                    'security_patrol_action_client',
                     'start_delivery_client'
                 ]
             ],
@@ -47,12 +45,9 @@ setup(
             *[
                 f'{name} = {base_path}.publisher.{name}:main' for name in [
                     'avoidance_cmd_publisher',
-                    'charge_command_publisher',
-                    'control_command_publisher',
+
                     'log_event_publisher',
-                    'navigation_goal_publisher',
                     'obstacle_response_publisher',
-                    'precision_stop_cmd_publisher'
                 ]
             ],
 
