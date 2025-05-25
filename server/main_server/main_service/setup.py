@@ -49,7 +49,6 @@ setup(
                     'avoidance_cmd_publisher',
                     'charge_command_publisher',
                     'control_command_publisher',
-                    'dashboard_status_publisher',
                     'log_event_publisher',
                     'navigation_goal_publisher',
                     'obstacle_response_publisher',

@@ -81,23 +81,11 @@ target_include_directories(sensor_read_lib PUBLIC
 # ───────────────────────────────────────────────────────────────
 
 # 구독자 노드
-add_executable(roscar_status_charge_subscriber ros_nodes/roscar_status_charge_subscriber.cpp)
-ament_target_dependencies(roscar_status_charge_subscriber rclcpp shared_interfaces)
-
-add_executable(roscar_navigation_goal_subscriber ros_nodes/roscar_navigation_goal_subscriber.cpp)
-ament_target_dependencies(roscar_navigation_goal_subscriber rclcpp shared_interfaces)
-
-add_executable(dashboard_status_update_subscriber ros_nodes/dashboard_status_update_subscriber.cpp)
-ament_target_dependencies(dashboard_status_update_subscriber rclcpp shared_interfaces)
-
 add_executable(roscar_obstacle_response_subscriber ros_nodes/roscar_obstacle_response_subscriber.cpp)
 ament_target_dependencies(roscar_obstacle_response_subscriber rclcpp shared_interfaces)
 
 add_executable(roscar_avoidance_cmd_subscriber ros_nodes/roscar_avoidance_cmd_subscriber.cpp)
 ament_target_dependencies(roscar_avoidance_cmd_subscriber rclcpp shared_interfaces)
-
-add_executable(roscar_precision_stop_cmd_subscriber ros_nodes/roscar_precision_stop_cmd_subscriber.cpp)
-ament_target_dependencies(roscar_precision_stop_cmd_subscriber rclcpp shared_interfaces)
 
 # 퍼블리셔 노드
 add_executable(roscar_task_progress_publisher ros_nodes/roscar_task_progress_publisher.cpp)
@@ -108,9 +96,6 @@ ament_target_dependencies(roscar_task_complete_publisher rclcpp shared_interface
 
 add_executable(roscar_precision_stop_result_publisher ros_nodes/roscar_precision_stop_result_publisher.cpp)
 ament_target_dependencies(roscar_precision_stop_result_publisher rclcpp shared_interfaces)
-
-add_executable(roscar_obstacle_detected_publisher ros_nodes/roscar_obstacle_detected_publisher.cpp)
-ament_target_dependencies(roscar_obstacle_detected_publisher rclcpp shared_interfaces)
 
 add_executable(roscar_ssid_publisher ros_nodes/roscar_ssid_publisher.cpp)
 ament_target_dependencies(roscar_ssid_publisher rclcpp std_msgs)
@@ -131,8 +116,8 @@ target_link_libraries(roscar_imu_publisher sensor_read_lib)
 add_executable(roscar_register_publisher ros_nodes/roscar_register_publisher.cpp)
 ament_target_dependencies(roscar_register_publisher rclcpp shared_interfaces)
 
-add_executable(roscar_presure_reader ros_nodes/roscar_presure_reader.cpp)
-ament_target_dependencies(roscar_presure_reader rclcpp shared_interfaces)
+add_executable(roscar_presure_subscriber ros_nodes/roscar_presure_subscriber.cpp)
+ament_target_dependencies(roscar_presure_subscriber rclcpp shared_interfaces)
 
 add_executable(roscar_battery_publisher ros_nodes/roscar_battery_publisher.cpp)
 ament_target_dependencies(roscar_battery_publisher rclcpp shared_interfaces)
@@ -173,23 +158,16 @@ target_include_directories(control_bridge PRIVATE include/mobile_controller)
 # ───────────────────────────────────────────────────────────────
 install(TARGETS
   roscar_register_publisher
-  roscar_presure_reader
+  roscar_presure_subscriber
   roscar_battery_publisher
   roscar_lidar_publisher
   roscar_imu_publisher
   roscar_ultra_publisher
-
-  roscar_status_charge_subscriber
-  roscar_navigation_goal_subscriber
-  dashboard_status_update_subscriber
   roscar_obstacle_response_subscriber
   roscar_avoidance_cmd_subscriber
-  roscar_precision_stop_cmd_subscriber
-
   roscar_task_progress_publisher
   roscar_task_complete_publisher
   roscar_precision_stop_result_publisher
-  roscar_obstacle_detected_publisher
   roscar_ssid_publisher
 
   start_delivery_server

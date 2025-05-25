@@ -1,8 +1,0 @@
-<launch>
-  <!-- 개별 퍼블리셔 노드들 -->
-  <node pkg="mobile_controller" exec="roscar_battery_publisher" name="battery_node" output="screen"/>
-  <node pkg="mobile_controller" exec="roscar_register_publisher" name="register_node" output="screen"/>
-
-  <!-- ✅ Lidar + IMU + 초음파 통합 퍼블리셔 -->
-  <node pkg="mobile_controller" exec="sensor_data_publisher" name="sensor_data_node" output="screen"/>
-</launch>

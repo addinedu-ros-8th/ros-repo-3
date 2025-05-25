@@ -10,9 +10,6 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/config', ['config/camera_calibration.npz']),
         # launch 폴더 내 모든 launch 파일(.py, .xml) 포함
-        ('share/' + package_name + '/launch', [
-            'launch/vision_udp.launch.xml'
-        ]),
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ],
     install_requires=['setuptools'],
