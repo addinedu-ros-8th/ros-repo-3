@@ -41,7 +41,7 @@ def main():
     cam.configure(config)
     cam.start()
 
-    streamer = VideoStreamer('192.168.4.19', 4436, quality=60)
+    streamer = VideoStreamer('192.168.4.18', 4436, quality=60)
     print(f"Streaming to 192.168.4.19:4436 with SSID={ssid}")
 
     try:
