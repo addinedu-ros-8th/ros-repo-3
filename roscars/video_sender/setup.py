@@ -1,5 +1,3 @@
-import os
-import glob
 from setuptools import setup
 
 package_name = 'video_sender'
@@ -9,10 +7,13 @@ setup(
     version='0.0.1',
     packages=[package_name],
     data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', glob.glob(os.path.join('launch', '*.launch.xml'))),
+        ('share/' + package_name + '/config', ['config/camera_calibration.npz']),
+        # launch 폴더 내 모든 launch 파일(.py, .xml) 포함
+        ('share/' + package_name + '/launch', [
+            'launch/vision_udp.launch.xml'
+        ]),
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -22,11 +23,9 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'camera_publisher = video_sender.camera_publisher:main',
-            'aruco_localizer_node = video_sender.aruco_localizer_node:main',
-            'marker_recorder = video_sender.marker_recorder:main',
-            'udp_streamer_node = video_sender.udp_streamer_node:main',
             'video_streamer = video_sender.video_streamer:main',
+            'aruco_align = video_sender.aruco_align:main',
+            'camera = video_sender.camera:main'
         ],
     },
 )

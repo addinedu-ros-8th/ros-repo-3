@@ -16,10 +16,10 @@ int main(int argc, char** argv) {
   std::vector<WP> wps = {
     {0, 0.47, -0.009},
     {1, 0.524, 0.48},
-    {2, 0.08,  0.7},
-    {3, 0.08,  1.15},
-    {4, 0.43,  1.27},
-    {5, 0.57,  1.92}
+    {2, 1.05,  0.8},
+    {3, 0.6,  1.23},
+    {4, 0.6,  1.16},
+    {5, 1.15,  2.23}
   };
 
   std::vector<Node> nodes;
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     ps.pose.position.y = wp.y;
     ps.pose.orientation.w = 1.0;
     goal_msg.poses.push_back(ps);
-  }
+  } 
 
   rclcpp_action::Client<FollowWaypoints>::SendGoalOptions options;
   options.feedback_callback =
