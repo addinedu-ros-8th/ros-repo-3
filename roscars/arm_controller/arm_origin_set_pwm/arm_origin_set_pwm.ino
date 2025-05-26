@@ -5,14 +5,22 @@
 #define SERVO_MAX 600
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+// Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 
-//–– 채널 번호 정의 (pin → channel로 대응)
+// –– 채널 번호 정의 (pin → channel로 대응)
 const int ch1      = 0;  // 1번 joint
 const int ch2      = 1;  // 2번 joint
 const int ch3      = 2;  // 3번 joint
 const int ch4      = 3;  // 4번 joint
 const int ch5      = 4;  // 5번 joint
 const int chFinger = 5;  // 손가락
+
+// const int ch1      = 10;  // 1번 joint
+// const int ch2      = 11;  // 2번 joint
+// const int ch3      = 12;  // 3번 joint
+// const int ch4      = 13;  // 4번 joint
+// const int ch5      = 14;  // 5번 joint
+// const int chFinger = 15;  // 손가락
 
 //–– origin 각도 정의
 const int ORG1 = 110;
@@ -22,7 +30,7 @@ const int ORG4 = 100;
 const int ORG5 = 65;
 
 //–– 손가락 pick/drop 각도
-const int FINGER_PICK = 75;
+const int FINGER_PICK = 85;
 const int FINGER_DROP = 40;
 
 int angleToPWM(float angle) {
