@@ -27,7 +27,7 @@
 
 ---
 
-## 🎯 프로젝트 배경 및 목표
+## 프로젝트 배경 및 목표
 
 - **노동력 부족 및 인건비 상승**으로 오프라인 매장의 물류 처리 효율화 필요
 - **기존 수작업 프로세스 한계**: 재고 처리 속도 저하, 배송 오류, 응대 지연 문제 발생
@@ -35,7 +35,7 @@
 
 ---
 
-## ⚙️ 핵심 기술 스택
+## ⚙핵심 기술 스택
 
 - **로봇 미들웨어**: ROS 2 (Nav2, TF2)
 - **SLAM & 위치추정**: Cartographer SLAM + ArUco 마커 기반 초기 포즈 보정
@@ -48,8 +48,8 @@
 
 ---
 
-## 📁 리포지터리 구조
-
+##  리포지터리 구조
+```
 ros-repo-3/
 ├── docs/ # 설계 문서 (아키텍처, 인터페이스, ERD 등)
 ├── shared_interfaces/ # ROS 메시지·서비스 정의
@@ -59,14 +59,9 @@ ros-repo-3/
 ├── requirements.txt # Python 패키지 의존성
 ├── roscars.sql # 초기 DB 스키마 덤프
 └── README.md # 프로젝트 개요 및 실행 가이드
+```
 
-markdown
-복사
-편집
-
----
-
-## 🏗️ 시스템 아키텍처
+## 시스템 아키텍처
 
 1. **Embedded Controller** (`mobile_controller/`)
    - 센서 데이터 수집 및 액추에이터 제어
@@ -84,64 +79,4 @@ markdown
 ---
 
 ## 🚀 설치 및 실행 방법
-
-1. **환경 준비**
-   ```bash
-   # Python 3.12 가상환경 생성
-   python3 -m venv .venv && source .venv/bin/activate
-   pip install -r requirements.txt
-DB 초기화
-
-bash
-복사
-편집
-mysql -u USER -p < roscars.sql
-ROS2 패키지 빌드
-
-bash
-복사
-편집
-colcon build --packages-select shared_interfaces mobile_controller server/ros_nodes
-source install/setup.bash
-서버 실행
-
-bash
-복사
-편집
-# AI 영상 서버
-python server/ai_server/tcp_server.py
-
-# 메인 TCP 서버
-python server/main_server/main.py
-GUI 실행
-
-bash
-복사
-편집
-# Staff Interface
-python viewer/staff/mode_select.py
-
-# Manager Dashboard
-python viewer/manager/main.py
-📜 주요 시나리오 및 기능
-재고 조회: QR 코드 스캔 → 서버 DB 조회 → 모델, 색상, 사이즈, 위치 정보 표시
-
-배송 요청 및 취소: 대기 큐 관리(FIFO + 우선순위)에 따른 작업 배정
-
-기본 주행: Nav2를 이용한 이동 목표 달성 및 장애물 회피
-
-정밀 정차: ArUco 마커 감지를 통한 오차 ±5cm 이내 정밀 포즈 조정
-
-AI 객체 탐지: 실시간 영상에서 상품 인식 및 작업 지원
-
-실시간 모니터링: Manager Dashboard에서 로봇 위치 및 상태 시각화
-
-🤝 기여
-Fork & Clone
-
-새 브랜치 생성: git checkout -b feature/your-feature
-
-수정 후 Commit & Push
-
-Pull Request 작성
 
