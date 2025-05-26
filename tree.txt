@@ -1,0 +1,410 @@
+.
+├── build.sh
+├── dev_build.sh
+├── gui
+│   ├── manager
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── package.xml
+│   │   ├── resource
+│   │   │   └── manager
+│   │   ├── ros_interface
+│   │   │   ├── __init__.py
+│   │   │   └── manager_ros_interface.py
+│   │   ├── setup.cfg
+│   │   ├── setup.py
+│   │   ├── view
+│   │   │   ├── dashboard_panel.py
+│   │   │   ├── __init__.py
+│   │   │   └── manager_login.py
+│   │   └── view_ui
+│   │       └── manager_login.ui
+│   ├── shared
+│   │   └── theme.py
+│   └── staff
+│       ├── comm
+│       │   ├── __init__.py
+│       │   ├── message_router.py
+│       │   ├── qr_reader.py
+│       │   ├── task_status_cancel.py
+│       │   └── tcp_sender.py
+│       └── view
+│           ├── base_panel.py
+│           ├── cache_manager.py
+│           ├── camera_panel.py
+│           ├── cart_panel.py
+│           ├── __init__.py
+│           ├── main.py
+│           ├── product_info_panel.py
+│           ├── request_wait_panel.py
+│           └── staff_login.py
+├── rack
+│   └── rack_controller
+│       ├── CMakeLists.txt
+│       ├── package.xml
+│       └── platformio.ini
+├── README.md
+├── requirements.txt
+├── roscars
+│   ├── arm_controller
+│   │   ├── arm_origin_set.ino
+│   │   └── arm_origin_set_pwm
+│   │       └── arm_origin_set_pwm.ino
+│   ├── aruco_mapper
+│   │   ├── aruco_mapper
+│   │   │   ├── aruco_localizer_node.py
+│   │   │   ├── camera_publisher.py
+│   │   │   ├── initialpose_custom.py
+│   │   │   ├── __init__.py
+│   │   │   ├── marker_recorder.py
+│   │   │   ├── numpy-2.2.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+│   │   │   └── transforms3d-0.4.2-py3-none-any.whl
+│   │   ├── aruco_marker_positions.csv
+│   │   ├── aruco_marker_positions.json
+│   │   ├── camera_calibration.npz
+│   │   ├── launch
+│   │   │   └── aruco_mapping.launch.py
+│   │   ├── package.xml
+│   │   ├── resource
+│   │   │   └── aruco_mapper
+│   │   ├── setup.cfg
+│   │   ├── setup.py
+│   │   └── test
+│   │       ├── test_copyright.py
+│   │       ├── test_flake8.py
+│   │       └── test_pep257.py
+│   ├── cart_controller
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   └── platformio.ini
+│   ├── mobile_controller
+│   │   ├── action
+│   │   │   ├── maintenance_charge_action_server.cpp
+│   │   │   ├── move_to_goal_action_server.cpp
+│   │   │   ├── scan_inventory_action_server.cpp
+│   │   │   ├── security_patrol_action_server.cpp
+│   │   │   └── start_delivery_server.cpp
+│   │   ├── actuator.cpp
+│   │   ├── CMakeLists.txt
+│   │   ├── config
+│   │   │   └── roscar_sensors_params.yaml
+│   │   ├── drive
+│   │   │   ├── control_bridge.cpp
+│   │   │   └── teb_local_planner.cpp
+│   │   ├── include
+│   │   │   └── mobile_controller
+│   │   │       ├── astar.hpp
+│   │   │       ├── battery.hpp
+│   │   │       ├── imu_sensor.hpp
+│   │   │       ├── kalman_filter.hpp
+│   │   │       ├── ultra_sensor.hpp
+│   │   │       └── utils.hpp
+│   │   ├── launch
+│   │   │   ├── bridge_config.yaml
+│   │   │   ├── bridge_launch.xml
+│   │   │   ├── roscars_publishers.launch.py
+│   │   │   ├── sensor_data.launch.xml
+│   │   │   ├── start_delivery_server.launch.py
+│   │   │   └── waypoint_follower_launch.xml
+│   │   ├── nav_drive
+│   │   │   ├── astar.cpp
+│   │   │   └── waypoint_follower.cpp
+│   │   ├── package.xml
+│   │   ├── ros_nodes
+│   │   │   ├── dashboard_status_update_subscriber.cpp
+│   │   │   ├── roscar_avoidance_cmd_subscriber.cpp
+│   │   │   ├── roscar_battery_publisher.cpp
+│   │   │   ├── roscar_imu_publisher.cpp
+│   │   │   ├── roscar_lidar_publisher.cpp
+│   │   │   ├── roscar_navigation_goal_subscriber.cpp
+│   │   │   ├── roscar_obstacle_detected_publisher.cpp
+│   │   │   ├── roscar_obstacle_response_subscriber.cpp
+│   │   │   ├── roscar_precision_stop_cmd_subscriber.cpp
+│   │   │   ├── roscar_precision_stop_result_publisher.cpp
+│   │   │   ├── roscar_presure_subscriber.cpp
+│   │   │   ├── roscar_register_publisher.cpp
+│   │   │   ├── roscar_ssid_publisher.cpp
+│   │   │   ├── roscar_status_charge_subscriber.cpp
+│   │   │   ├── roscar_task_complete_publisher.cpp
+│   │   │   ├── roscar_task_progress_publisher.cpp
+│   │   │   └── roscar_ultra_publisher.cpp
+│   │   ├── sdk
+│   │   │   ├── include
+│   │   │   │   ├── rplidar_cmd.h
+│   │   │   │   ├── rplidar_driver.h
+│   │   │   │   ├── rplidar.h
+│   │   │   │   ├── rplidar_protocol.h
+│   │   │   │   ├── rptypes.h
+│   │   │   │   ├── sl_crc.h
+│   │   │   │   ├── sl_lidar_cmd.h
+│   │   │   │   ├── sl_lidar_driver.h
+│   │   │   │   ├── sl_lidar_driver_impl.h
+│   │   │   │   ├── sl_lidar.h
+│   │   │   │   ├── sl_lidar_protocol.h
+│   │   │   │   └── sl_types.h
+│   │   │   ├── Makefile
+│   │   │   └── src
+│   │   │       ├── arch
+│   │   │       │   └── linux
+│   │   │       │       ├── arch_linux.h
+│   │   │       │       ├── net_serial.cpp
+│   │   │       │       ├── net_serial.h
+│   │   │       │       ├── net_socket.cpp
+│   │   │       │       ├── thread.hpp
+│   │   │       │       ├── timer.cpp
+│   │   │       │       └── timer.h
+│   │   │       ├── dataunpacker
+│   │   │       │   ├── dataunnpacker_commondef.h
+│   │   │       │   ├── dataunnpacker_internal.h
+│   │   │       │   ├── dataunpacker.cpp
+│   │   │       │   ├── dataunpacker.h
+│   │   │       │   ├── dataupacker_namespace.h
+│   │   │       │   └── unpacker
+│   │   │       │       ├── handler_capsules.cpp
+│   │   │       │       ├── handler_capsules.h
+│   │   │       │       ├── handler_hqnode.cpp
+│   │   │       │       ├── handler_hqnode.h
+│   │   │       │       ├── handler_normalnode.cpp
+│   │   │       │       └── handler_normalnode.h
+│   │   │       ├── hal
+│   │   │       │   ├── abs_rxtx.h
+│   │   │       │   ├── assert.h
+│   │   │       │   ├── byteops.h
+│   │   │       │   ├── byteorder.h
+│   │   │       │   ├── event.h
+│   │   │       │   ├── locker.h
+│   │   │       │   ├── socket.h
+│   │   │       │   ├── thread.cpp
+│   │   │       │   ├── thread.h
+│   │   │       │   ├── types.h
+│   │   │       │   ├── util.h
+│   │   │       │   └── waiter.h
+│   │   │       ├── rplidar_driver.cpp
+│   │   │       ├── sdkcommon.h
+│   │   │       ├── sl_async_transceiver.cpp
+│   │   │       ├── sl_async_transceiver.h
+│   │   │       ├── sl_crc.cpp
+│   │   │       ├── sl_lidar_driver.cpp
+│   │   │       ├── sl_lidarprotocol_codec.cpp
+│   │   │       ├── sl_lidarprotocol_codec.h
+│   │   │       ├── sl_serial_channel.cpp
+│   │   │       ├── sl_tcp_channel.cpp
+│   │   │       └── sl_udp_channel.cpp
+│   │   └── sensor_read
+│   │       ├── battery.cpp
+│   │       ├── imu_sensor.cpp
+│   │       ├── kalman_filter.cpp
+│   │       └── ultra_sensor.cpp
+│   ├── pinky_bringup
+│   │   ├── launch
+│   │   │   └── bringup.launch.xml
+│   │   ├── package.xml
+│   │   ├── pinky_bringup
+│   │   │   ├── camera.py
+│   │   │   ├── __init__.py
+│   │   │   ├── pinky_battery_publiser.py
+│   │   │   ├── pinky_bringup.py
+│   │   │   └── pinkylib
+│   │   │       ├── battery.py
+│   │   │       ├── buzzer.py
+│   │   │       ├── imu.py
+│   │   │       ├── __init__.py
+│   │   │       ├── ir.py
+│   │   │       ├── motor.py
+│   │   │       ├── pinkylib.py
+│   │   │       └── ultrasonic.py
+│   │   ├── resource
+│   │   │   └── pinky_bringup
+│   │   ├── setup.cfg
+│   │   ├── setup.py
+│   │   └── test
+│   │       ├── test_copyright.py
+│   │       ├── test_flake8.py
+│   │       └── test_pep257.py
+│   ├── pinky_cartographer
+│   │   ├── CMakeLists.txt
+│   │   ├── launch
+│   │   │   ├── cartographer.launch.xml
+│   │   │   └── map_view.launch.xml
+│   │   ├── package.xml
+│   │   ├── params
+│   │   │   ├── cartographer_params.lua
+│   │   │   ├── initial_pose.lua
+│   │   │   └── nav2_cartographer_params.lua
+│   │   └── rviz
+│   │       └── map_building.rviz
+│   ├── pinky_navigation
+│   │   ├── CMakeLists.txt
+│   │   ├── launch
+│   │   │   ├── bringup_launch.xml
+│   │   │   ├── initialpose_bringup_launch.xml
+│   │   │   ├── localization_launch.xml
+│   │   │   ├── nav2_view.launch.xml
+│   │   │   └── navigation_launch.xml
+│   │   ├── map
+│   │   │   ├── roscars_map.pgm
+│   │   │   └── roscars_map.yaml
+│   │   ├── package.xml
+│   │   ├── params
+│   │   │   └── nav2_params.yaml
+│   │   ├── pinky_navigation
+│   │   │   ├── initialpose.py
+│   │   │   └── __init__.py
+│   │   └── rviz
+│   │       └── nav2_view.rviz
+│   └── video_sender
+│       ├── aruco_marker_positions.csv
+│       ├── launch
+│       │   └── vision_udp.launch.xml
+│       ├── package.xml
+│       ├── resource
+│       │   └── video_sender
+│       ├── setup.cfg
+│       ├── setup.py
+│       ├── test
+│       │   ├── test_copyright.py
+│       │   ├── test_flake8.py
+│       │   └── test_pep257.py
+│       └── video_sender
+│           ├── __init__.py
+│           └── video_streamer.py
+├── server
+│   ├── ai_server
+│   │   ├── ai_modules
+│   │   │   ├── deepsort.py
+│   │   │   ├── __init__.py
+│   │   │   ├── main.py
+│   │   │   └── object_detector.py
+│   │   └── file_system_manager.py
+│   └── main_server
+│       ├── databases
+│       │   ├── database_manager.py
+│       │   ├── logger_function.py
+│       │   ├── logger.py
+│       │   ├── make_qrcode.py
+│       │   ├── models
+│       │   │   ├── roscars_log_models.py
+│       │   │   └── roscars_models.py
+│       │   ├── query_function.py
+│       │   ├── query.py
+│       │   ├── schema_manager.py
+│       │   ├── seed_data_loader.py
+│       │   ├── sensor_utils.py
+│       │   ├── system_schema_function.py
+│       │   └── system_schema.py
+│       └── main_service
+│           ├── comm
+│           │   ├── controller.py
+│           │   ├── ctl_service.py
+│           │   ├── roscar_commands.py
+│           │   ├── tcp_handler.py
+│           │   └── tcp_message_router.py
+│           ├── handler
+│           │   ├── ai_handler.py
+│           │   ├── delivery_handler.py
+│           │   ├── login_handler.py
+│           │   ├── qrcode_handler.py
+│           │   └── task_handler.py
+│           ├── __init__.py
+│           ├── main.py
+│           ├── package.xml
+│           ├── resource
+│           │   └── main_service
+│           ├── ros_interface
+│           │   ├── action
+│           │   │   ├── __init__.py
+│           │   │   ├── maintenance_charge_action_client.py
+│           │   │   ├── move_to_goal_client.py
+│           │   │   ├── scan_inventory_action_client.py
+│           │   │   ├── security_patrol_action_client.py
+│           │   │   └── start_delivery_client.py
+│           │   ├── config
+│           │   │   ├── goal_position.json
+│           │   │   ├── main_service_config.yaml
+│           │   │   └── nav2_params.yaml
+│           │   ├── drive
+│           │   │   ├── a_star_planner.py
+│           │   │   ├── global_planner.py
+│           │   │   └── path_follower.py
+│           │   ├── __init__.py
+│           │   ├── launch
+│           │   │   └── planner_launch.launch.xml
+│           │   ├── publisher
+│           │   │   ├── avoidance_cmd_publisher.py
+│           │   │   ├── charge_command_publisher.py
+│           │   │   ├── control_command_publisher.py
+│           │   │   ├── dashboard_status_publisher.py
+│           │   │   ├── __init__.py
+│           │   │   ├── log_event_publisher.py
+│           │   │   ├── map_pose_publisher.py
+│           │   │   ├── navigation_goal_publisher.py
+│           │   │   ├── obstacle_response_publisher.py
+│           │   │   └── precision_stop_cmd_publisher.py
+│           │   ├── service
+│           │   │   ├── __init__.py
+│           │   │   ├── log_query_service.py
+│           │   │   ├── manager_login_service.py
+│           │   │   └── roscar_status_service.py
+│           │   └── subscriber
+│           │       ├── __init__.py
+│           │       ├── obstacle_detected_subscriber.py
+│           │       ├── precision_stop_result_subscriber.py
+│           │       ├── roscar_status_subscriber.py
+│           │       ├── sensor_subscriber.py
+│           │       ├── task_complete_subscriber.py
+│           │       └── task_progress_subscriber.py
+│           ├── setup.cfg
+│           └── setup.py
+├── shared_interfaces
+│   ├── action
+│   │   ├── ChargeProcess.action
+│   │   ├── MaintenanceCharge.action
+│   │   ├── MoveToGoal.action
+│   │   ├── PatrolZone.action
+│   │   ├── ScanInventory.action
+│   │   ├── SecurityPatrol.action
+│   │   └── StartDelivery.action
+│   ├── CMakeLists.txt
+│   ├── msg
+│   │   ├── BatteryStatus.msg
+│   │   ├── ChargeCommand.msg
+│   │   ├── DashboardStatus.msg
+│   │   ├── EmergencyAlert.msg
+│   │   ├── EmergencyCommand.msg
+│   │   ├── ImuStatus.msg
+│   │   ├── InventoryResult.msg
+│   │   ├── LidarScan.msg
+│   │   ├── LogEvent.msg
+│   │   ├── NavigationGoal.msg
+│   │   ├── ObstacleAvoidanceCmd.msg
+│   │   ├── ObstacleDetected.msg
+│   │   ├── ObstacleResponse.msg
+│   │   ├── PrecisionStopCmd.msg
+│   │   ├── PrecisionStopResult.msg
+│   │   ├── RoscarInfo.msg
+│   │   ├── RoscarPoseUpdate.msg
+│   │   ├── RoscarRegister.msg
+│   │   ├── RoscarStatusLog.msg
+│   │   ├── RoscarStatus.msg
+│   │   ├── SensorData.msg
+│   │   ├── SensorFusion.msg
+│   │   ├── StartTask.msg
+│   │   ├── TaskComplete.msg
+│   │   ├── TaskProgress.msg
+│   │   └── UltraStatus.msg
+│   ├── package.xml
+│   ├── src
+│   │   ├── box_is_on_main.cpp
+│   │   ├── esp_udp_transport.c
+│   │   └── include
+│   │       └── config.h
+│   └── srv
+│       ├── Login.srv
+│       ├── LogQuery.srv
+│       ├── ManualOverride.srv
+│       ├── QueryRoscarStatus.srv
+│       ├── QueryTaskStatus.srv
+│       └── RequestDiagnostics.srv
+└── tree.txt
+
+85 directories, 323 files

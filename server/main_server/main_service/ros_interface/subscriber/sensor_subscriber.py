@@ -42,7 +42,7 @@ class SensorSubscriber(Node):
             return
 
         battery_topic = f"{ns}/roscar/status/battery"
-        sensor_topic  = f"{ns}/roscar/sensor_data"
+        sensor_topic  = f"{ns}/roscar/sensor_data" #수정
 
         battery_sub = self.create_subscription(
             BatteryStatus,

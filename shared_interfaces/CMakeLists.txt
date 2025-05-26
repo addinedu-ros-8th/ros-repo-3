@@ -17,24 +17,13 @@ find_package(geometry_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   # Messages
   "msg/BatteryStatus.msg"
-  "msg/ChargeCommand.msg"
-  "msg/DashboardStatus.msg"
-  "msg/EmergencyAlert.msg"
-  "msg/EmergencyCommand.msg"
-  "msg/InventoryResult.msg"
   "msg/LogEvent.msg"
-  "msg/NavigationGoal.msg"
   "msg/ObstacleAvoidanceCmd.msg"
-  "msg/ObstacleDetected.msg"
   "msg/ObstacleResponse.msg"
-  "msg/PrecisionStopCmd.msg"
   "msg/PrecisionStopResult.msg"
-  "msg/RoscarInfo.msg"
   "msg/RoscarPoseUpdate.msg"
   "msg/RoscarRegister.msg"
   "msg/RoscarStatusLog.msg"
-  "msg/SensorData.msg"
-  "msg/SensorFusion.msg"
   "msg/StartTask.msg"
   "msg/TaskComplete.msg"
   "msg/TaskProgress.msg"
@@ -44,20 +33,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RoscarStatus.msg"
 
   # Services
-  "srv/ManualOverride.srv"
-  "srv/QueryTaskStatus.srv"
-  "srv/RequestDiagnostics.srv"
   "srv/LogQuery.srv"
   "srv/Login.srv"
   "srv/QueryRoscarStatus.srv"
 
   # Actions
-  "action/ChargeProcess.action"
-  "action/MaintenanceCharge.action"
   "action/MoveToGoal.action"
-  "action/PatrolZone.action"
-  "action/ScanInventory.action"
-  "action/SecurityPatrol.action"
   "action/StartDelivery.action"
 
   DEPENDENCIES

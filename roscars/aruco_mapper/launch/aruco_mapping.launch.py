@@ -81,14 +81,6 @@ def generate_launch_description():
     )
 
     # --- 6) Marker recorder ---
-    ld.add_entity(
-        Node(
-            package='aruco_mapper',
-            executable='marker_recorder',
-            name='marker_recorder',
-            output='screen',
-        )
-    )
 
     # --- 7) Initial pose publisher ---
     ld.add_entity(
