@@ -3,23 +3,15 @@ import threading
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 
-from server.main_server.main_service.ros_interface.action.maintenance_charge_action_client import MaintenanceChargeActionClient
 from server.main_server.main_service.ros_interface.action.move_to_goal_client import MoveToGoalClient
-from server.main_server.main_service.ros_interface.action.scan_inventory_action_client import ScanInventoryActionClient
-from server.main_server.main_service.ros_interface.action.security_patrol_action_client import SecurityPatrolActionClient
 from server.main_server.main_service.ros_interface.action.start_delivery_client import StartDeliveryClient
 from server.main_server.main_service.ros_interface.service.log_query_service import LogQueryService
 from server.main_server.main_service.ros_interface.service.manager_login_service import ManagerLoginService
 from server.main_server.main_service.ros_interface.service.roscar_status_service import QueryRoscarStatusService
 from server.main_server.main_service.ros_interface.publisher.avoidance_cmd_publisher import AvoidanceCmdPublisher
-from server.main_server.main_service.ros_interface.publisher.charge_command_publisher import ChargeCommandPublisher
-from server.main_server.main_service.ros_interface.publisher.control_command_publisher import ControlCommandPublisher
-from server.main_server.main_service.ros_interface.publisher.dashboard_status_publisher import DashboardStatusPublisher
 from server.main_server.main_service.ros_interface.publisher.log_event_publisher import LogEventPublisher
 from server.main_server.main_service.ros_interface.publisher.map_pose_publisher import MapPosePublisher
-from server.main_server.main_service.ros_interface.publisher.navigation_goal_publisher import NavigationGoalPublisher
 from server.main_server.main_service.ros_interface.publisher.obstacle_response_publisher import ObstacleResponsePublisher
-from server.main_server.main_service.ros_interface.publisher.precision_stop_cmd_publisher import PrecisionStopCmdPublisher
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.main_service.comm.controller import RuntimeController
 from server.main_server.main_service.comm.ctl_service import MainControlService
@@ -39,7 +31,6 @@ from server.main_server.main_service.comm.tcp_message_router import MessageRoute
 from server.main_server.databases.database_manager import DatabaseManager
 from server.main_server.databases.schema_manager import SchemaManager
 
-from server.main_server.main_service.ros_interface.subscriber.obstacle_detected_subscriber import ObstacleDetectedSubscriber
 from server.main_server.main_service.ros_interface.subscriber.precision_stop_result_subscriber import PrecisionStopResultSubscriber
 from server.main_server.main_service.ros_interface.subscriber.roscar_status_subscriber import RoscarStatusSubscriber
 from server.main_server.main_service.ros_interface.subscriber.sensor_subscriber import SensorSubscriber
@@ -48,9 +39,7 @@ from server.main_server.main_service.ros_interface.subscriber.task_progress_subs
 
 def create_executor(main_ctl_service):
     # # Action Clients
-    # maintenance_charge_node = MaintenanceChargeActionClient()
     # move_to_goal_node = MoveToGoalClient()
-    # scan_inventory_node = ScanInventoryActionClient()
     # security_patrol_node = SecurityPatrolActionClient()
     # start_delivery_node = StartDeliveryClient()
 
@@ -61,17 +50,11 @@ def create_executor(main_ctl_service):
 
     # Publishers
     avoidance_cmd_publisher = AvoidanceCmdPublisher()
-    charge_command_publisher = ChargeCommandPublisher()
-    control_command_publisher = ControlCommandPublisher()
-    dashboard_status_publisher = DashboardStatusPublisher()
     log_event_publisher = LogEventPublisher()
     map_pose_publisher = MapPosePublisher()
-    navigation_goal_publisher = NavigationGoalPublisher()
     obstacle_response_publisher = ObstacleResponsePublisher()
-    precision_stop_cmd_publisher = PrecisionStopCmdPublisher()
 
     # Subscribers
-    obstacle_subscriber = ObstacleDetectedSubscriber()
     precision_stop_result_subscriber = PrecisionStopResultSubscriber()
     roscar_status_subscriber = RoscarStatusSubscriber(main_ctl_service)
     sensor_subscriber = SensorSubscriber(main_ctl_service)
@@ -82,24 +65,16 @@ def create_executor(main_ctl_service):
 
     # executor.add_node(maintenance_charge_node)
     # executor.add_node(move_to_goal_node)
-    # executor.add_node(scan_inventory_node)
     # executor.add_node(security_patrol_node)
     # executor.add_node(start_delivery_node)
 
     executor.add_node(avoidance_cmd_publisher)
-    executor.add_node(charge_command_publisher)
-    executor.add_node(control_command_publisher)
-    executor.add_node(dashboard_status_publisher)
     executor.add_node(log_query_node)
     executor.add_node(map_pose_publisher)
-    executor.add_node(navigation_goal_publisher)
     executor.add_node(obstacle_response_publisher)
-    executor.add_node(precision_stop_cmd_publisher)
-
     executor.add_node(manager_login_node)
     executor.add_node(status_service_node)
     executor.add_node(log_event_publisher)
-    executor.add_node(obstacle_subscriber)
     executor.add_node(precision_stop_result_subscriber)
     executor.add_node(roscar_status_subscriber)
     executor.add_node(sensor_subscriber)

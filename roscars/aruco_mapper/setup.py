@@ -34,9 +34,7 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'camera_publisher           = aruco_mapper.camera_publisher:main',
             'aruco_localizer_node       = aruco_mapper.aruco_localizer_node:main',
-            'marker_recorder            = aruco_mapper.marker_recorder:main',
             'aruco_initialpose_publisher = aruco_mapper.initialpose_custom:main',
         ],
     },

@@ -8,6 +8,35 @@
 
 using FollowWaypoints = nav2_msgs::action::FollowWaypoints;
 
+// helper: ids 순서대로 goal 구성, 마지막 pose만 override_yaw 적용
+FollowWaypoints::Goal make_goal(
+  const std::vector<int>& ids,
+  const std::vector<std::pair<double,double>>& wps,
+  double override_yaw = NAN)
+{
+  FollowWaypoints::Goal g;
+  for (size_t i = 0; i < ids.size(); ++i) {
+    auto [x, y] = wps[ids[i]];
+    double yaw;
+    if (!std::isnan(override_yaw) && i == ids.size() - 1) {
+      yaw = override_yaw;
+    } else if (i + 1 < ids.size()) {
+      auto [nx, ny] = wps[ids[i+1]];
+      yaw = std::atan2(ny - y, nx - x);
+    } else {
+      yaw = 0.0;
+    }
+    tf2::Quaternion q; q.setRPY(0, 0, yaw);
+    geometry_msgs::msg::PoseStamped ps;
+    ps.header.frame_id = "map";
+    ps.pose.position.x = x;
+    ps.pose.position.y = y;
+    ps.pose.orientation = tf2::toMsg(q);
+    g.poses.push_back(ps);
+  }
+  return g;
+}
+
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("waypoint_follower");
@@ -63,23 +92,11 @@ int main(int argc, char** argv) {
   auto res_future = client->async_get_result(gh);
   rclcpp::spin_until_future_complete(node, res_future);
 
+  // ★ 여기서 수정: get()이 반환하는 WrappedResult에 .result로 접근
   auto wrapped_result = res_future.get();
-  auto result = wrapped_result.result;
-
-  auto logger = rclcpp::get_logger("waypoint_follower");
-
-  if (result->error_code == result->NONE && result->missed_waypoints.empty()) {
-    RCLCPP_INFO(logger, "FollowWaypoints succeeded.");
-  } else {
-    RCLCPP_WARN(logger, "FollowWaypoints failed with error: %s",
-                result->error_msg.c_str());
-
-    for (const auto &missed : result->missed_waypoints) {
-      RCLCPP_WARN(logger, "Missed waypoint index: %d", missed.index);
-    }
+  if (wrapped_result.result->success) {
+    RCLCPP_INFO(node->get_logger(), "웨이포인트 주행 완료");
   }
-
-
 
   rclcpp::shutdown();
   return 0;
