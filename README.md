@@ -52,7 +52,7 @@
 
 ---
 
-## 🖼시스템 아키텍처
+## 시스템 아키텍처
 
 ![System Architecture](https://github.com/user-attachments/assets/730f694e-7c41-4ea8-891b-623ae14bacbb)
 
