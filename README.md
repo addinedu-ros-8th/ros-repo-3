@@ -37,17 +37,20 @@
 
 ## 핵심 기술 스택
 
-- **로봇 미들웨어**: ROS 2 (Nav2, TF2)
-- **SLAM & 위치추정**: Cartographer SLAM + ArUco 마커 기반 초기 포즈 보정
-- **센서 융합**: LiDAR, IMU, 초음파 센서, 카메라
-- **객체 인식**: OpenCV, YOLO 계열 모델
-- **영상 전송**: UDP 기반 실시간 스트리밍
-- **GUI**: PyQt6 (Staff Interface, Manager Dashboard)
-- **서버 & 네트워크**: Python TCP 서버, 바이너리 프로토콜, MySQL 데이터베이스
-- **협업 도구**: Git, Confluence, Jira
+
+| 분류             | 기술 요소 |
+|------------------|------------------------------------------------------------------|
+| 로봇 미들웨어  | ![ROS 2](https://img.shields.io/badge/ROS2-iron-blue?logo=ros) ![Nav2](https://img.shields.io/badge/Nav2-robot--navigation-blue) ![TF2](https://img.shields.io/badge/TF2-transform--library-lightgrey) |
+| SLAM & 위치추정 | ![Cartographer](https://img.shields.io/badge/Cartographer-SLAM-orange) ![ArUco](https://img.shields.io/badge/ArUco-marker%20tracking-lightblue) |
+| 센서 융합      | ![LiDAR](https://img.shields.io/badge/LiDAR-2D/3D-green) ![IMU](https://img.shields.io/badge/IMU-inertial-yellow) ![Ultrasonic](https://img.shields.io/badge/Ultrasonic-distance-lightgrey) ![Camera](https://img.shields.io/badge/Camera-vision-red) |
+| 객체 인식      | ![OpenCV](https://img.shields.io/badge/OpenCV-computer--vision-blue?logo=opencv) ![YOLO](https://img.shields.io/badge/YOLOv5-object%20detection-red) |
+| 영상 전송      | ![UDP](https://img.shields.io/badge/UDP-streaming-darkblue) |
+| GUI           | ![PyQt6](https://img.shields.io/badge/PyQt6-GUI-lightgreen) |
+| 서버 & 네트워크 | ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python) ![TCP](https://img.shields.io/badge/TCP-protocol-yellow) ![MySQL](https://img.shields.io/badge/MySQL-database-blue?logo=mysql) |
+| 협업 도구      | ![Git](https://img.shields.io/badge/Git-version%20control-orange?logo=git) ![Confluence](https://img.shields.io/badge/Confluence-docs-blue?logo=confluence) ![Jira](https://img.shields.io/badge/Jira-task%20mgmt-blue?logo=jira) |
+
 
 ---
-```
 
 ## 시스템 아키텍처
 
