@@ -9,12 +9,12 @@
 
 ## **Secondary Wave**팀 구성
 
-| 역할   | 이름       |
-|--------|------------|
-| 팀장   | 김연우     |
-| 팀원   | 나덕윤     |
-| 팀원   | 남상기     |
-| 팀원   | 심채훈     |
+| 역할   | 이름       | 주요업무 |
+|--------|------------|------------------------------|
+| 팀장   | 김연우     | MainService 구조화 및 모듈화 (DB, TCP/UDP, ROS2 통신)<br>- Task 처리(배송 요청, 제어 명령) ROS2 Action/Service 구현<br>- 로봇 암 제어(robsar_arm_controller), rack/cart controller 개발<br>- Manager GUI 구조 개선 및 통신 연동<br>- AI 모듈 통합: 객체 인식, 파일 처리, 통신 연동<br>- Database ORM 및 Query/Seed 구성<br>- 시스템 전체 구조 리팩토링 및 launch/log 설정|
+| 팀원   | 나덕윤     | YOLO 기반 AI 모델 학습 및 테스트<br>- Labeling 코드 및 데이터 처리 구현<br>- AI 서버 → Main 서버로 객체 탐지 결과 전송 파이프라인 구성<br>- Manager GUI의 지도 위 로봇 상태 표시 기능 초안<br>- 로봇 배터리 상태, 이름 등 시각적 UI 연동 처리<br>- 로그인 및 초기 GUI 전환 플로우 구현 |
+| 팀원   | 남상기     | 자율주행 기능 구현 (TEB, Path Planner, Waypoint)<br>- IMU, LiDAR, 초음파 등 센서 리스너 및 퍼블리셔 개발<br>- ArUco 기반 절대 위치 추정 로직 구현<br>- main_server 내부 통신 구조 설계 및 다중 노드 처리<br>- GUI 색상 및 상태 동기화<br>- Domain Bridge, Register 기능 개발|
+| 팀원   | 심채훈     | Mapping 및 Navigation 설정<br>- ArUco 마커 인식 및 위치 보정<br>- Battery/SSID 센서 퍼블리셔 및 DB 저장<br>- Video 송신 모듈 개발 (UDP)<br>- ROS2 통신 처리 및 shared_interfaces 구성<br>- GUI 기본 기능 구현 (Staff/Manager)|
 
 ---
 
