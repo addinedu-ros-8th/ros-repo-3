@@ -52,20 +52,9 @@
 
 ---
 
-## 시스템 아키텍처
+## 🖼시스템 아키텍처
 
-1. **Embedded Controller** (`mobile_controller/`)
-   - 센서 데이터 수집 및 액추에이터 제어
-2. **ROS2 Middleware**
-   - Roscar 노드들 (`shared_interfaces/msg`, `server/ros_nodes`)
-   - Topic/Service/Action 기반 통신
-3. **AI 영상 서버** (`server/ai_server/`)
-   - 객체 탐지 및 트래킹 모듈
-4. **메인 서버** (`server/main_server/`)
-   - TCP/UDP 데이터 처리, DB 저장, 작업 할당 로직
-5. **GUI & Dashboard** (`viewer/`)
-   - **Staff Interface**: QR 코드 스캔, 재고 조회, 배송 요청/취소
-   - **Manager Dashboard**: 실시간 위치 추적 및 상태 모니터링
+![System Architecture](https://github.com/user-attachments/assets/730f694e-7c41-4ea8-891b-623ae14bacbb)
 
 ---
 
