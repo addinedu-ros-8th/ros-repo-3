@@ -46,7 +46,7 @@
 | 객체 인식      | ![OpenCV](https://img.shields.io/badge/OpenCV-computer--vision-blue?logo=opencv) ![YOLO](https://img.shields.io/badge/YOLOv5-object%20detection-red) |
 | 영상 전송      | ![UDP](https://img.shields.io/badge/UDP-streaming-darkblue) |
 | GUI           | ![PyQt6](https://img.shields.io/badge/PyQt6-GUI-lightgreen) |
-| 서버 & 네트워크 | ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python) ![TCP](https://img.shields.io/badge/TCP-protocol-yellow) ![MySQL](https://img.shields.io/badge/MySQL-database-blue?logo=mysql) |
+| 서버 & 네트워크 | ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python) ![TCP](https://img.shields.io/badge/TCP-protocol-yellow) ![MySQL](https://img.shields.io/badge/MySQL-database-blue?logo=mysql) |
 | 협업 도구      | ![Git](https://img.shields.io/badge/Git-version%20control-orange?logo=git) ![Confluence](https://img.shields.io/badge/Confluence-docs-blue?logo=confluence) ![Jira](https://img.shields.io/badge/Jira-task%20mgmt-blue?logo=jira) |
 
 
