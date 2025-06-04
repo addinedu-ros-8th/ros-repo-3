@@ -60,6 +60,8 @@
 
 ## 기본주행
 
+![Basic_driving](https://github.com/user-attachments/assets/944b3f10-5b37-466e-9ef4-fd37d4a90237)
+
 ---
 
 ## 정밀정차
