@@ -47,18 +47,6 @@
 - **협업 도구**: Git, Confluence, Jira
 
 ---
-
-##  리포지터리 구조
-```
-ros-repo-3/
-├── docs/ # 설계 문서 (아키텍처, 인터페이스, ERD 등)
-├── shared_interfaces/ # ROS 메시지·서비스 정의
-├── mobile_controller/ # 임베디드(C++) & ROS 노드 (센서, 액추에이터)
-├── server/ # AI 서버(object detection) & 메인 서버(통신·DB·ROS 노드)
-├── viewer/ # PyQt6 기반 Staff GUI 및 Manager Dashboard
-├── requirements.txt # Python 패키지 의존성
-├── roscars.sql # 초기 DB 스키마 덤프
-└── README.md # 프로젝트 개요 및 실행 가이드
 ```
 
 ## 시스템 아키텍처
