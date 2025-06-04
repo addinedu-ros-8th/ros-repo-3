@@ -72,6 +72,10 @@
 
 ## Dashboard
 
+![Dashboard Image 1](https://github.com/user-attachments/assets/e2204ab3-1947-4924-a7ae-be2521c85c91)
+
+![Dashboard Image 2](https://github.com/user-attachments/assets/1f6ed6ce-8fd7-4b66-a0e9-99cd54573325)
+
 ---
 
 ## 🚀 설치 및 실행 방법
