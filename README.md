@@ -64,6 +64,7 @@
 
 ## 정밀정차
 
+![Precise stop](https://github.com/user-attachments/assets/2ecbc1c4-c21e-4b37-baad-ce581e4ed49f)
 ---
 
 ## 집품확인 (micro-ros)
