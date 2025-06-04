@@ -42,7 +42,7 @@
 |------------------|------------------------------------------------------------------|
 | 로봇 미들웨어  | ![ROS 2](https://img.shields.io/badge/ROS2-iron-blue?logo=ros) ![Nav2](https://img.shields.io/badge/Nav2-robot--navigation-blue) ![TF2](https://img.shields.io/badge/TF2-transform--library-lightgrey) |
 | SLAM & 위치추정 | ![Cartographer](https://img.shields.io/badge/Cartographer-SLAM-orange) ![ArUco](https://img.shields.io/badge/ArUco-marker%20tracking-lightblue) |
-| 센서 융합      | ![LiDAR](https://img.shields.io/badge/LiDAR-2D/3D-green) ![IMU](https://img.shields.io/badge/IMU-inertial-yellow) ![Ultrasonic](https://img.shields.io/badge/Ultrasonic-distance-lightgrey) ![Camera](https://img.shields.io/badge/Camera-vision-red) |
+| 센서 융합      | ![LiDAR](https://img.shields.io/badge/LiDAR-2D-green) ![IMU](https://img.shields.io/badge/IMU-inertial-yellow) ![Ultrasonic](https://img.shields.io/badge/Ultrasonic-distance-lightgrey) ![Camera](https://img.shields.io/badge/Camera-vision-red) |
 | 객체 인식      | ![OpenCV](https://img.shields.io/badge/OpenCV-computer--vision-blue?logo=opencv) ![YOLO](https://img.shields.io/badge/YOLOv5-object%20detection-red) |
 | 영상 전송      | ![UDP](https://img.shields.io/badge/UDP-streaming-darkblue) |
 | GUI           | ![PyQt6](https://img.shields.io/badge/PyQt6-GUI-lightgreen) |
